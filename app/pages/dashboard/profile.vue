@@ -1,0 +1,361 @@
+<script setup lang="ts">
+definePageMeta({
+	middleware: 'auth',
+	layout: 'dashboard'
+})
+
+const { t } = useI18n()
+const { $api } = useNuxtApp()
+const authStore = useAuthStore()
+const user = computed(() => authStore.user)
+
+const business = ref({
+	id: undefined as string | undefined,
+	name: '',
+	phone: '',
+	addressStreet: '',
+	addressCity: '',
+	addressZip: '',
+	addressCountry: '',
+	website: '',
+	primaryColor: '#00E5FF',
+	logo: null as string | null,
+})
+
+const loading = ref(true)
+const saving = ref(false)
+const isEditing = ref(false)
+
+const isProfileComplete = computed(() => {
+	// Profile is complete if name and logo are present
+	// We also check if name is not empty string
+	return !!(business.value.name && business.value.name.trim() !== '' && business.value.logo)
+})
+
+const canEdit = computed(() => {
+	// Can edit if user clicked "Modifier" OR if profile is not complete
+	return isEditing.value || !isProfileComplete.value
+})
+
+// Helper to get asset URL
+const getAssetUrl = (url: string) => {
+	return url // Full URL from S3/R2
+}
+
+const fetchBusiness = async () => {
+	try {
+		const data = await $api<any>('/businesses/me')
+		if (data) {
+			// If name defaults to email (from registration), clear it to force user input
+			let cleanName = data.name
+			if (user.value?.email && cleanName === user.value.email) {
+				cleanName = ''
+			}
+
+			business.value = {
+				...business.value,
+				...data,
+				name: cleanName,
+				primaryColor: data.primaryColor || '#00E5FF',
+				addressStreet: data.addressStreet || '',
+				phone: data.phone || '',
+			}
+		}
+	} catch (e) {
+		console.error(e)
+	} finally {
+		loading.value = false
+	}
+}
+
+const handleSave = async () => {
+	saving.value = true
+	try {
+		const payload: any = {
+			name: business.value.name,
+			addressStreet: business.value.addressStreet,
+			primaryColor: business.value.primaryColor,
+			logo: business.value.logo,
+		}
+
+		if (business.value.phone) payload.phone = business.value.phone
+		if (business.value.website) payload.website = business.value.website
+		if (business.value.addressCity) payload.addressCity = business.value.addressCity
+		if (business.value.addressZip) payload.addressZip = business.value.addressZip
+		if (business.value.addressCountry) payload.addressCountry = business.value.addressCountry
+
+		if (business.value.id) {
+			await $api(`/businesses/${business.value.id}`, {
+				method: 'PATCH',
+				body: payload
+			})
+			useToast().show(t('profile.success_message'), 'success')
+		} else {
+			console.warn('No business ID found to update')
+		}
+		await fetchBusiness()
+		isEditing.value = false
+	} catch (e) {
+		console.error(e)
+		useToast().show(t('profile.error_message'), 'error')
+	} finally {
+		saving.value = false
+	}
+}
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const triggerFileInput = () => {
+	fileInputRef.value?.click()
+}
+const handleLogoUpload = async (event: Event) => {
+	const input = event.target as HTMLInputElement
+	if (input.files && input.files[0]) {
+		const file = input.files[0]
+		const formData = new FormData()
+		formData.append('file', file)
+
+		try {
+			const response = await $api<{ url: string }>('/uploads/logo', {
+				method: 'POST',
+				body: formData
+			})
+			if (response?.url) {
+				business.value.logo = response.url
+				useToast().show(t('profile.upload_success'), 'success')
+			}
+		} catch (e) {
+			console.error(e)
+			useToast().show(t('profile.upload_error'), 'error')
+		}
+	}
+}
+
+onMounted(() => {
+	if (user.value) {
+		fetchBusiness()
+	}
+})
+</script>
+
+<template>
+	<div class="space-y-8 relative">
+
+		<!-- Header -->
+		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+			<div>
+				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('profile.title') }}</h1>
+				<p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">{{ $t('profile.subtitle') }}
+				</p>
+			</div>
+
+			<!-- Actions -->
+			<div v-if="!loading" class="flex items-center gap-3">
+				<button v-if="isProfileComplete && !isEditing" @click="isEditing = true"
+					class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+					<Icon name="ph:pencil-simple-bold" size="16" />
+					<span>{{ $t('profile.edit_button') }}</span>
+				</button>
+
+				<button v-if="canEdit" @click="handleSave" :disabled="saving"
+					class="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 shadow-md shadow-slate-900/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+					<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
+					<Icon v-else name="ph:floppy-disk-bold" size="16" />
+					<span>{{ saving ? $t('profile.saving') : $t('profile.save_button') }}</span>
+				</button>
+			</div>
+		</div>
+
+		<!-- Loading State -->
+		<div v-if="loading" class="flex justify-center py-20">
+			<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="32" />
+		</div>
+
+		<!-- Incomplete Profile Warning -->
+		<div v-else-if="!isProfileComplete"
+			class="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-4 flex items-start gap-3 mb-6">
+			<Icon name="ph:warning-circle-fill" class="text-amber-500 mt-0.5" size="20" />
+			<div>
+				<h3 class="text-sm font-bold text-amber-900 dark:text-amber-500">{{ $t('profile.incomplete_warning') }}</h3>
+				<p class="text-sm text-amber-700 dark:text-amber-400 mt-0.5">{{ $t('profile.incomplete_message') }}</p>
+			</div>
+		</div>
+
+		<!-- Main Grid -->
+		<div v-if="!loading" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+			<!-- SECTION 1: Informations (Left Column) -->
+			<div
+				class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
+				<div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
+					<div
+						class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+						<Icon name="ph:info-duotone" size="20" />
+					</div>
+					<div>
+						<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('profile.information_section') }}</h2>
+						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('profile.information_subtitle') }}</p>
+					</div>
+				</div>
+
+				<div class="space-y-6">
+					<!-- Name -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.business_name') }}</label>
+						<input v-model="business.name" type="text" required :disabled="!canEdit"
+							class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+							:placeholder="$t('profile.business_name_placeholder')">
+					</div>
+
+					<!-- Phone -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.phone') }}</label>
+						<div class="relative group/input">
+							<span
+								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-brand-500">
+								<Icon name="ph:phone-bold" size="18" />
+							</span>
+							<input v-model="business.phone" type="tel" :disabled="!canEdit"
+								class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								:placeholder="$t('profile.phone_placeholder')">
+						</div>
+					</div>
+
+					<!-- Website -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.website') }}</label>
+						<div class="relative group/input">
+							<span
+								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-brand-500">
+								<Icon name="ph:globe-simple-bold" size="18" />
+							</span>
+							<input v-model="business.website" type="url" :disabled="!canEdit"
+								class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								:placeholder="$t('profile.website_placeholder')">
+						</div>
+					</div>
+
+					<!-- Address -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.address') }}</label>
+						<div class="relative group/input">
+							<span
+								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-brand-500">
+								<Icon name="ph:map-pin-bold" size="18" />
+							</span>
+							<input v-model="business.addressStreet" :disabled="!canEdit"
+								class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								:placeholder="$t('profile.address_placeholder')">
+						</div>
+					</div>
+
+					<!-- City + Zip -->
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label
+								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.city') }}</label>
+							<input v-model="business.addressCity" :disabled="!canEdit"
+								class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								:placeholder="$t('profile.city_placeholder')">
+						</div>
+						<div>
+							<label
+								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.postal_code') }}</label>
+							<input v-model="business.addressZip" :disabled="!canEdit"
+								class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								:placeholder="$t('profile.postal_code_placeholder')">
+						</div>
+					</div>
+
+					<!-- Country -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.country') }}</label>
+						<input v-model="business.addressCountry" :disabled="!canEdit"
+							class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+							:placeholder="$t('profile.country_placeholder')">
+					</div>
+				</div>
+			</div>
+
+			<!-- SECTION 2: Marque & Visuel (Right Column) -->
+			<div
+				class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
+				<div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
+					<div
+						class="w-10 h-10 rounded-lg bg-fuchsia-50 dark:bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+						<Icon name="ph:paint-brush-broad-duotone" size="20" />
+					</div>
+					<div>
+						<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('profile.visual_identity') }}</h2>
+						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('profile.visual_identity_subtitle') }}</p>
+					</div>
+				</div>
+
+				<div class="space-y-8">
+
+					<!-- Logo Section -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">{{ $t('profile.logo') }}</label>
+						<div class="flex items-start gap-6">
+							<!-- Logo Preview -->
+							<div
+								class="w-24 h-24 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-700/50 flex items-center justify-center p-3 relative group/logo overflow-hidden transition-all hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm">
+								<img v-if="business.logo" :src="getAssetUrl(business.logo)"
+									class="w-full h-full object-contain" />
+								<Icon v-else name="ph:storefront-duotone" class="text-slate-300" size="32" />
+
+								<!-- Hover actions -->
+								<button v-if="business.logo && canEdit" @click="business.logo = null"
+									class="absolute top-1 right-1 p-1.5 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/logo:opacity-100 transform scale-90 hover:scale-100 border border-slate-100"
+									:title="$t('profile.delete_logo')">
+									<Icon name="ph:trash-bold" size="14" />
+								</button>
+							</div>
+
+							<!-- Upload Actions -->
+							<div v-if="canEdit" class="flex-1 space-y-2 pt-1">
+								<input ref="fileInputRef" type="file" @change="handleLogoUpload" accept="image/*"
+									class="hidden" />
+								<button type="button" @click="triggerFileInput"
+									class="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm">
+									<Icon name="ph:upload-simple-bold" size="14" />
+									{{ $t('profile.upload_logo') }}
+								</button>
+								<p class="text-[11px] text-slate-400 font-medium leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="h-px bg-slate-50 dark:bg-slate-700 w-full"></div>
+
+					<!-- Colors Section -->
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">{{ $t('profile.brand_color') }}</label>
+
+						<div class="group/color">
+							<div
+								class="flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-white dark:hover:bg-slate-700 transition-all group-hover/color:shadow-sm">
+								<div class="relative w-8 h-8 rounded-md overflow-hidden shadow-sm ring-1 ring-black/5 cursor-pointer hover:scale-105 transition-transform"
+									:class="{ 'opacity-50 cursor-not-allowed hover:scale-100': !canEdit }">
+									<input v-model="business.primaryColor" type="color" :disabled="!canEdit"
+										class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 border-0 cursor-pointer disabled:cursor-not-allowed" />
+								</div>
+								<input v-model="business.primaryColor" type="text" :disabled="!canEdit"
+									class="bg-transparent font-mono font-bold text-slate-700 dark:text-slate-200 outline-none w-full text-xs uppercase disabled:opacity-50"
+									maxlength="7">
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+</template>

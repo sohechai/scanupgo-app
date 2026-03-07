@@ -1,0 +1,14 @@
+/* ==========================================================
+   RTL (Right-to-Left) Global Overrides
+   Applied when <div dir="rtl"> wraps the app (Arabic locale)
+   ========================================================== */
+
+/* --- Tables: flip text-left alignment to text-right --- */
+[dir="rtl"] th,
+[dir="rtl"] td {
+	text-align: right;
+}
+
+[dir="rtl"] tr.text-left {
+	text-align: right;
+}

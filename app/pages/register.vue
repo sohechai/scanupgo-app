@@ -1,0 +1,167 @@
+<script setup lang="ts">
+definePageMeta({
+	layout: 'auth'
+})
+const { t } = useI18n()
+const { signUp } = useAuth()
+const config = useRuntimeConfig()
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const cgvAccepted = ref(false)
+const cgvError = ref(false)
+const error = ref('')
+const loading = ref(false)
+
+const handleRegister = async () => {
+	if (password.value !== confirmPassword.value) {
+		error.value = t('auth.register.error_passwords_mismatch')
+		return
+	}
+
+	if (!cgvAccepted.value) {
+		cgvError.value = true
+		error.value = t('auth.register.error_cgv_not_accepted')
+		return
+	}
+
+	cgvError.value = false
+	loading.value = true
+	error.value = ''
+	try {
+		await signUp(email.value, password.value, undefined, undefined, cgvAccepted.value)
+		navigateTo('/verify-email-pending')
+	} catch (e: any) {
+		console.error(e)
+		if (e?.response?.status === 429 || e?.status === 429) {
+			error.value = t('auth.register.error_rate_limit')
+		} else if (e.errors?.[0]?.message) {
+			const msg = e.errors[0].message
+			if (msg.includes('unique') && msg.includes('email')) {
+				error.value = t('auth.register.error_email_exists')
+			} else {
+				error.value = msg
+			}
+		} else {
+			error.value = t('auth.register.error_registration_failed')
+		}
+
+	} finally {
+		loading.value = false
+	}
+}
+
+const loginWithGoogle = () => {
+	const apiBase = config.public.apiUrl || 'http://localhost:4000'
+	window.location.href = `${apiBase}/auth/google`
+}
+</script>
+
+<template>
+	<div class="w-full max-w-sm">
+		<div class="mb-10">
+			<h3 class="font-display text-3xl font-semibold text-slate-900 mb-2 tracking-tight">{{ $t('auth.register.heading') }}</h3>
+			<p class="text-slate-500 text-sm">{{ $t('auth.register.subtitle') }}</p>
+		</div>
+
+		<!-- Google Register Button -->
+		<button @click="loginWithGoogle" type="button"
+			class="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 transition-all text-sm font-medium shadow-sm">
+			<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+				<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+				<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+				<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+			</svg>
+			{{ $t('auth.register.google_button') }}
+		</button>
+
+		<!-- Separator -->
+		<div class="relative my-6">
+			<div class="absolute inset-0 flex items-center">
+				<div class="w-full border-t border-slate-200"></div>
+			</div>
+			<div class="relative flex justify-center text-xs">
+				<span class="bg-white px-3 text-slate-400 font-medium uppercase tracking-wide">{{ $t('auth.register.divider') }}</span>
+			</div>
+		</div>
+
+		<form @submit.prevent="handleRegister" class="space-y-5">
+			<!-- Email Input -->
+			<div class="space-y-1.5">
+				<label for="email" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.email_label') }}</label>
+				<div class="relative">
+					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
+						<Icon name="ph:envelope-simple" size="18" />
+					</div>
+					<input id="email" v-model="email" type="email" required
+						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
+						:placeholder="$t('auth.register.email_placeholder')">
+				</div>
+			</div>
+
+			<!-- Password Input -->
+			<div class="space-y-1.5">
+				<label for="password" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.password_label') }}</label>
+				<div class="relative">
+					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
+						<Icon name="ph:lock-key" size="18" />
+					</div>
+					<input id="password" v-model="password" type="password" required
+						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
+						:placeholder="$t('auth.register.password_placeholder')">
+				</div>
+				<p class="text-xs text-slate-500 mt-1">{{ $t('auth.register.password_hint') }}</p>
+			</div>
+
+			<div class="space-y-1.5">
+				<label for="confirm-password" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.confirm_password_label') }}</label>
+				<div class="relative">
+					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
+						<Icon name="ph:check-circle" size="18" />
+					</div>
+					<input id="confirm-password" v-model="confirmPassword" type="password" required
+						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
+						:placeholder="$t('auth.register.confirm_password_placeholder')">
+				</div>
+			</div>
+
+			<!-- CGV Checkbox -->
+			<div class="flex items-start gap-2" :class="{ 'ring-2 ring-red-400 rounded-lg p-2 bg-red-50/50': cgvError && !cgvAccepted }">
+				<input id="cgv" v-model="cgvAccepted" type="checkbox"
+					class="mt-0.5 h-4 w-4 rounded text-brand-600 focus:ring-brand-500 transition-colors"
+					:class="cgvError && !cgvAccepted ? 'border-red-500' : 'border-slate-300'"
+					@change="cgvError = false" />
+				<label for="cgv" class="text-sm" :class="cgvError && !cgvAccepted ? 'text-red-600' : 'text-slate-500'">
+					{{ $t('auth.register.cgv_label') }}
+					<a href="/cgv" target="_blank" class="text-brand-600 hover:text-brand-500 underline">{{ $t('auth.register.cgv_link') }}</a>
+				</label>
+			</div>
+
+			<div v-if="error"
+				class="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+				<Icon name="ph:warning-circle-fill" size="16" class="flex-shrink-0" />
+				{{ error }}
+			</div>
+
+			<!-- Submit Button -->
+			<button type="submit" :disabled="loading"
+				class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+				<span v-if="loading" class="flex items-center gap-2">
+					<Icon name="ph:spinner-gap" class="animate-spin" size="18" />
+					{{ $t('auth.register.submit_loading') }}
+				</span>
+				<span v-else>{{ $t('auth.register.submit_button') }}</span>
+			</button>
+		</form>
+
+		<div class="mt-8 text-center">
+			<p class="text-sm text-slate-500">
+				{{ $t('auth.register.already_account_text') }}
+				<NuxtLink to="/login" class="font-medium text-brand-600 hover:text-brand-500 transition-colors">
+					{{ $t('auth.register.login_link') }}
+				</NuxtLink>
+			</p>
+		</div>
+	</div>
+</template>
