@@ -22,7 +22,7 @@ const deleteTargetId = ref<string | null>(null)
 const previewMode = ref(false)
 
 const form = ref({
-	type: 'welcome' as 'welcome' | 'inactivity' | 'post_win',
+	type: 'inactivity' as 'inactivity' | 'post_win',
 	name: '',
 	subject: '',
 	htmlContent: '',
@@ -31,14 +31,6 @@ const form = ref({
 })
 
 const automationTypes = computed(() => [
-	{
-		type: 'welcome',
-		label: t('marketing.automations.welcome_type'),
-		description: t('marketing.automations.welcome_description'),
-		icon: 'ph:hand-waving-fill',
-		color: 'emerald',
-		hasDelay: false,
-	},
 	{
 		type: 'inactivity',
 		label: t('marketing.automations.inactivity_type'),
@@ -104,13 +96,6 @@ const openCreateModal = (type: string) => {
 
 const getDefaultTemplate = (type: string) => {
 	const templates: Record<string, string> = {
-		welcome: `<h2 style="color: #1e293b; margin-bottom: 16px;">Bienvenue {{prenom}} !</h2>
-<p style="color: #64748b; line-height: 1.6; margin-bottom: 24px;">
-Merci d'avoir participé à notre jeu chez {{commerce}}. Nous sommes ravis de vous compter parmi nos clients !
-</p>
-<p style="color: #64748b; line-height: 1.6;">
-À très bientôt !
-</p>`,
 		inactivity: `<h2 style="color: #1e293b; margin-bottom: 16px;">{{prenom}}, vous nous manquez !</h2>
 <p style="color: #64748b; line-height: 1.6; margin-bottom: 24px;">
 Cela fait un moment que nous ne vous avons pas vu chez {{commerce}}. Revenez vite tenter votre chance à notre jeu !
