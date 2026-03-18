@@ -12,6 +12,14 @@ jobs:
     if: github.repository == 'scanupgo-git/scanupgo-app'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set git author to Vercel owner
+        run: |
+          git config user.email "scanupgo@gmail.com"
+          git config user.name "scanupgo"
+          git commit --amend --no-edit --author="scanupgo <scanupgo@gmail.com>" || true
 
       - name: Install Vercel CLI
         run: npm install -g vercel
@@ -21,6 +29,3 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_GIT_COMMIT_AUTHOR_LOGIN: ""
-          VERCEL_GIT_COMMIT_AUTHOR_EMAIL: ""
-          GITHUB_ACTOR: ""
