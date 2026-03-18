@@ -8,6 +8,8 @@ const config = useRuntimeConfig()
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const cgvAccepted = ref(false)
 const cgvError = ref(false)
 const error = ref('')
@@ -107,22 +109,31 @@ const loginWithGoogle = () => {
 					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
 						<Icon name="ph:lock-key" size="18" />
 					</div>
-					<input id="password" v-model="password" type="password" required
-						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
+					<input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
+						class="block w-full pl-10 rtl:pl-10 pr-10 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
 						:placeholder="$t('auth.register.password_placeholder')">
+					<button type="button" @click="showPassword = !showPassword"
+						class="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 pr-3 rtl:pr-0 rtl:pl-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+						<Icon :name="showPassword ? 'ph:eye-slash' : 'ph:eye'" size="18" />
+					</button>
 				</div>
 				<p class="text-xs text-slate-500 mt-1">{{ $t('auth.register.password_hint') }}</p>
 			</div>
 
+			<!-- Confirm Password Input -->
 			<div class="space-y-1.5">
 				<label for="confirm-password" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.confirm_password_label') }}</label>
 				<div class="relative">
 					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
 						<Icon name="ph:check-circle" size="18" />
 					</div>
-					<input id="confirm-password" v-model="confirmPassword" type="password" required
-						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
+					<input id="confirm-password" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required
+						class="block w-full pl-10 rtl:pl-10 pr-10 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
 						:placeholder="$t('auth.register.confirm_password_placeholder')">
+					<button type="button" @click="showConfirmPassword = !showConfirmPassword"
+						class="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 pr-3 rtl:pr-0 rtl:pl-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
+						<Icon :name="showConfirmPassword ? 'ph:eye-slash' : 'ph:eye'" size="18" />
+					</button>
 				</div>
 			</div>
 
