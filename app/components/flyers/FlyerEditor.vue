@@ -308,24 +308,32 @@ const loadTemplate = async (templateId: string) => {
 	if (!template) return
 
 	if (template.isSmart) {
-		// Clean up canvas if we're coming from canvas mode
-		if (canvas.value) {
-			canvas.value.dispose()
-			canvas.value = null
-		}
+		// Save ref and clear it BEFORE switching mode so Vue removes the canvas
+		// element from DOM first, then we dispose Fabric safely
+		const canvasToDispose = canvas.value
+		canvas.value = null
 		mode.value = 'smart'
 		selectedBaseTemplate.value = templateId
-		showToast(`Template template intelligent chargé`, 'success')
+		// Wait for Vue to remove the canvas DOM element, then dispose Fabric
+		await nextTick()
+		if (canvasToDispose) {
+			try {
+				await canvasToDispose.dispose()
+			} catch (e) {
+				console.warn('Canvas dispose error (safe to ignore):', e)
+			}
+		}
+		showToast('Template intelligent chargé', 'success')
 		return
 	}
 
 	// Switch back to canvas mode if needed
 	if (mode.value === 'smart') {
+		canvas.value = null // Ensure fresh init
 		mode.value = 'canvas'
-		// Update UI immediately (optimistic)
 		selectedBaseTemplate.value = templateId
 
-		// Give Vue a moment to render the canvas element
+		// Wait for Vue to re-create the canvas DOM element
 		await nextTick()
 		await new Promise(resolve => setTimeout(resolve, 100))
 
