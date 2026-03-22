@@ -720,7 +720,7 @@ watch(textColor, (newColor) => {
 	changeTextColor(newColor)
 })
 
-const textFontFamily = ref('Arial')
+const textFontFamily = ref('Luckiest Guy')
 
 const changeFontFamily = (font: string) => {
 	if (mode.value === 'smart') return
@@ -1167,14 +1167,10 @@ const previewFlyer = async () => {
 						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Police</span>
 						<select v-model="textFontFamily"
 							class="text-xs bg-transparent border-0 outline-none cursor-pointer text-slate-700 dark:text-slate-200 max-w-[110px]">
-							<option value="Arial">Arial</option>
-							<option value="Inter">Inter</option>
-							<option value="Outfit">Outfit</option>
-							<option value="Anton">Anton</option>
-							<option value="Bangers">Bangers</option>
-							<option value="Luckiest Guy">Luckiest Guy</option>
-							<option value="Righteous">Righteous</option>
-							<option value="Georgia">Georgia</option>
+							<option value="Luckiest Guy">Fun</option>
+							<option value="Anton">Impact</option>
+							<option value="Bangers">Comics</option>
+							<option value="Righteous">Moderne</option>
 						</select>
 					</div>
 
