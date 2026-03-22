@@ -12,6 +12,13 @@ const loading = ref(false)
 const showPassword = ref(false)
 const rememberMe = ref(false)
 
+const route = useRoute()
+onMounted(() => {
+	if (route.query.error === 'google_not_configured') {
+		error.value = t('auth.login.error_google_not_configured')
+	}
+})
+
 const handleLogin = async () => {
 	loading.value = true
 	error.value = ''

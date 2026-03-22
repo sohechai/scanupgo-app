@@ -53,6 +53,13 @@ const handleRegister = async () => {
 	}
 }
 
+const route = useRoute()
+onMounted(() => {
+	if (route.query.error === 'google_not_configured') {
+		error.value = t('auth.register.error_google_not_configured')
+	}
+})
+
 const loginWithGoogle = () => {
 	const apiBase = config.public.apiUrl || 'http://localhost:4000'
 	window.location.href = `${apiBase}/auth/google`
