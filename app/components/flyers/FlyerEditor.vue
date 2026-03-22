@@ -304,8 +304,13 @@ const configureObjectControls = (obj: any) => {
 
 // Load template
 const loadTemplate = async (templateId: string) => {
+	console.log('[FlyerEditor] loadTemplate:', templateId, '| mode:', mode.value, '| canvas:', !!canvas.value, '| loadingTemplate:', loadingTemplate.value)
 	const template = templates.find(t => t.id === templateId)
-	if (!template) return
+	if (!template) {
+		console.warn('[FlyerEditor] template not found:', templateId, 'available:', templates.value?.map((t: any) => t.id))
+		return
+	}
+	console.log('[FlyerEditor] template found:', template.id, 'isSmart:', !!template.isSmart)
 
 	if (template.isSmart) {
 		// Save ref and clear it BEFORE switching mode so Vue removes the canvas
