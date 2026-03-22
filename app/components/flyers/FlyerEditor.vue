@@ -241,6 +241,15 @@ const initCanvas = async () => {
 }
 
 onMounted(async () => {
+	// Preload all canvas fonts so Fabric.js renders them correctly
+	if (process.client) {
+		await Promise.allSettled([
+			document.fonts.load('20px "Luckiest Guy"'),
+			document.fonts.load('20px "Anton"'),
+			document.fonts.load('20px "Bangers"'),
+			document.fonts.load('20px "Righteous"'),
+		])
+	}
 	// Initialize Fabric only if not in smart mode initially (default is canvas)
 	await initCanvas()
 	// Ensure canvas has white background and is rendered
@@ -408,6 +417,9 @@ const addText = async () => {
 	if (!canvas.value) return
 
 	const { Textbox } = await import('fabric')
+
+	// Ensure the selected font is loaded before rendering
+	await document.fonts.load(`20px "${textFontFamily.value}"`)
 
 	const text = new Textbox('Nouveau texte', {
 		left: 100,
@@ -722,9 +734,10 @@ watch(textColor, (newColor) => {
 
 const textFontFamily = ref('Luckiest Guy')
 
-const changeFontFamily = (font: string) => {
+const changeFontFamily = async (font: string) => {
 	if (mode.value === 'smart') return
 	if (!canvas.value) return
+	await document.fonts.load(`20px "${font}"`)
 	const activeObject = canvas.value.getActiveObject()
 	if (activeObject && activeObject.type === 'textbox') {
 		activeObject.set('fontFamily', font)
