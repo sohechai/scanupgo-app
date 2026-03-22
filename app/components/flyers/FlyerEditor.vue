@@ -192,6 +192,17 @@ const initCanvas = async () => {
 			backgroundColor: '#ffffff',
 		})
 
+		// Sync textColor and textFontFamily when selecting a text object
+		const syncTextProps = (e: any) => {
+			const obj = e.selected?.[0] ?? e.target
+			if (obj && obj.type === 'textbox') {
+				if (obj.fill) textColor.value = obj.fill as string
+				if (obj.fontFamily) textFontFamily.value = obj.fontFamily
+			}
+		}
+		canvas.value.on('selection:created', syncTextProps)
+		canvas.value.on('selection:updated', syncTextProps)
+
 		// Configure global control appearance
 		if (fabric.Object && fabric.Object.prototype) {
 			try {
@@ -403,8 +414,8 @@ const addText = async () => {
 		top: 100,
 		width: 200,
 		fontSize: 20,
-		fill: '#000000',
-		fontFamily: 'Arial',
+		fill: textColor.value,
+		fontFamily: textFontFamily.value,
 	})
 
 	configureObjectControls(text)
@@ -707,6 +718,22 @@ const changeTextColor = (color: string) => {
 
 watch(textColor, (newColor) => {
 	changeTextColor(newColor)
+})
+
+const textFontFamily = ref('Arial')
+
+const changeFontFamily = (font: string) => {
+	if (mode.value === 'smart') return
+	if (!canvas.value) return
+	const activeObject = canvas.value.getActiveObject()
+	if (activeObject && activeObject.type === 'textbox') {
+		activeObject.set('fontFamily', font)
+		canvas.value.renderAll()
+	}
+}
+
+watch(textFontFamily, (newFont) => {
+	changeFontFamily(newFont)
 })
 
 // Export canvas as image
@@ -1132,6 +1159,23 @@ const previewFlyer = async () => {
 						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Texte</span>
 						<input v-model="textColor" type="color"
 							class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
+					</div>
+
+					<!-- Font Family -->
+					<div
+						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
+						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Police</span>
+						<select v-model="textFontFamily"
+							class="text-xs bg-transparent border-0 outline-none cursor-pointer text-slate-700 dark:text-slate-200 max-w-[110px]">
+							<option value="Arial">Arial</option>
+							<option value="Inter">Inter</option>
+							<option value="Outfit">Outfit</option>
+							<option value="Anton">Anton</option>
+							<option value="Bangers">Bangers</option>
+							<option value="Luckiest Guy">Luckiest Guy</option>
+							<option value="Righteous">Righteous</option>
+							<option value="Georgia">Georgia</option>
+						</select>
 					</div>
 
 					<div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
