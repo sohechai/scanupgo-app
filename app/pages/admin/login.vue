@@ -24,7 +24,6 @@ const handleLogin = async () => {
 	error.value = ''
 
 	try {
-		console.log('🔐 Tentative de connexion admin...')
 		const response = await $api<{ message: string; user: any }>('/auth/login', {
 			method: 'POST',
 			body: {
@@ -33,7 +32,6 @@ const handleLogin = async () => {
 			}
 		})
 
-		console.log('✅ Connexion réussie, rôle:', response.user.role)
 
 		// Vérifier que l'utilisateur est bien un SUPER_ADMIN
 		if (response.user.role !== 'SUPER_ADMIN') {
@@ -45,21 +43,18 @@ const handleLogin = async () => {
 			return
 		}
 
-		console.log('✅ Utilisateur SUPER_ADMIN vérifié, vérification de la session...')
 
 		// Vérifier que la session est bien établie avant de rediriger
 		await new Promise(resolve => setTimeout(resolve, 100))
 
 		// Vérifier une dernière fois le statut
 		const statusCheck = await $api<{ authenticated: boolean; user: any }>('/auth/status')
-		console.log('✅ Session vérifiée:', statusCheck.authenticated, 'rôle:', statusCheck.user?.role)
 
 		if (!statusCheck.authenticated || statusCheck.user?.role !== 'SUPER_ADMIN') {
 			error.value = t('admin.login.session_error')
 			return
 		}
 
-		console.log('✅ Redirection vers /admin...')
 		// Rediriger vers le dashboard admin
 		await router.push('/admin')
 	} catch (e: any) {

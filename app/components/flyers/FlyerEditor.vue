@@ -43,7 +43,6 @@ const loadLogoAsDataUrl = async (url: string | null | undefined) => {
 		reader.onloadend = () => {
 			logoDataUrl.value = reader.result as string
 			logoLoadAttempted.value = true
-			console.log('Logo loaded as data URL successfully')
 		}
 		reader.onerror = () => {
 			console.warn('Failed to convert logo to data URL')
@@ -70,7 +69,6 @@ const loadLogoAsDataUrl = async (url: string | null | undefined) => {
 			reader.onloadend = () => {
 				logoDataUrl.value = reader.result as string
 				logoLoadAttempted.value = true
-				console.log('Logo loaded via proxy successfully')
 			}
 			reader.onerror = () => {
 				console.warn('Failed to convert proxied logo to data URL')
@@ -88,13 +86,11 @@ const loadLogoAsDataUrl = async (url: string | null | undefined) => {
 
 // Watch for logo changes and load as data URL
 watch(() => props.businessLogo, (newLogo) => {
-	console.log('FlyerEditor: businessLogo prop changed to:', newLogo)
 	loadLogoAsDataUrl(newLogo)
 }, { immediate: true })
 
 // Also try loading on mount in case the watch doesn't trigger
 onMounted(async () => {
-	console.log('FlyerEditor mounted, businessLogo:', props.businessLogo)
 	if (props.businessLogo && !logoLoadAttempted.value) {
 		loadLogoAsDataUrl(props.businessLogo)
 	}
@@ -192,12 +188,13 @@ const initCanvas = async () => {
 			backgroundColor: '#ffffff',
 		})
 
-		// Sync textColor and textFontFamily when selecting a text object
+		// Sync textColor, textFontFamily and textAlign when selecting a text object
 		const syncTextProps = (e: any) => {
 			const obj = e.selected?.[0] ?? e.target
 			if (obj && obj.type === 'textbox') {
 				if (obj.fill) textColor.value = obj.fill as string
 				if (obj.fontFamily) textFontFamily.value = obj.fontFamily
+				if (obj.textAlign) textAlign.value = obj.textAlign as 'left' | 'center' | 'right'
 			}
 		}
 		canvas.value.on('selection:created', syncTextProps)
@@ -260,7 +257,11 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-	canvas.value?.dispose()
+	const canvasToDispose = canvas.value
+	canvas.value = null
+	if (canvasToDispose) {
+		canvasToDispose.dispose().catch(() => {})
+	}
 })
 
 const configureObjectControls = (obj: any) => {
@@ -304,13 +305,8 @@ const configureObjectControls = (obj: any) => {
 
 // Load template
 const loadTemplate = async (templateId: string) => {
-	console.log('[FlyerEditor] loadTemplate:', templateId, '| mode:', mode.value, '| canvas:', !!canvas.value, '| loadingTemplate:', loadingTemplate.value)
-	const template = templates.find(t => t.id === templateId)
-	if (!template) {
-		console.warn('[FlyerEditor] template not found:', templateId, 'available:', templates.value?.map((t: any) => t.id))
-		return
-	}
-	console.log('[FlyerEditor] template found:', template.id, 'isSmart:', !!template.isSmart)
+	const template = templates.value.find((t: any) => t.id === templateId)
+	if (!template) return
 
 	if (template.isSmart) {
 		// Save ref and clear it BEFORE switching mode so Vue removes the canvas
@@ -762,6 +758,19 @@ watch(textFontFamily, (newFont) => {
 	changeFontFamily(newFont)
 })
 
+const textAlign = ref<'left' | 'center' | 'right'>('left')
+
+const changeTextAlign = (align: 'left' | 'center' | 'right') => {
+	if (mode.value === 'smart') return
+	if (!canvas.value) return
+	const activeObject = canvas.value.getActiveObject()
+	if (activeObject && activeObject.type === 'textbox') {
+		activeObject.set('textAlign', align)
+		canvas.value.renderAll()
+	}
+	textAlign.value = align
+}
+
 // Export canvas as image
 const exportFlyer = async () => {
 	if (mode.value === 'smart') {
@@ -1169,7 +1178,7 @@ const previewFlyer = async () => {
 
 			<!-- TOP BAR: ACTIONS -->
 			<div
-				class="bg-white dark:bg-slate-800 p-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+				class="bg-white dark:bg-slate-800 p-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap-reverse items-center justify-between gap-4">
 				<div v-if="mode === 'canvas'" class="flex items-center gap-2">
 					<!-- Background Color -->
 					<div
@@ -1200,6 +1209,25 @@ const previewFlyer = async () => {
 						</select>
 					</div>
 
+					<!-- Text Alignment -->
+					<div class="flex items-center bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600 overflow-hidden">
+						<button @click="changeTextAlign('left')" type="button" title="Aligner à gauche"
+							class="p-1.5 transition-colors"
+							:class="textAlign === 'left' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
+							<Icon name="ph:text-align-left-bold" size="16" />
+						</button>
+						<button @click="changeTextAlign('center')" type="button" title="Centrer"
+							class="p-1.5 transition-colors"
+							:class="textAlign === 'center' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
+							<Icon name="ph:text-align-center-bold" size="16" />
+						</button>
+						<button @click="changeTextAlign('right')" type="button" title="Aligner à droite"
+							class="p-1.5 transition-colors"
+							:class="textAlign === 'right' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
+							<Icon name="ph:text-align-right-bold" size="16" />
+						</button>
+					</div>
+
 					<div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
 					<!-- Delete -->
@@ -1214,9 +1242,7 @@ const previewFlyer = async () => {
 						<Icon name="ph:eraser-bold" size="20" />
 					</button>
 				</div>
-				<div v-else></div>
-
-				<div class="flex items-center gap-2">
+				<div v-else class=""></div>				<div class="flex items-center gap-2">
 					<!-- Preview (Test) Button -->
 					<button @click="previewFlyer" type="button" :disabled="previewing"
 						class="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
@@ -1255,6 +1281,8 @@ const previewFlyer = async () => {
 						{{ exporting ? 'Sauvegarde...' : 'Enregistrer le flyer' }}
 					</button>
 				</div>
+
+
 			</div>
 
 			<!-- CANVAS CONTAINER -->

@@ -30,7 +30,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		}
 
 		// Update local state with server user data
-		authStore.user = response.user
+		// Only replace the user object if the ID changed to avoid unnecessary re-renders
+		if (authStore.user?.id !== response.user.id) {
+			authStore.user = response.user
+		} else {
+			Object.assign(authStore.user, response.user)
+		}
 		authStore.initialized = true
 		authStore._saveState()
 

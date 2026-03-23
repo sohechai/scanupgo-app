@@ -98,14 +98,12 @@ const businessObject = ref<any>(null)
 const fetchBusiness = async () => {
 	if (!user.value?.id) return
 	try {
-		console.log('Fetching business for user:', user.value.id)
 		const business = await $api<any>('/businesses/me')
 
 		if (business) {
 			game.value.businessId = business.id
 			businessLogo.value = business.logo
 			businessObject.value = business
-			console.log('Business fetched:', business.name, 'Logo:', business.logo)
 
 			// For new games, use the business primary color as default
 			if (isNew && business.primaryColor) {
@@ -118,34 +116,26 @@ const fetchBusiness = async () => {
 }
 
 onMounted(async () => {
-	await fetchSubscription()
-	if (!hasActiveSubscription.value) {
-		loading.value = false
-		return
-	}
+	try {
+		await fetchSubscription()
+		if (!hasActiveSubscription.value) return
 
-	console.log('User info on mount:', user.value)
-	if (user.value) {
-		await fetchBusiness()
-	}
-
-	if (!isNew) {
-		try {
-			const item = await $api<any>(`/games/${route.params.id}`)
-			game.value = { ...game.value, ...item }
-		} catch (e) {
-			console.error(e)
+		if (user.value) {
+			await fetchBusiness()
 		}
-	}
-	loading.value = false
-})
 
-watch(user, async (newUser) => {
-	if (newUser) {
-		console.log('User changed, fetching business...')
-		await fetchBusiness()
+		if (!isNew) {
+			try {
+				const item = await $api<any>(`/games/${route.params.id}`)
+				game.value = { ...game.value, ...item }
+			} catch (e) {
+				console.error(e)
+			}
+		}
+	} finally {
+		loading.value = false
 	}
-}, { immediate: true })
+})
 
 // Scroll to top when tab changes
 watch(activeTab, () => {
@@ -1016,50 +1006,25 @@ const downloadFlyerPDF = async () => {
 						</div>
 
 						<!-- TAB: FLYERS -->
-						<div v-show="activeTab === 'flyers'">
+						<div v-if="activeTab === 'flyers'">
 							<div v-if="isNew" class="text-center py-12">
 								<p class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_no_flyer') }}</p>
 							</div>
-							<div v-else class="space-y-6">
-								<div
-									class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
-									<div
-										class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-										<Icon name="ph:qr-code-duotone" size="20" />
+							<div v-else class="space-y-4">
+								<!-- Compact header with link -->
+								<div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+									<div class="flex items-center gap-2">
+										<Icon name="ph:qr-code-duotone" size="16" class="text-indigo-500 dark:text-indigo-400 shrink-0" />
+										<h2 class="text-sm font-bold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_title') }}</h2>
 									</div>
-									<div>
-										<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_title') }}</h2>
-										<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.flyers_subtitle') }}
-										</p>
-									</div>
-								</div>
-
-								<!-- Quick Actions -->
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-									<div
-										class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600 flex items-center justify-between">
-										<div class="flex items-center gap-3 overflow-hidden">
-											<div
-												class="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
-												<Icon name="ph:link-bold" size="20" />
-											</div>
-											<div class="min-w-0">
-												<p
-													class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
-													{{ $t('games.detail.flyers_game_link') }}
-												</p>
-												<p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{
-													getGameUrl() }}
-												</p>
-											</div>
-										</div>
+									<div class="flex items-center gap-1.5 min-w-0">
+										<span class="text-[11px] text-slate-400 dark:text-slate-500 truncate hidden sm:block max-w-[220px] font-mono">{{ getGameUrl() }}</span>
 										<button @click="copyLink"
-											class="p-2 bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm transition-colors">
-											<Icon name="ph:copy-bold" size="16" />
+											class="p-1.5 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors shrink-0"
+											:title="$t('games.detail.flyers_game_link')">
+											<Icon name="ph:copy-bold" size="14" />
 										</button>
 									</div>
-
-
 								</div>
 
 								<!-- Preview Mode: Show flyer preview if saved and editor is not open -->

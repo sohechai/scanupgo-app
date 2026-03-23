@@ -27,16 +27,11 @@ onMounted(() => {
 <style>
 .page-enter-active,
 .page-leave-active {
-	transition: opacity 220ms ease, transform 220ms ease;
+	transition: opacity 180ms ease;
 }
 
-.page-enter-from {
-	opacity: 0;
-	transform: translateY(8px);
-}
-
+.page-enter-from,
 .page-leave-to {
 	opacity: 0;
-	transform: translateY(-4px);
 }
 </style>

@@ -137,8 +137,7 @@ const previewPrizes = computed(() => {
 					<!-- Logo -->
 					<div v-if="logoUrl && !imgError"
 						class="w-14 h-14 bg-white rounded-xl p-1 shadow-lg flex items-center justify-center overflow-hidden mb-2 z-10 shrink-0">
-						<img :src="logoUrl" @error="() => { console.log('Logo image error'); imgError = true }"
-							@load="() => console.log('Logo loaded successfully')"
+						<img :src="logoUrl" @error="() => { imgError = true }"
 							class="w-full h-full object-contain max-w-full max-h-full" />
 					</div>
 					<div v-else

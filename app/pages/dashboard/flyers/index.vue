@@ -235,7 +235,6 @@ const generatePDF = async () => {
 }
 
 const handleFlyerSave = async (imageUrl: string) => {
-	console.log('handleFlyerSave called with:', imageUrl)
 	if (!game.value) return
 
 	try {
