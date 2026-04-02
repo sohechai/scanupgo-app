@@ -20,6 +20,7 @@ const props = defineProps<{
 
 const flyerRef = ref<HTMLElement>()
 const { $api } = useNuxtApp()
+const { t } = useI18n()
 
 // Use props or fallback (safely handle undefined game)
 const backgroundColor = computed(() => props.primaryColor || props.game?.primaryColor || '#fb923c')
@@ -186,12 +187,12 @@ defineExpose({
 			<div class="absolute top-[140px] left-0 right-0 z-30 text-center">
 				<h1 class="font-black text-4xl text-white uppercase leading-none stroke-text-black"
 					:style="{ fontFamily: currentFont }">
-					SCANNEZ & GAGNEZ
+					{{ $t('flyers.smart_flyer.scan_win') }}
 				</h1>
 				<h2 class="font-black text-5xl text-white uppercase leading-none mt-1 stroke-text-black"
 					:style="{ fontFamily: currentFont }">
-					VOTRE <span class="stroke-text-black"
-						:style="{ color: accentColor, fontFamily: currentFont }">CADEAU!</span>
+					<span class="stroke-text-black"
+						:style="{ color: accentColor, fontFamily: currentFont }">{{ $t('flyers.smart_flyer.your_gift') }}</span>
 				</h2>
 			</div>
 
@@ -208,7 +209,7 @@ defineExpose({
 								<text x="50" y="20" text-anchor="middle" :fill="i % 2 === 0 ? '#000' : '#fff'"
 									class="font-display font-black text-[5px] uppercase"
 									style="font-family: 'Luckiest Guy', cursive;">
-									{{ i % 2 === 0 ? 'GAGNÉ' : 'PERDU' }}
+									{{ i % 2 === 0 ? $t('flyers.smart_flyer.won') : $t('flyers.smart_flyer.lost') }}
 								</text>
 							</g>
 						</template>
@@ -235,7 +236,7 @@ defineExpose({
 			<div class="absolute z-30 w-full flex justify-center" style="bottom: 100px;">
 				<div class="border-2 border-black text-white px-8 py-2 rounded-xl uppercase font-black text-xl tracking-wide"
 					:style="{ backgroundColor: buttonColor, fontFamily: currentFont, boxShadow: '4px 4px 0px rgba(0,0,0,1)', marginRight: '4px' }">
-					SCANNE POUR JOUER
+					{{ $t('flyers.smart_flyer.scan_to_play') }}
 				</div>
 			</div>
 
@@ -253,7 +254,7 @@ defineExpose({
 					</svg>
 					<div class="flex flex-col leading-none text-black text-center">
 						<span class="text-xs font-black">1</span>
-						<span class="text-[8px] font-bold uppercase">Scanne<br>le code</span>
+						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step1') }}</span>
 					</div>
 				</div>
 
@@ -266,7 +267,7 @@ defineExpose({
 					</svg>
 					<div class="flex flex-col leading-none text-black text-center">
 						<span class="text-xs font-black">2</span>
-						<span class="text-[8px] font-bold uppercase">Fais tourner<br>la roue</span>
+						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step2') }}</span>
 					</div>
 				</div>
 
@@ -279,7 +280,7 @@ defineExpose({
 					</svg>
 					<div class="flex flex-col leading-none text-black text-center">
 						<span class="text-xs font-black">3</span>
-						<span class="text-[8px] font-bold uppercase">Découvre<br>ton cadeau</span>
+						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step3') }}</span>
 					</div>
 				</div>
 			</div>

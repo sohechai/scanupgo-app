@@ -87,7 +87,7 @@ const isEndingSoon = computed(() => {
 								}}
 							</span>
 						</div>
-						<p class="text-sm text-slate-500 dark:text-slate-400">{{ subscription.plan.description }}</p>
+						<p class="text-sm text-slate-500 dark:text-slate-400">{{ $te(`subscription.plan_descriptions.${subscription.plan.name}`) ? $t(`subscription.plan_descriptions.${subscription.plan.name}`) : subscription.plan.description }}</p>
 					</div>
 					<div class="text-right rtl:text-left">
 						<div class="text-3xl font-display font-bold text-slate-900 dark:text-white">

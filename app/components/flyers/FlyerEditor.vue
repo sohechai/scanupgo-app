@@ -123,6 +123,7 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp()
 const { show: showToast } = useToast()
+const { t } = useI18n()
 
 const canvasRef = ref<HTMLCanvasElement>()
 const canvas = shallowRef<any>(null)
@@ -161,15 +162,15 @@ const mode = ref<'canvas' | 'smart'>('canvas') // New: Mode for editor
 const smartFlyerRef = ref<any>(null) // New: Ref for SmartFlyer component
 
 // Static templates (special modes, not images)
-const staticTemplates = [
-	{ id: 'blank', name: 'Canvas Vierge', description: 'Créez depuis zéro', icon: 'ph:file-dashed', image: null },
-	{ id: 'smart', name: 'Template Généré', description: 'Design automatique', icon: 'ph:magic-wand-fill', image: null, isSmart: true },
-]
+const staticTemplates = computed(() => [
+	{ id: 'blank', name: t('flyers.editor.template_blank'), description: t('flyers.editor.template_blank_desc'), icon: 'ph:file-dashed', image: null },
+	{ id: 'smart', name: t('flyers.editor.template_smart'), description: t('flyers.editor.template_smart_desc'), icon: 'ph:magic-wand-fill', image: null, isSmart: true },
+])
 
 // Templates loaded from API
 const apiTemplates = ref<any[]>([])
 
-const templates = computed(() => [...staticTemplates, ...apiTemplates.value])
+const templates = computed(() => [...staticTemplates.value, ...apiTemplates.value])
 
 // Canvas dimensions (A4 ratio - 595x842px for web, scaled down for A6)
 const CANVAS_WIDTH = 420  // A6 width (105mm at 4px/mm)
@@ -324,7 +325,7 @@ const loadTemplate = async (templateId: string) => {
 				console.warn('Canvas dispose error (safe to ignore):', e)
 			}
 		}
-		showToast('Template intelligent chargé', 'success')
+		showToast(t('flyers.editor.template_smart_loaded'), 'success')
 		return
 	}
 
@@ -1070,7 +1071,7 @@ const previewFlyer = async () => {
 					<h3
 						class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
 						<Icon name="ph:toolbox-fill" class="text-brand-500" />
-						Outils
+						{{ $t('flyers.editor.tools_title') }}
 					</h3>
 				</div>
 				<div class="p-3 grid grid-cols-2 gap-2">
@@ -1081,7 +1082,7 @@ const previewFlyer = async () => {
 							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 							<Icon name="ph:text-t-bold" size="20" />
 						</div>
-						<span class="text-xs font-bold">Texte</span>
+						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_text') }}</span>
 					</button>
 
 					<!-- Add Logo -->
@@ -1091,7 +1092,7 @@ const previewFlyer = async () => {
 							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 							<Icon name="ph:image-square-bold" size="20" />
 						</div>
-						<span class="text-xs font-bold">Logo</span>
+						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_logo') }}</span>
 					</button>
 
 					<!-- Add QR Code -->
@@ -1112,7 +1113,7 @@ const previewFlyer = async () => {
 							<Icon v-if="uploading" name="ph:spinner-gap-bold" size="20" class="animate-spin" />
 							<Icon v-else name="ph:upload-simple-bold" size="20" />
 						</div>
-						<span class="text-xs font-bold">Image</span>
+						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_image') }}</span>
 					</button>
 					<input type="file" ref="fileInputRef" @change="handleImageUpload" accept="image/*" class="hidden" />
 
@@ -1123,7 +1124,7 @@ const previewFlyer = async () => {
 							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 							<Icon name="ph:align-center-horizontal-bold" size="20" />
 						</div>
-						<span class="text-xs font-bold">Centrer H</span>
+						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_center_h') }}</span>
 					</button>
 
 					<!-- Center Vertically -->
@@ -1133,7 +1134,7 @@ const previewFlyer = async () => {
 							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 							<Icon name="ph:align-center-vertical-bold" size="20" />
 						</div>
-						<span class="text-xs font-bold">Centrer V</span>
+						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_center_v') }}</span>
 					</button>
 				</div>
 			</div>
@@ -1145,7 +1146,7 @@ const previewFlyer = async () => {
 					<h3
 						class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
 						<Icon name="ph:stack-fill" class="text-brand-500" />
-						Templates
+						{{ $t('flyers.editor.templates_title') }}
 					</h3>
 				</div>
 				<div class="p-4 h-64 xl:h-auto overflow-y-auto custom-scrollbar space-y-3">
@@ -1183,7 +1184,7 @@ const previewFlyer = async () => {
 					<!-- Background Color -->
 					<div
 						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
-						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Fond</span>
+						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">{{ $t('flyers.editor.color_bg') }}</span>
 						<input v-model="backgroundColor" type="color"
 							class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
 					</div>
@@ -1191,7 +1192,7 @@ const previewFlyer = async () => {
 					<!-- Text Color -->
 					<div
 						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
-						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Texte</span>
+						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">{{ $t('flyers.editor.color_text') }}</span>
 						<input v-model="textColor" type="color"
 							class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
 					</div>
@@ -1248,7 +1249,7 @@ const previewFlyer = async () => {
 						class="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
 						<Icon v-if="previewing" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 						<Icon v-else name="ph:eye-bold" size="16" />
-						<span class="hidden sm:inline">Aperçu</span>
+						<span class="hidden sm:inline">{{ $t('flyers.editor.btn_preview') }}</span>
 					</button>
 
 					<!-- Download PNG -->
@@ -1270,7 +1271,7 @@ const previewFlyer = async () => {
 						class="px-3 py-2 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
 						<Icon v-if="orderLoading" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 						<Icon v-else name="ph:shopping-cart-bold" size="16" />
-						<span class="hidden sm:inline">{{ orderLoading ? 'Préparation...' : 'Commander' }}</span>
+						<span class="hidden sm:inline">{{ orderLoading ? $t('flyers.editor.btn_ordering') : $t('flyers.editor.btn_order') }}</span>
 					</button>
 
 					<!-- Export / Save -->
@@ -1278,7 +1279,7 @@ const previewFlyer = async () => {
 						class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20">
 						<Icon v-if="exporting" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 						<Icon v-else name="ph:floppy-disk-bold" size="16" />
-						{{ exporting ? 'Sauvegarde...' : 'Enregistrer le flyer' }}
+						{{ exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}
 					</button>
 				</div>
 
@@ -1303,7 +1304,7 @@ const previewFlyer = async () => {
 						<div
 							class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl">
 							<Icon name="ph:magic-wand-bold" size="16" />
-							<span class="text-xs font-bold uppercase tracking-wide">Personnalisation</span>
+							<span class="text-xs font-bold uppercase tracking-wide">{{ $t('flyers.editor.smart_customize') }}</span>
 						</div>
 
 						<div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
@@ -1336,7 +1337,7 @@ const previewFlyer = async () => {
 										<div class="w-full h-full pointer-events-none"
 											:style="{ backgroundColor: smartOptions.backgroundColor }"></div>
 									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Fond</span>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_bg') }}</span>
 								</div>
 							</div>
 
@@ -1351,7 +1352,7 @@ const previewFlyer = async () => {
 										<div class="w-full h-full pointer-events-none"
 											:style="{ backgroundColor: smartOptions.accentColor }"></div>
 									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Texte</span>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_text') }}</span>
 								</div>
 							</div>
 
@@ -1366,7 +1367,7 @@ const previewFlyer = async () => {
 										<div class="w-full h-full pointer-events-none"
 											:style="{ backgroundColor: smartOptions.buttonColor }"></div>
 									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Bouton</span>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_button') }}</span>
 								</div>
 							</div>
 
@@ -1374,7 +1375,7 @@ const previewFlyer = async () => {
 							<div class="relative group" title="Mentions légales">
 								<div class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
 									<Icon name="ph:scales-bold" size="16" class="text-slate-400" />
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Conditions</span>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_conditions') }}</span>
 								</div>
 								<div class="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-3 hidden group-hover:block z-50">
 									<textarea v-model="smartOptions.conditions" rows="3" placeholder="Ex: Jeu sans obligation d'achat. Voir conditions en magasin."
@@ -1397,13 +1398,10 @@ const previewFlyer = async () => {
 
 			<!-- FOOTER HINT -->
 			<div class="py-2 px-4 bg-white border-t border-slate-200 text-center">
-				<p v-if="mode === 'canvas'" class="text-[10px] text-slate-400 font-medium">Pour éditer un texte :
-					double-cliquez dessus •
-					Utilisez les poignées pour redimensionner</p>
+				<p v-if="mode === 'canvas'" class="text-[10px] text-slate-400 font-medium">{{ $t('flyers.editor.hint_canvas') }}</p>
 				<p v-else class="text-[10px] text-slate-400 font-medium flex items-center justify-center gap-2">
 					<Icon name="ph:info-fill" size="14" class="text-brand-500" />
-					Ce modèle est généré automatiquement à partir des paramètres de votre jeu. Il n'est pas modifiable
-					ici.
+					{{ $t('flyers.editor.hint_smart') }}
 				</p>
 			</div>
 		</div>

@@ -14,30 +14,31 @@ const emit = defineEmits<{
 	subscribe: [period: 'monthly' | 'annual' | 'lifetime']
 }>()
 
+const { t } = useI18n()
 const isDisabled = computed(() => props.loading || props.isCurrentPlan || props.disabled)
 
 const periodConfig = computed(() => {
 	switch (props.period) {
 		case 'monthly':
 			return {
-				title: 'Mensuel',
+				title: t('subscription.period.monthly'),
 				price: props.plan.priceMonthly,
-				unit: 'Dhs /mois',
-				description: 'Facturation mensuelle sans engagement.',
+				unit: t('subscription.plan_card.monthly_unit'),
+				description: t('subscription.plan_card.monthly_desc'),
 			}
 		case 'annual':
 			return {
-				title: 'Annuel',
+				title: t('subscription.period.annual'),
 				price: props.plan.priceAnnual,
-				unit: 'Dhs /an',
-				description: `Économisez ${Math.round((1 - (Number(props.plan.priceAnnual) / (Number(props.plan.priceMonthly) * 12))) * 100)}% sur l'année`,
+				unit: t('subscription.plan_card.annual_unit'),
+				description: t('subscription.plan_card.annual_save', { percent: Math.round((1 - (Number(props.plan.priceAnnual) / (Number(props.plan.priceMonthly) * 12))) * 100) }),
 			}
 		case 'lifetime':
 			return {
-				title: 'À vie',
+				title: t('subscription.period.lifetime'),
 				price: props.plan.priceLifetime,
-				unit: 'Dhs',
-				description: 'Paiement unique. Accès éternel.',
+				unit: t('subscription.plan_card.lifetime_unit'),
+				description: t('subscription.plan_card.lifetime_desc'),
 			}
 	}
 })
@@ -53,7 +54,7 @@ const periodConfig = computed(() => {
 		<!-- Badge for highlighted plan -->
 		<div v-if="highlighted"
 			class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-500 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide">
-			Le plus populaire
+			{{ $t('subscription.plan_card.most_popular') }}
 		</div>
 
 		<!-- Trial Badge -->
@@ -61,8 +62,7 @@ const periodConfig = computed(() => {
 			class="mb-4 flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg px-3 py-2"
 			:class="[highlighted && 'mt-2']">
 			<Icon name="ph:clock-countdown-bold" class="text-purple-600 dark:text-purple-400 shrink-0" size="16" />
-			<span class="text-xs font-bold text-purple-700 dark:text-purple-300">{{ trialDays }} jours d'essai
-				gratuit</span>
+			<span class="text-xs font-bold text-purple-700 dark:text-purple-300">{{ $t('subscription.plan_card.trial_days', { days: trialDays }) }}</span>
 		</div>
 
 		<!-- Header -->
@@ -88,48 +88,48 @@ const periodConfig = computed(() => {
 					<div class="p-0.5 bg-brand-100 rounded-full text-brand-600">
 						<Icon name="ph:check-bold" size="12" />
 					</div>
-					<span>Toutes les fonctionnalités Mensuel</span>
+					<span>{{ $t('subscription.plan_card.all_monthly_features') }}</span>
 				</div>
 				<div class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300 font-medium">
 					<div class="p-0.5 bg-brand-100 rounded-full text-brand-600">
 						<Icon name="ph:check-bold" size="12" />
 					</div>
-					<span>Support Prioritaire inclus</span>
+					<span>{{ $t('subscription.plan_card.priority_support') }}</span>
 				</div>
 			</template>
 
 			<template v-else-if="period === 'lifetime'">
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span>Paiement unique</span>
+					<span>{{ $t('subscription.plan_card.one_time_payment_feature') }}</span>
 				</div>
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span>Mises à jour à vie incluses</span>
+					<span>{{ $t('subscription.plan_card.lifetime_updates') }}</span>
 				</div>
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span>Support VIP</span>
+					<span>{{ $t('subscription.plan_card.vip_support') }}</span>
 				</div>
 			</template>
 
 			<template v-else>
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span><strong>{{ plan.features.max_games }}</strong> Jeu(x) Actif(s)</span>
+					<span>{{ $t('subscription.plan_card.active_games', { count: plan.features.max_games }) }}</span>
 				</div>
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span><strong>{{ plan.features.max_players }}</strong> Joueurs max</span>
+					<span>{{ $t('subscription.plan_card.max_players', { count: plan.features.max_players }) }}</span>
 				</div>
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span><strong>{{ plan.features.email_credits_per_month }}</strong> Emails/mois</span>
+					<span><strong>{{ plan.features.email_credits_per_month }}</strong> {{ $t('subscription.plan_card.emails_per_month') }}</span>
 				</div>
 				<div v-if="plan.features.google_reviews"
 					class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span>Avis Google Booster</span>
+					<span>{{ $t('subscription.plan_card.google_booster') }}</span>
 				</div>
 			</template>
 		</div>
@@ -147,13 +147,13 @@ const periodConfig = computed(() => {
 		]">
 			<template v-if="isCurrentPlan">
 				<Icon name="ph:check-circle-fill" class="inline mr-1.5" size="16" />
-				Plan actuel
+				{{ $t('subscription.plan_card.current_plan_badge') }}
 			</template>
 			<template v-else-if="trialDays && trialDays > 0 && period !== 'lifetime'">
-				{{ loading ? '...' : `Essayer gratuitement ${trialDays}j` }}
+				{{ loading ? '...' : $t('subscription.plan_card.try_free', { days: trialDays }) }}
 			</template>
 			<template v-else>
-				{{ loading ? '...' : `Choisir ${periodConfig.title}` }}
+				{{ loading ? '...' : $t('subscription.plan_card.choose', { period: periodConfig?.title }) }}
 			</template>
 		</button>
 	</div>

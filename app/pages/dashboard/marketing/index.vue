@@ -125,13 +125,13 @@ onMounted(async () => {
 						:class="(stats?.emailCredits ?? 0) > 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600 dark:text-red-400'">
 						{{ stats?.emailCredits ?? 0 }}
 					</span>
-					<span class="text-sm font-semibold text-slate-500">crédits email disponibles</span>
+					<span class="text-sm font-semibold text-slate-500">{{ $t('marketing.index.credits_available') }}</span>
 				</div>
 				<p v-if="(stats?.emailCredits ?? 0) === 0" class="text-xs text-red-500 dark:text-red-400 mt-0.5">
-					Vous n'avez plus de crédits. Contactez votre administrateur pour en obtenir.
+					{{ $t('marketing.index.no_credits') }}
 				</p>
 				<p v-else class="text-xs text-slate-400 mt-0.5">
-					1 crédit = 1 email envoyé · {{ stats?.optInPlayers ?? 0 }} contact(s) opt-in
+					{{ $t('marketing.index.credits_info', { contacts: stats?.optInPlayers ?? 0 }) }}
 				</p>
 			</div>
 		</div>

@@ -29,11 +29,11 @@ const initialTab = (route.query.tab as string) || 'content'
 const activeTab = ref(initialTab) // content, appearance, prizes, flyers
 
 // Wizard steps for new game creation
-const wizardSteps = [
-	{ key: 'content', label: 'Contenu', icon: 'ph:pencil-simple-bold' },
-	{ key: 'appearance', label: 'Apparence', icon: 'ph:paint-brush-broad-bold' },
-	{ key: 'prizes', label: 'Cadeaux', icon: 'ph:gift-bold' }
-]
+const wizardSteps = computed(() => [
+	{ key: 'content', label: t('games.detail.tab_content'), icon: 'ph:pencil-simple-bold' },
+	{ key: 'appearance', label: t('games.detail.tab_appearance'), icon: 'ph:paint-brush-broad-bold' },
+	{ key: 'prizes', label: t('games.detail.tab_prizes'), icon: 'ph:gift-bold' }
+])
 const currentWizardStep = ref(0)
 
 const canGoNext = computed(() => {
@@ -45,9 +45,9 @@ const canGoNext = computed(() => {
 })
 
 const goToNextStep = () => {
-	if (currentWizardStep.value < wizardSteps.length - 1) {
+	if (currentWizardStep.value < wizardSteps.value.length - 1) {
 		currentWizardStep.value++
-		activeTab.value = wizardSteps[currentWizardStep.value].key
+		activeTab.value = wizardSteps.value[currentWizardStep.value].key
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
 }
@@ -55,12 +55,12 @@ const goToNextStep = () => {
 const goToPreviousStep = () => {
 	if (currentWizardStep.value > 0) {
 		currentWizardStep.value--
-		activeTab.value = wizardSteps[currentWizardStep.value].key
+		activeTab.value = wizardSteps.value[currentWizardStep.value].key
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
 }
 
-const isLastStep = computed(() => currentWizardStep.value === wizardSteps.length - 1)
+const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.length - 1)
 
 // Google Review Help Modal
 const showGoogleHelpModal = ref(false)
@@ -621,25 +621,25 @@ const downloadFlyerPDF = async () => {
 						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
 						:class="activeTab === 'content' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
 						<Icon name="ph:pencil-simple-bold" size="16" />
-						<span>Contenu</span>
+						<span>{{ $t('games.detail.tab_content') }}</span>
 					</button>
 					<button @click="activeTab = 'appearance'"
 						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
 						:class="activeTab === 'appearance' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
 						<Icon name="ph:paint-brush-broad-bold" size="16" />
-						<span>Apparence</span>
+						<span>{{ $t('games.detail.tab_appearance') }}</span>
 					</button>
 					<button @click="activeTab = 'prizes'"
 						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
 						:class="activeTab === 'prizes' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
 						<Icon name="ph:gift-bold" size="16" />
-						<span>Cadeaux</span>
+						<span>{{ $t('games.detail.tab_prizes') }}</span>
 					</button>
 					<button @click="activeTab = 'flyers'"
 						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
 						:class="activeTab === 'flyers' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
 						<Icon name="ph:qr-code-bold" size="16" />
-						<span>Flyers</span>
+						<span>{{ $t('games.detail.tab_flyers') }}</span>
 					</button>
 				</div>
 			</div>

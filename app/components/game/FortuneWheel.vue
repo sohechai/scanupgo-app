@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const props = defineProps<{
 	prizes: any[]
 	primaryColor: string
@@ -31,7 +33,7 @@ const wheelSegments = computed(() => {
 			// Lost segment (dark)
 			segments.push({
 				type: 'lost',
-				name: 'PERDU',
+				name: t('play.wheel.lost'),
 				color: '#1e293b', // Dark slate
 				textColor: '#94a3b8' // Light gray text
 			})
@@ -42,7 +44,7 @@ const wheelSegments = computed(() => {
 			const prize = props.prizes[prizeIndex % props.prizes.length]
 			segments.push({
 				type: 'prize',
-				name: prize?.name || 'Cadeau',
+				name: prize?.name || t('play.wheel.gift'),
 				data: prize,
 				color: '#fef3c7', // Amber-100 (warm cream)
 				textColor: '#92400e', // Amber-800
@@ -82,6 +84,7 @@ onUnmounted(() => {
 })
 
 watch(() => props.prizes, drawWheel, { deep: true })
+watch(wheelSegments, drawWheel, { deep: true })
 watch(() => props.isSpinning, (newVal) => {
 	if (newVal) {
 		startSpin()

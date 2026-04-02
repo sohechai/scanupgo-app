@@ -395,6 +395,10 @@
 			"save_button": "Save",
 			"creating": "Creating...",
 			"create_game": "Create game",
+			"tab_content": "Content",
+			"tab_appearance": "Appearance",
+			"tab_prizes": "Prizes",
+			"tab_flyers": "Flyers",
 			"appearance_title": "Game Appearance",
 			"appearance_subtitle": "Customize the colors",
 			"background_color": "Background color",
@@ -645,7 +649,10 @@
 			"quick_actions": "Quick actions",
 			"automations_link": "Automations",
 			"tip_title": "Marketing Tip",
-			"tip_message": "Personalize your emails with {prenom}, {nom}, and {commerce} for a better open rate."
+			"tip_message": "Personalize your emails with {prenom}, {nom}, and {commerce} for a better open rate.",
+			"credits_available": "email credits available",
+			"no_credits": "You have no more credits. Contact your administrator to get some.",
+			"credits_info": "1 credit = 1 email sent · {contacts} opt-in contact(s)"
 		},
 		"campaigns": {
 			"title": "Campaigns",
@@ -853,6 +860,31 @@
 			"emails_per_month_description": "Newsletter sending credits",
 			"google_reviews_booster": "Google Reviews Booster",
 			"google_reviews_booster_description": "Redirect your winners to Google Reviews"
+		},
+		"plan_descriptions": {
+			"ScanUpGo": "All-in-one solution to collect Google reviews and build customer loyalty."
+		},
+		"plan_card": {
+			"monthly_unit": "Dhs /month",
+			"annual_unit": "Dhs /year",
+			"lifetime_unit": "Dhs",
+			"monthly_desc": "Monthly billing, no commitment.",
+			"annual_save": "Save {percent}% per year",
+			"lifetime_desc": "One-time payment. Lifetime access.",
+			"emails_per_month": "Emails/month",
+			"most_popular": "Most popular",
+			"trial_days": "{days} days free trial",
+			"all_monthly_features": "All Monthly features",
+			"priority_support": "Priority Support included",
+			"one_time_payment_feature": "One-time payment",
+			"lifetime_updates": "Lifetime updates included",
+			"vip_support": "VIP Support",
+			"active_games": "{count} Active Game(s)",
+			"max_players": "{count} max players",
+			"google_booster": "Google Reviews Booster",
+			"current_plan_badge": "Current plan",
+			"try_free": "Try free for {days}d",
+			"choose": "Choose {period}"
 		}
 	},
 	"account": {
@@ -1020,7 +1052,45 @@
 		"save_flyer_error": "Error saving flyer",
 		"pdf_generation": "Error generating PDF",
 		"pdf_success": "Print-ready PDF downloaded!",
-		"pdf_error": "Error downloading PDF"
+		"pdf_error": "Error downloading PDF",
+		"editor": {
+			"tools_title": "Tools",
+			"tool_text": "Text",
+			"tool_logo": "Logo",
+			"tool_image": "Image",
+			"tool_center_h": "Center H",
+			"tool_center_v": "Center V",
+			"templates_title": "Templates",
+			"color_bg": "Background",
+			"color_text": "Text",
+			"btn_preview": "Preview",
+			"btn_order": "Order",
+			"btn_ordering": "Ordering...",
+			"btn_save": "Save flyer",
+			"btn_saving": "Saving...",
+			"template_blank": "Blank Canvas",
+			"template_blank_desc": "Create from scratch",
+			"template_smart": "Smart Template",
+			"template_smart_desc": "Automatic design",
+			"template_smart_loaded": "Smart template loaded",
+			"smart_customize": "Customize",
+			"smart_bg": "Background",
+			"smart_text": "Text",
+			"smart_button": "Button",
+			"smart_conditions": "Terms",
+			"hint_canvas": "To edit text: double-click on it • Use handles to resize",
+			"hint_smart": "This template is automatically generated from your game settings. It cannot be edited here."
+		},
+		"smart_flyer": {
+			"scan_win": "SCAN & WIN",
+			"your_gift": "YOUR GIFT!",
+			"won": "WON",
+			"lost": "LOST",
+			"scan_to_play": "SCAN TO PLAY",
+			"step1": "Scan the code",
+			"step2": "Spin the wheel",
+			"step3": "Discover your gift"
+		}
 	},
 	"notifications": {
 		"title": "Notifications",
@@ -2188,6 +2258,10 @@
 				"home_button": "Back to home"
 			}
 		},
-		"powered_by": "Powered by ScanUpGo"
+		"powered_by": "Powered by ScanUpGo",
+		"wheel": {
+			"lost": "LOST",
+			"gift": "Gift"
+		}
 	}
 }

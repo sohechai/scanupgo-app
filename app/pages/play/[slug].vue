@@ -4,7 +4,7 @@ import QRCode from 'qrcode'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { t } = useI18n()
+const { t, locale, setLocale } = useI18n()
 
 // Page Meta
 definePageMeta({
@@ -122,6 +122,10 @@ const trackEvent = (eventType: string) => {
 onMounted(() => {
 	if (game.value && !error.value) {
 		trackEvent('page_visit')
+		// Set locale to game's configured language
+		if (game.value.gameLanguage) {
+			switchLocale(game.value.gameLanguage)
+		}
 	}
 })
 
@@ -226,6 +230,21 @@ const onSpinEnd = () => {
 	step.value = 'result'
 }
 
+// Language selector for players
+const playerLocales = [
+	{ code: 'fr', flag: '🇫🇷' },
+	{ code: 'en', flag: '🇬🇧' },
+	{ code: 'ar', flag: '🇲🇦' },
+]
+
+const switchLocale = async (code: string) => {
+	await setLocale(code as 'fr' | 'en' | 'ar')
+	if (import.meta.client) {
+		document.documentElement.dir = code === 'ar' ? 'rtl' : 'ltr'
+		document.documentElement.lang = code
+	}
+}
+
 // Styles
 const primaryColor = computed(() => game.value?.primaryColor || '#00e5ff')
 
@@ -302,6 +321,19 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 		<!-- Background Layer -->
 		<div class="absolute inset-0 z-0" :style="{ backgroundColor: primaryColor }"></div>
 
+		<!-- Language Selector -->
+		<div class="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
+			<button
+				v-for="lang in playerLocales"
+				:key="lang.code"
+				@click="switchLocale(lang.code)"
+				class="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all"
+				:class="locale === lang.code ? 'bg-white/40 shadow-md scale-110' : 'bg-white/10 hover:bg-white/25 opacity-60 hover:opacity-100'"
+			>
+				{{ lang.flag }}
+			</button>
+		</div>
+
 		<!-- Content Container -->
 		<div class="relative z-10 w-full max-w-md p-6 flex flex-col items-center text-center">
 
@@ -320,42 +352,37 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 
 			<!-- ÉTAPE 1: INTRO -->
 			<div v-else-if="step === 'intro'"
-				class="flex flex-col items-center justify-between min-h-[85vh] animate-fade-in-up w-full py-4 relative">
-				<!-- Partie haute : Logo + Titre -->
-				<div class="flex flex-col items-center space-y-4 z-10">
-					<!-- Logo -->
+				class="flex flex-col items-center min-h-[90vh] animate-fade-in-up w-full pt-14 pb-6 gap-5">
+				<!-- Logo + Titre -->
+				<div class="flex flex-col items-center space-y-3">
 					<div v-if="business?.logo"
-						class="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-2xl p-3 shadow-xl flex items-center justify-center overflow-hidden border border-white/20">
+						class="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl p-2.5 shadow-xl flex items-center justify-center overflow-hidden border border-white/20">
 						<img :src="business.logo" class="w-full h-full object-contain" />
 					</div>
-
-					<!-- Titre et tagline -->
-					<div class="space-y-2 text-center">
+					<div class="space-y-1 text-center">
 						<h1 class="text-3xl font-black tracking-tight">{{ game.title }}</h1>
 						<p class="text-sm uppercase tracking-wide opacity-90 font-medium px-4">{{ game.tagline }}</p>
 					</div>
 				</div>
 
-				<!-- Bouton central -->
-				<div class="w-full space-y-4 z-10 px-4">
+				<!-- Roue centrée -->
+				<div class="w-full flex justify-center cursor-pointer" @click="goToSteps">
+					<FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
+						:is-spinning="false" :has-lost="false" :preview-mode="true" />
+				</div>
+
+				<!-- Bouton sous la roue -->
+				<div class="w-full px-4">
 					<button @click="goToSteps"
 						class="w-full py-4 text-lg font-black uppercase tracking-wider rounded-full shadow-lg transform transition active:scale-95 hover:shadow-2xl bg-slate-900 text-white">
 						{{ $t('play.intro.play_button') }}
 					</button>
 				</div>
 
-				<!-- Roue positionnée à gauche, moitié visible -->
-				<div class="wheel-left-preview" @click="goToSteps">
-					<FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
-						:is-spinning="false" :has-lost="false" :preview-mode="true" />
-				</div>
-
 				<!-- Footer -->
-				<div class="w-full z-10">
-					<p class="text-[10px] uppercase tracking-widest opacity-40 text-center">
-						{{ $t('play.intro.powered_by') }}
-					</p>
-				</div>
+				<p class="text-[10px] uppercase tracking-widest opacity-40 text-center mt-auto">
+					{{ $t('play.intro.powered_by') }}
+				</p>
 			</div>
 
 			<!-- ÉTAPE 2: DESCRIPTION DES ÉTAPES + BOUTON GOOGLE REVIEW -->
@@ -609,21 +636,7 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 	}
 }
 
-/* Roue positionnée à gauche avec moitié visible (mobile only) */
-.wheel-left-preview {
-	position: absolute;
-	left: -40%;
-	bottom: 0%;
-	transform: scale(1.1);
-	transform-origin: center center;
-	cursor: pointer;
-	transition: transform 0.3s ease;
-	z-index: 1;
-}
 
-.wheel-left-preview:hover {
-	transform: scale(1.12);
-}
 
 @media (min-width: 400px) {
 	.wheel-left-preview {

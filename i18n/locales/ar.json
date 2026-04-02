@@ -395,6 +395,10 @@
 			"save_button": "حفظ",
 			"creating": "جاري الإنشاء...",
 			"create_game": "إنشاء اللعبة",
+			"tab_content": "المحتوى",
+			"tab_appearance": "المظهر",
+			"tab_prizes": "الجوائز",
+			"tab_flyers": "الفلايرات",
 			"appearance_title": "مظهر اللعبة",
 			"appearance_subtitle": "خصص الألوان",
 			"background_color": "لون الخلفية",
@@ -645,7 +649,10 @@
 			"quick_actions": "إجراءات سريعة",
 			"automations_link": "الأتمتة",
 			"tip_title": "نصيحة تسويقية",
-			"tip_message": "خصّص رسائلك الإلكترونية باستخدام {prenom} و{nom} و{commerce} لتحقيق معدل فتح أفضل."
+			"tip_message": "خصّص رسائلك الإلكترونية باستخدام {prenom} و{nom} و{commerce} لتحقيق معدل فتح أفضل.",
+			"credits_available": "رصيد بريد إلكتروني متاح",
+			"no_credits": "لم يتبق لديك رصيد. تواصل مع المسؤول للحصول على رصيد.",
+			"credits_info": "1 رصيد = 1 بريد إلكتروني مُرسل · {contacts} جهة اتصال موافقة"
 		},
 		"campaigns": {
 			"title": "الحملات",
@@ -853,6 +860,31 @@
 			"emails_per_month_description": "رصيد إرسال النشرات الإخبارية",
 			"google_reviews_booster": "معزز تقييمات Google",
 			"google_reviews_booster_description": "أعد توجيه الفائزين إلى تقييمات Google"
+		},
+		"plan_descriptions": {
+			"ScanUpGo": "حل متكامل لجمع تقييمات Google وبناء ولاء العملاء."
+		},
+		"plan_card": {
+			"monthly_unit": "درهم / شهر",
+			"annual_unit": "درهم / سنة",
+			"lifetime_unit": "درهم",
+			"monthly_desc": "فوترة شهرية بدون التزام.",
+			"annual_save": "وفّر {percent}% سنويًا",
+			"lifetime_desc": "دفعة واحدة. وصول مدى الحياة.",
+			"emails_per_month": "بريد إلكتروني/شهر",
+			"most_popular": "الأكثر شعبية",
+			"trial_days": "{days} أيام تجريبية مجانية",
+			"all_monthly_features": "جميع مزايا الاشتراك الشهري",
+			"priority_support": "دعم أولوي مشمول",
+			"one_time_payment_feature": "دفعة واحدة",
+			"lifetime_updates": "تحديثات مدى الحياة مشمولة",
+			"vip_support": "دعم VIP",
+			"active_games": "{count} لعبة نشطة",
+			"max_players": "{count} لاعب حد أقصى",
+			"google_booster": "معزز تقييمات Google",
+			"current_plan_badge": "الخطة الحالية",
+			"try_free": "تجريب مجاني {days} أيام",
+			"choose": "اختر {period}"
 		}
 	},
 	"account": {
@@ -1020,7 +1052,45 @@
 		"save_flyer_error": "خطأ أثناء حفظ المنشور",
 		"pdf_generation": "خطأ أثناء توليد PDF",
 		"pdf_success": "تم تنزيل PDF جاهز للطباعة!",
-		"pdf_error": "خطأ أثناء تنزيل PDF"
+		"pdf_error": "خطأ أثناء تنزيل PDF",
+		"editor": {
+			"tools_title": "الأدوات",
+			"tool_text": "نص",
+			"tool_logo": "شعار",
+			"tool_image": "صورة",
+			"tool_center_h": "توسيط أفقي",
+			"tool_center_v": "توسيط عمودي",
+			"templates_title": "القوالب",
+			"color_bg": "الخلفية",
+			"color_text": "النص",
+			"btn_preview": "معاينة",
+			"btn_order": "طلب",
+			"btn_ordering": "جارٍ الطلب...",
+			"btn_save": "حفظ الفلاير",
+			"btn_saving": "جارٍ الحفظ...",
+			"template_blank": "لوحة فارغة",
+			"template_blank_desc": "أنشئ من الصفر",
+			"template_smart": "قالب ذكي",
+			"template_smart_desc": "تصميم تلقائي",
+			"template_smart_loaded": "تم تحميل القالب الذكي",
+			"smart_customize": "تخصيص",
+			"smart_bg": "خلفية",
+			"smart_text": "نص",
+			"smart_button": "زر",
+			"smart_conditions": "الشروط",
+			"hint_canvas": "لتحرير نص: انقر مرتين عليه • استخدم المقابض لتغيير الحجم",
+			"hint_smart": "يتم إنشاء هذا القالب تلقائيًا من إعدادات لعبتك. لا يمكن تعديله هنا."
+		},
+		"smart_flyer": {
+			"scan_win": "امسح وأربح",
+			"your_gift": "هديتك!",
+			"won": "ربحت",
+			"lost": "خسرت",
+			"scan_to_play": "امسح للعب",
+			"step1": "امسح الرمز",
+			"step2": "أدر العجلة",
+			"step3": "اكتشف هديتك"
+		}
 	},
 	"notifications": {
 		"title": "الإشعارات",
@@ -2188,6 +2258,10 @@
 				"home_button": "العودة للرئيسية"
 			}
 		},
-		"powered_by": "مدعوم من ScanUpGo"
+		"powered_by": "مدعوم من ScanUpGo",
+		"wheel": {
+			"lost": "خسرت",
+			"gift": "هدية"
+		}
 	}
 }

@@ -395,6 +395,10 @@
 			"save_button": "Enregistrer",
 			"creating": "Création...",
 			"create_game": "Créer le jeu",
+			"tab_content": "Contenu",
+			"tab_appearance": "Apparence",
+			"tab_prizes": "Cadeaux",
+			"tab_flyers": "Flyers",
 			"appearance_title": "Apparence du Jeu",
 			"appearance_subtitle": "Personnalisez les couleurs",
 			"background_color": "Couleur de fond",
@@ -645,7 +649,10 @@
 			"quick_actions": "Actions rapides",
 			"automations_link": "Automatisations",
 			"tip_title": "Conseil Marketing",
-			"tip_message": "Personnalisez vos emails avec {prenom}, {nom} et {commerce} pour un meilleur taux d'ouverture."
+			"tip_message": "Personnalisez vos emails avec {prenom}, {nom} et {commerce} pour un meilleur taux d'ouverture.",
+			"credits_available": "crédits email disponibles",
+			"no_credits": "Vous n'avez plus de crédits. Contactez votre administrateur pour en obtenir.",
+			"credits_info": "1 crédit = 1 email envoyé · {contacts} contact(s) opt-in"
 		},
 		"campaigns": {
 			"title": "Campagnes",
@@ -853,6 +860,31 @@
 			"emails_per_month_description": "Crédits d'envoi de newsletters",
 			"google_reviews_booster": "ScanUpGo Google",
 			"google_reviews_booster_description": "Redirigez vos gagnants vers Google Reviews"
+		},
+		"plan_descriptions": {
+			"ScanUpGo": "Solution tout-en-un pour collecter des avis Google et fidéliser vos clients."
+		},
+		"plan_card": {
+			"monthly_unit": "Dhs /mois",
+			"annual_unit": "Dhs /an",
+			"lifetime_unit": "Dhs",
+			"monthly_desc": "Facturation mensuelle sans engagement.",
+			"annual_save": "Économisez {percent}% sur l'année",
+			"lifetime_desc": "Paiement unique. Accès éternel.",
+			"emails_per_month": "Emails/mois",
+			"most_popular": "Le plus populaire",
+			"trial_days": "{days} jours d'essai gratuit",
+			"all_monthly_features": "Toutes les fonctionnalités Mensuel",
+			"priority_support": "Support Prioritaire inclus",
+			"one_time_payment_feature": "Paiement unique",
+			"lifetime_updates": "Mises à jour à vie incluses",
+			"vip_support": "Support VIP",
+			"active_games": "{count} Jeu(x) Actif(s)",
+			"max_players": "{count} Joueurs max",
+			"google_booster": "Avis Google Booster",
+			"current_plan_badge": "Plan actuel",
+			"try_free": "Essayer gratuitement {days}j",
+			"choose": "Choisir {period}"
 		}
 	},
 	"account": {
@@ -1020,7 +1052,45 @@
 		"save_flyer_error": "Erreur lors de la sauvegarde du flyer",
 		"pdf_generation": "Erreur lors de la génération du PDF",
 		"pdf_success": "PDF print-ready téléchargé !",
-		"pdf_error": "Erreur lors du téléchargement du PDF"
+		"pdf_error": "Erreur lors du téléchargement du PDF",
+		"editor": {
+			"tools_title": "Outils",
+			"tool_text": "Texte",
+			"tool_logo": "Logo",
+			"tool_image": "Image",
+			"tool_center_h": "Centrer H",
+			"tool_center_v": "Centrer V",
+			"templates_title": "Templates",
+			"color_bg": "Fond",
+			"color_text": "Texte",
+			"btn_preview": "Aperçu",
+			"btn_order": "Commander",
+			"btn_ordering": "Préparation...",
+			"btn_save": "Enregistrer le flyer",
+			"btn_saving": "Sauvegarde...",
+			"template_blank": "Canvas Vierge",
+			"template_blank_desc": "Créez depuis zéro",
+			"template_smart": "Template Généré",
+			"template_smart_desc": "Design automatique",
+			"template_smart_loaded": "Template intelligent chargé",
+			"smart_customize": "Personnalisation",
+			"smart_bg": "Fond",
+			"smart_text": "Texte",
+			"smart_button": "Bouton",
+			"smart_conditions": "Conditions",
+			"hint_canvas": "Pour éditer un texte : double-cliquez dessus • Utilisez les poignées pour redimensionner",
+			"hint_smart": "Ce modèle est généré automatiquement à partir des paramètres de votre jeu. Il n'est pas modifiable ici."
+		},
+		"smart_flyer": {
+			"scan_win": "SCANNEZ & GAGNEZ",
+			"your_gift": "VOTRE CADEAU!",
+			"won": "GAGNÉ",
+			"lost": "PERDU",
+			"scan_to_play": "SCANNE POUR JOUER",
+			"step1": "Scanne le code",
+			"step2": "Fais tourner la roue",
+			"step3": "Découvre ton cadeau"
+		}
 	},
 	"notifications": {
 		"title": "Notifications",
@@ -2188,6 +2258,10 @@
 				"home_button": "Retour à l'accueil"
 			}
 		},
-		"powered_by": "Propulsé par ScanUpGo"
+		"powered_by": "Propulsé par ScanUpGo",
+		"wheel": {
+			"lost": "PERDU",
+			"gift": "Cadeau"
+		}
 	}
 }
