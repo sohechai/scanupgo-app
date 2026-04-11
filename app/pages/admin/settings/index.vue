@@ -16,7 +16,9 @@ const loading = ref(true)
 const settings = ref({
 	appName: 'ScanUpGo',
 	supportEmail: 'support@scanupgo.com',
-	stripeConfigured: false
+	stripeConfigured: false,
+	freeTrialEnabled: false,
+	freeTrialDays: 14,
 })
 
 // Fetch settings
@@ -26,7 +28,9 @@ onMounted(async () => {
 		settings.value = {
 			appName: data.appName,
 			supportEmail: data.supportEmail,
-			stripeConfigured: data.stripeConfigured ?? false
+			stripeConfigured: data.stripeConfigured ?? false,
+			freeTrialEnabled: data.freeTrialEnabled ?? false,
+			freeTrialDays: data.freeTrialDays ?? 14,
 		}
 	} catch (error) {
 		console.error('Failed to fetch settings:', error)
@@ -42,6 +46,8 @@ const handleSave = async () => {
 		const payload: any = {
 			appName: settings.value.appName,
 			supportEmail: settings.value.supportEmail,
+			freeTrialEnabled: settings.value.freeTrialEnabled,
+			freeTrialDays: settings.value.freeTrialDays,
 		}
 
 		const response: any = await $api('/admin/settings', {
@@ -142,6 +148,59 @@ const handleSave = async () => {
 							<Icon name="ph:spinner-gap-bold" size="32" class="text-white animate-spin" />
 						</div>
 						<div v-else>
+							<!-- Free Trial Toggle -->
+							<div class="mb-8">
+								<h2 class="text-xl font-bold text-white mb-6">Période d'essai gratuite</h2>
+								<div class="bg-white/5 border border-white/10 rounded-xl p-6 space-y-5">
+									<!-- Toggle row -->
+									<div class="flex items-center justify-between gap-4">
+										<div>
+											<p class="font-semibold text-white text-sm">Activer l'essai gratuit</p>
+											<p class="text-slate-400 text-xs mt-0.5">Les nouveaux inscrits bénéficient d'une période d'essai automatique</p>
+										</div>
+										<button
+											type="button"
+											@click="settings.freeTrialEnabled = !settings.freeTrialEnabled"
+											:class="[
+												'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+												settings.freeTrialEnabled ? 'bg-emerald-500' : 'bg-white/10'
+											]">
+											<span
+												:class="[
+													'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200',
+													settings.freeTrialEnabled ? 'translate-x-5' : 'translate-x-0'
+												]" />
+										</button>
+									</div>
+
+									<!-- Days input -->
+									<div v-if="settings.freeTrialEnabled" class="flex items-center gap-4 pt-2 border-t border-white/10">
+										<label class="text-sm text-slate-400 shrink-0">Durée de l'essai</label>
+										<div class="flex items-center gap-2">
+											<input
+												v-model.number="settings.freeTrialDays"
+												type="number"
+												min="1"
+												max="90"
+												class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-center font-bold outline-none focus:border-white/30 transition-all"
+											/>
+											<span class="text-slate-400 text-sm">jours</span>
+										</div>
+									</div>
+
+									<!-- Status badge -->
+									<div :class="[
+										'flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg w-fit',
+										settings.freeTrialEnabled
+											? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+											: 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+									]">
+										<Icon :name="settings.freeTrialEnabled ? 'ph:check-circle-bold' : 'ph:x-circle-bold'" size="14" />
+										{{ settings.freeTrialEnabled ? `Essai de ${settings.freeTrialDays}j activé` : 'Essai désactivé — inscription directe sans période d\'essai' }}
+									</div>
+								</div>
+							</div>
+
 							<!-- Stripe Status -->
 							<div>
 								<h2 class="text-xl font-bold text-white mb-6">{{ $t('admin.settings.stripe_config') }}</h2>
