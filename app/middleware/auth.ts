@@ -48,6 +48,27 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		if (!response.user.emailVerified && to.path.startsWith('/dashboard')) {
 			return navigateTo('/verify-email-pending')
 		}
+
+		// Onboarding flow (only for dashboard routes, not for the target pages themselves)
+		if (response.user.emailVerified && to.path.startsWith('/dashboard')) {
+			const business = response.user.business
+			const userEmail = response.user.email
+			const onboardingDone = business?.name &&
+				business.name.trim() !== '' &&
+				business.name.trim() !== userEmail?.trim()
+			const hasActiveSubscription = business?.subscription &&
+				['active', 'trialing'].includes(business.subscription.status)
+
+			// Step 1: fill business info
+			if (!onboardingDone && to.path !== '/dashboard/onboarding') {
+				return navigateTo('/dashboard/onboarding')
+			}
+
+			// Step 2: subscribe (only after onboarding is done)
+			if (onboardingDone && !hasActiveSubscription && to.path !== '/dashboard/subscription') {
+				return navigateTo('/dashboard/subscription')
+			}
+		}
 	} catch (error: any) {
 		// If status check fails (401, network error, etc.), redirect to login
 		console.warn('Auth check failed:', error)
