@@ -4,6 +4,16 @@ definePageMeta({
 	middleware: []
 })
 
+// On admin subdomain, this route doesn't exist — canonical login is /login
+// On localhost (dev), keep this page functional
+if (import.meta.client) {
+	const host = window.location.hostname
+	const isAdminSubdomain = host.startsWith('admin.')
+	if (isAdminSubdomain) {
+		throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
+	}
+}
+
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const router = useRouter()
@@ -32,22 +42,15 @@ const handleLogin = async () => {
 			}
 		})
 
-
-		// Vérifier que l'utilisateur est bien un SUPER_ADMIN
 		if (response.user.role !== 'SUPER_ADMIN') {
-			console.warn('❌ Utilisateur non autorisé, rôle:', response.user.role)
 			error.value = t('admin.login.unauthorized')
-			// Déconnecter immédiatement
 			await $api('/auth/logout', { method: 'POST' })
 			loading.value = false
 			return
 		}
 
-
-		// Vérifier que la session est bien établie avant de rediriger
 		await new Promise(resolve => setTimeout(resolve, 100))
 
-		// Vérifier une dernière fois le statut
 		const statusCheck = await $api<{ authenticated: boolean; user: any }>('/auth/status')
 
 		if (!statusCheck.authenticated || statusCheck.user?.role !== 'SUPER_ADMIN') {
@@ -55,10 +58,8 @@ const handleLogin = async () => {
 			return
 		}
 
-		// Rediriger vers le dashboard admin
 		await router.push('/admin')
 	} catch (e: any) {
-		console.error('❌ Login failed:', e)
 		error.value = e?.data?.message || t('admin.login.incorrect_credentials')
 	} finally {
 		loading.value = false
@@ -68,19 +69,12 @@ const handleLogin = async () => {
 
 <template>
 	<div class="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-		<!-- Gradient Background -->
 		<div class="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-black"></div>
-
-		<!-- Grid Pattern -->
 		<div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
-
-		<!-- Glow Effects -->
 		<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-[128px]"></div>
 		<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px]"></div>
 
-		<!-- Login Card -->
 		<div class="relative w-full max-w-md">
-			<!-- Logo -->
 			<div class="text-center mb-8">
 				<div class="inline-flex items-center gap-3 mb-3">
 					<div class="w-12 h-12 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl flex items-center justify-center shadow-xl shadow-brand-500/20">
@@ -91,17 +85,14 @@ const handleLogin = async () => {
 				<p class="text-sm text-slate-400">{{ $t('admin.administration') }}</p>
 			</div>
 
-			<!-- Card -->
 			<div class="bg-slate-950/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
 				<h2 class="text-xl font-bold text-white mb-6">{{ $t('admin.login.title') }}</h2>
 
-				<!-- Error Message -->
 				<div v-if="error" class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
 					<p class="text-sm text-red-400">{{ error }}</p>
 				</div>
 
 				<form @submit.prevent="handleLogin" class="space-y-5">
-					<!-- Email -->
 					<div>
 						<label for="email" class="block text-sm font-medium text-slate-300 mb-2">
 							{{ $t('admin.login.email_label') }}
@@ -117,7 +108,6 @@ const handleLogin = async () => {
 						/>
 					</div>
 
-					<!-- Password -->
 					<div>
 						<label for="password" class="block text-sm font-medium text-slate-300 mb-2">
 							{{ $t('admin.login.password_label') }}
@@ -144,7 +134,6 @@ const handleLogin = async () => {
 						</div>
 					</div>
 
-					<!-- Submit Button -->
 					<button
 						type="submit"
 						:disabled="loading"
@@ -157,16 +146,8 @@ const handleLogin = async () => {
 						<span v-else>{{ $t('admin.login.login_button') }}</span>
 					</button>
 				</form>
-
-				<!-- Footer -->
-				<div class="mt-6 pt-6 border-t border-white/5 text-center">
-					<NuxtLink to="/login" class="text-sm text-slate-400 hover:text-white transition-colors">
-						{{ $t('admin.login.back_to_merchant') }}
-					</NuxtLink>
-				</div>
 			</div>
 
-			<!-- Bottom Text -->
 			<p class="text-center text-xs text-slate-500 mt-6">
 				{{ $t('admin.login.super_admin_only') }}
 			</p>

@@ -12,7 +12,7 @@ onMounted(() => {
 
 	// On admin subdomain, redirect root to admin login
 	if (window.location.hostname.startsWith('admin.') && window.location.pathname === '/') {
-		navigateTo('/admin/login', { replace: true })
+		navigateTo('/login', { replace: true })
 	}
 })
 </script>

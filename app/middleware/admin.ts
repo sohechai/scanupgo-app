@@ -20,26 +20,19 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		const response = await $api<{ authenticated: boolean; user: any }>('/auth/status')
 
 
-		// Not authenticated -> redirect to admin login
+		// Not authenticated -> redirect to login
 		if (!response.authenticated || !response.user) {
-			return navigateTo('/admin/login')
+			return navigateTo('/login')
 		}
 
 		// Authenticated but not SUPER_ADMIN
 		if (response.user.role !== 'SUPER_ADMIN') {
 			await $api('/auth/logout', { method: 'POST' })
-
-			// If on admin subdomain, redirect to admin login
-			// Otherwise redirect to main login
-			if (isAdminSubdomain) {
-				return navigateTo('/admin/login')
-			} else {
-				return navigateTo('/login')
-			}
+			return navigateTo('/login')
 		}
 
 	} catch (error) {
 		console.error('[Admin middleware] error:', error)
-		return navigateTo('/admin/login')
+		return navigateTo('/login')
 	}
 })
