@@ -9,7 +9,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 	// Determine subdomain context
 	const host = window.location.hostname
 	const isAdminSubdomain = host.startsWith('admin.')
+	const isLocalhost = host === 'localhost' || host.startsWith('127.0.0.1')
 
+	// Block admin access from app.scanupgo.com — enforce admin.scanupgo.com
+	if (!isAdminSubdomain && !isLocalhost) {
+		return navigateTo('https://admin.scanupgo.com' + to.fullPath, { external: true })
+	}
 
 	try {
 		const response = await $api<{ authenticated: boolean; user: any }>('/auth/status')
