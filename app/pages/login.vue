@@ -2,12 +2,6 @@
 definePageMeta({
 	layout: 'auth'
 })
-
-// Redirect to admin login if on admin subdomain
-if (import.meta.client && window.location.hostname.startsWith('admin.')) {
-	await navigateTo('/admin/login', { replace: true })
-}
-
 const { t } = useI18n()
 const { signIn } = useAuth()
 const config = useRuntimeConfig()

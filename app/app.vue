@@ -9,6 +9,11 @@ onMounted(() => {
 	}
 	document.documentElement.dir = locale.value === 'ar' ? 'rtl' : 'ltr'
 	document.documentElement.lang = locale.value
+
+	// On admin subdomain, redirect root to admin login
+	if (window.location.hostname.startsWith('admin.') && window.location.pathname === '/') {
+		navigateTo('/admin/login', { replace: true })
+	}
 })
 </script>
 
