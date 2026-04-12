@@ -138,7 +138,7 @@ onMounted(() => fetchBusiness())
 				<Icon name="ph:spinner-gap" class="animate-spin text-brand-600" size="36" />
 			</div>
 
-			<div v-else class="w-full max-w-lg">
+			<div v-else class="w-full max-w-2xl">
 
 				<!-- Step 1: Nom de l'établissement -->
 				<Transition name="slide" mode="out-in">
@@ -288,43 +288,97 @@ onMounted(() => fetchBusiness())
 				<!-- Step 3: Identité visuelle -->
 				<Transition name="slide" mode="out-in">
 					<div v-if="step === 3" key="step3">
-						<div class="mb-8">
+						<div class="mb-6">
 							<div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
 								<Icon name="ph:palette-duotone" size="26" class="text-amber-600" />
 							</div>
 							<h1 class="text-2xl font-bold text-slate-900 mb-2">Votre identité visuelle</h1>
-							<p class="text-slate-500">Personnalisez l'apparence de vos flyers et QR codes. Vous pourrez modifier ça plus tard.</p>
+							<p class="text-slate-500 text-sm">Personnalisez l'apparence de vos flyers et QR codes. Vous pourrez modifier ça plus tard.</p>
 						</div>
 
-						<div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
-							<!-- Logo -->
-							<div class="space-y-2">
-								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Logo</label>
-								<FileUpload v-model="business.logo" label="" upload-type="logo" :max-size="5" :preview="true" accept="image/*" />
-								<p class="text-xs text-slate-400">Format PNG ou SVG recommandé, fond transparent de préférence.</p>
-							</div>
+						<div class="grid lg:grid-cols-2 gap-4">
+							<!-- Left: Config -->
+							<div class="space-y-4">
+								<!-- Logo -->
+								<div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+									<div class="flex items-center justify-between">
+										<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Logo</label>
+										<span class="text-xs text-slate-400">PNG, SVG recommandé</span>
+									</div>
+									<FileUpload v-model="business.logo" label="" upload-type="logo" :max-size="5" :preview="true" accept="image/*" />
+								</div>
 
-							<!-- Couleur -->
-							<div class="space-y-2 pt-4 border-t border-slate-100">
-								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Couleur principale</label>
-								<div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-									<input
-										v-model="business.primary_color"
-										type="color"
-										class="w-10 h-10 rounded-lg border-0 cursor-pointer bg-transparent p-0 shadow-sm"
-									/>
-									<div>
-										<p class="text-sm font-mono font-bold text-slate-900 uppercase">{{ business.primary_color }}</p>
-										<p class="text-xs text-slate-400">Utilisée sur vos flyers et QR codes</p>
+								<!-- Couleur -->
+								<div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+									<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Couleur principale</label>
+
+									<!-- Swatches -->
+									<div class="flex flex-wrap gap-2">
+										<button
+											v-for="color in ['#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#22C55E','#14B8A6','#0EA5E9','#1D4ED8','#111827','#64748B']"
+											:key="color"
+											type="button"
+											@click="business.primary_color = color"
+											class="w-7 h-7 rounded-lg border-2 transition-all hover:scale-110"
+											:style="{ backgroundColor: color }"
+											:class="business.primary_color === color ? 'border-slate-900 scale-110 shadow-md' : 'border-transparent'"
+										/>
+									</div>
+
+									<!-- Custom color picker -->
+									<div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+										<label class="cursor-pointer">
+											<input
+												v-model="business.primary_color"
+												type="color"
+												class="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent p-0 block"
+											/>
+										</label>
+										<div class="flex-1">
+											<p class="text-sm font-mono font-bold text-slate-900 uppercase">{{ business.primary_color }}</p>
+											<p class="text-xs text-slate-400">Couleur personnalisée</p>
+										</div>
+										<Icon name="ph:eyedropper-duotone" size="18" class="text-slate-400" />
 									</div>
 								</div>
+							</div>
+
+							<!-- Right: Live preview -->
+							<div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col">
+								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Aperçu</label>
+
+								<!-- Mini flyer mockup -->
+								<div class="flex-1 flex items-center justify-center">
+									<div class="w-full max-w-[200px] rounded-2xl overflow-hidden shadow-xl" :style="{ backgroundColor: business.primary_color }">
+										<!-- Header colored zone -->
+										<div class="p-5 flex flex-col items-center gap-3">
+											<!-- Logo or placeholder -->
+											<div class="w-16 h-16 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center overflow-hidden border-2 border-white/30">
+												<img v-if="business.logo" :src="business.logo" class="w-full h-full object-contain p-1" />
+												<Icon v-else name="ph:storefront-duotone" size="28" class="text-white/70" />
+											</div>
+											<p class="text-white font-bold text-sm text-center leading-tight">
+												{{ business.name || 'Votre établissement' }}
+											</p>
+										</div>
+										<!-- QR code zone -->
+										<div class="bg-white mx-3 mb-3 rounded-xl p-3 flex flex-col items-center gap-2">
+											<div class="w-16 h-16 rounded-lg flex items-center justify-center" :style="{ backgroundColor: business.primary_color + '15' }">
+												<Icon name="ph:qr-code-duotone" size="40" :style="{ color: business.primary_color }" />
+											</div>
+											<p class="text-xs text-slate-500 font-medium">Laissez-nous un avis ⭐</p>
+										</div>
+									</div>
+								</div>
+
+								<p class="text-xs text-slate-400 text-center mt-4">Aperçu simplifié de votre flyer</p>
 							</div>
 						</div>
 
 						<!-- Skip option -->
 						<p class="text-center text-xs text-slate-400 mt-4">
 							Vous pouvez aussi
-							<button @click="handleSubmit" class="text-slate-600 underline underline-offset-2 hover:text-slate-900">passer cette étape</button>
+							<button @click="handleSubmit" class="text-slate-600 underline underline-offset-2 hover:text-slate-900 transition-colors">passer cette étape</button>
 							et configurer ça plus tard.
 						</p>
 
