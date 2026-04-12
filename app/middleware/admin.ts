@@ -11,9 +11,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 	const isAdminSubdomain = host.startsWith('admin.')
 	const isLocalhost = host === 'localhost' || host.startsWith('127.0.0.1')
 
-	// Block admin access from app.scanupgo.com — enforce admin.scanupgo.com
+	// Block admin access from non-admin subdomains — return 404 silently (don't reveal admin exists)
 	if (!isAdminSubdomain && !isLocalhost) {
-		return navigateTo('https://admin.scanupgo.com' + to.fullPath, { external: true })
+		throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
 	}
 
 	try {
