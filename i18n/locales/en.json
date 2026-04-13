@@ -774,8 +774,9 @@
 	},
 	"subscription": {
 		"gate": {
-			"title": "Subscription required",
-			"description": "Subscribe to a plan to unlock all ScanUpGo features.",
+			"label": "Premium Feature",
+			"title": "Unlock all features",
+			"description": "Subscribe to a plan to access your games, players and marketing campaigns.",
 			"cta": "See plans",
 			"hint": "No commitment · Cancel anytime",
 			"feature_games": "Game contests",
@@ -956,6 +957,7 @@
 		"delete_lose_players": "Your players and their data",
 		"delete_lose_orders": "Your orders and history",
 		"delete_lose_data": "Your statistics and reports",
+		"delete_warning": "This action is irreversible. All your data, games and orders will be permanently deleted.",
 		"delete_confirm_text": "Type DELETE to confirm",
 		"delete_permanent": "Delete permanently",
 		"delete_confirm_text_message": "DELETE",
