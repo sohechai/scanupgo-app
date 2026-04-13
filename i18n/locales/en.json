@@ -775,8 +775,12 @@
 	"subscription": {
 		"gate": {
 			"title": "Subscription required",
-			"description": "Subscribe to a plan to access this feature.",
-			"cta": "See plans"
+			"description": "Subscribe to a plan to unlock all ScanUpGo features.",
+			"cta": "See plans",
+			"hint": "No commitment · Cancel anytime",
+			"feature_games": "Game contests",
+			"feature_players": "Players",
+			"feature_marketing": "Marketing"
 		},
 		"title": "My Subscription",
 		"choose_plan": "Choose your plan",
@@ -946,7 +950,12 @@
 		"delete_account_description": "This action cannot be undone. All your data will be deleted.",
 		"delete_button": "Delete",
 		"delete_confirmation_title": "Delete your account?",
-		"delete_confirmation_message": "This action cannot be undone. All your data, games, players, and orders will be permanently deleted.",
+		"delete_confirmation_message": "This action is immediate and irreversible. You will permanently lose access to your account.",
+		"delete_loses": "What you will lose",
+		"delete_lose_games": "All your games and campaigns",
+		"delete_lose_players": "Your players and their data",
+		"delete_lose_orders": "Your orders and history",
+		"delete_lose_data": "Your statistics and reports",
 		"delete_confirm_text": "Type DELETE to confirm",
 		"delete_permanent": "Delete permanently",
 		"delete_confirm_text_message": "DELETE",

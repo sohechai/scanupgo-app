@@ -631,45 +631,55 @@ watch(user, (newUser) => {
 		<Teleport to="body">
 			<Transition name="modal">
 				<div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDeleteModal = false" />
-					<div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-						<!-- Red top bar -->
-						<div class="h-1.5 w-full bg-gradient-to-r from-red-500 to-rose-600" />
+					<div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="showDeleteModal = false" />
+					<div class="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100 dark:border-slate-800">
 
 						<div class="p-8">
-							<!-- Icon + title -->
-							<div class="flex flex-col items-center text-center mb-7">
-								<div class="w-14 h-14 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-									<Icon name="ph:trash-simple-bold" size="28" class="text-red-500" />
+							<!-- Close button -->
+							<button @click="showDeleteModal = false"
+								class="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+								<Icon name="ph:x-bold" size="16" />
+							</button>
+
+							<!-- Icon -->
+							<div class="flex flex-col items-center text-center mb-6">
+								<div class="relative mb-5">
+									<div class="w-16 h-16 bg-red-100 dark:bg-red-950/60 rounded-2xl flex items-center justify-center">
+										<Icon name="ph:trash-simple-bold" size="30" class="text-red-600 dark:text-red-500" />
+									</div>
 								</div>
-								<h3 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+								<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
 									{{ $t('account.delete_confirmation_title') }}
 								</h3>
-								<p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed max-w-xs">
+								<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
 									{{ $t('account.delete_confirmation_message') }}
 								</p>
 							</div>
 
-							<!-- Warning banner -->
-							<div class="flex items-start gap-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 mb-6">
-								<Icon name="ph:warning-circle-fill" size="18" class="text-red-500 mt-0.5 shrink-0" />
-								<p class="text-xs text-red-700 dark:text-red-300 leading-relaxed">
-									Cette action est <strong>irréversible</strong>. Toutes vos données, jeux et commandes seront définitivement supprimés.
-								</p>
+							<!-- What will be deleted -->
+							<div class="bg-red-50 dark:bg-red-950/30 rounded-2xl p-4 mb-6 space-y-2">
+								<p class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-3">{{ $t('account.delete_loses') }}</p>
+								<div v-for="item in ['delete_lose_games', 'delete_lose_players', 'delete_lose_orders', 'delete_lose_data']" :key="item"
+									class="flex items-center gap-2.5">
+									<div class="w-4 h-4 rounded-full bg-red-200 dark:bg-red-900 flex items-center justify-center shrink-0">
+										<Icon name="ph:x-bold" size="8" class="text-red-600 dark:text-red-400" />
+									</div>
+									<span class="text-xs text-red-700 dark:text-red-300">{{ $t(`account.${item}`) }}</span>
+								</div>
 							</div>
 
 							<!-- Confirm input -->
-							<div class="mb-6">
-								<label class="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+							<div class="mb-5">
+								<label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
 									{{ $t('account.delete_confirm_text') }}
 								</label>
 								<input
 									v-model="deleteConfirmText"
 									type="text"
 									:placeholder="$t('account.delete_confirm_text_message')"
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white outline-none tracking-widest font-mono transition-colors placeholder:text-slate-300 dark:placeholder:text-slate-600"
+									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white outline-none tracking-widest font-mono text-sm transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
 									:class="deleteConfirmText === $t('account.delete_confirm_text_message')
-										? 'border-red-500 focus:border-red-500 ring-2 ring-red-500/20'
+										? 'border-red-500 focus:border-red-500 bg-red-50 dark:bg-red-950/20'
 										: 'border-slate-200 dark:border-slate-700 focus:border-slate-400'"
 								/>
 							</div>
@@ -678,16 +688,16 @@ watch(user, (newUser) => {
 							<div class="flex gap-3">
 								<button
 									@click="showDeleteModal = false"
-									class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm">
+									class="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm">
 									{{ $t('account.cancel') }}
 								</button>
 								<button
 									@click="deleteAccount"
 									:disabled="deleteLoading || deleteConfirmText !== $t('account.delete_confirm_text_message')"
-									class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-xl transition-all text-sm shadow-sm shadow-red-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2">
-									<Icon v-if="deleteLoading" name="ph:spinner-gap" size="16" class="animate-spin" />
+									class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold rounded-xl transition-all text-sm shadow-lg shadow-red-500/25 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 flex items-center justify-center gap-2">
+									<Icon v-if="deleteLoading" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 									<Icon v-else name="ph:trash-simple-bold" size="16" />
-									<span>{{ deleteLoading ? $t('common.loading') : $t('account.delete_permanent') }}</span>
+									{{ deleteLoading ? $t('common.loading') : $t('account.delete_permanent') }}
 								</button>
 							</div>
 						</div>

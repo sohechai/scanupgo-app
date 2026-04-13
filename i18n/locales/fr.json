@@ -775,8 +775,12 @@
 	"subscription": {
 		"gate": {
 			"title": "Abonnement requis",
-			"description": "Souscrivez à un abonnement pour accéder à cette fonctionnalité.",
-			"cta": "Voir les offres"
+			"description": "Souscrivez à un abonnement pour débloquer toutes les fonctionnalités de ScanUpGo.",
+			"cta": "Voir les offres",
+			"hint": "Sans engagement · Résiliable à tout moment",
+			"feature_games": "Jeux concours",
+			"feature_players": "Joueurs",
+			"feature_marketing": "Marketing"
 		},
 		"title": "Mon Abonnement",
 		"choose_plan": "Choisir votre formule",
@@ -946,7 +950,12 @@
 		"delete_account_description": "Cette action est irréversible. Toutes vos données seront supprimées.",
 		"delete_button": "Supprimer",
 		"delete_confirmation_title": "Supprimer votre compte ?",
-		"delete_confirmation_message": "Cette action est irréversible. Toutes vos données, jeux, joueurs et commandes seront définitivement supprimés.",
+		"delete_confirmation_message": "Cette action est irréversible et immédiate. Vous perdrez définitivement l'accès à votre espace.",
+		"delete_loses": "Ce que vous perdrez",
+		"delete_lose_games": "Tous vos jeux et campagnes",
+		"delete_lose_players": "Vos joueurs et leurs données",
+		"delete_lose_orders": "Vos commandes et historique",
+		"delete_lose_data": "Vos statistiques et rapports",
 		"delete_confirm_text": "Tapez SUPPRIMER pour confirmer",
 		"delete_permanent": "Supprimer définitivement",
 		"delete_confirm_text_message": "SUPPRIMER",
