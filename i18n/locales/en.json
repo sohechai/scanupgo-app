@@ -773,6 +773,11 @@
 		}
 	},
 	"subscription": {
+		"gate": {
+			"title": "Subscription required",
+			"description": "Subscribe to a plan to access this feature.",
+			"cta": "See plans"
+		},
 		"title": "My Subscription",
 		"choose_plan": "Choose your plan",
 		"subtitle": "Manage your plan and invoices with ease.",

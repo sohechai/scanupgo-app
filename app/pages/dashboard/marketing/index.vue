@@ -77,21 +77,8 @@ onMounted(async () => {
 
 <template>
 	<!-- Subscription Required -->
-	<div v-if="!subscriptionLoading && !hasActiveSubscription" class="flex flex-col items-center justify-center py-20">
-		<div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-			<Icon name="ph:lock-simple-fill" size="32" class="text-slate-400" />
-		</div>
-		<h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">{{ $t('marketing.index.premium_feature') }}</h2>
-		<p class="text-slate-500 dark:text-slate-400 text-center max-w-md mb-6">
-			{{ $t('marketing.index.premium_description') }}
-		</p>
-		<NuxtLink to="/dashboard/subscription"
-			class="px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors">
-			{{ $t('marketing.index.see_offers') }}
-		</NuxtLink>
-	</div>
-
-	<div v-else class="space-y-8">
+	<SubscriptionGate>
+	<div class="space-y-8">
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
@@ -284,4 +271,5 @@ onMounted(async () => {
 			</div>
 		</div>
 	</div>
+	</SubscriptionGate>
 </template>

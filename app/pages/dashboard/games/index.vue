@@ -73,15 +73,8 @@ onMounted(async () => {
 </script>
 
 <template>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('games.access_required')"
-		:description="$t('games.access_description')"
-		icon="ph:game-controller-fill"
-	/>
-
-	<div v-else class="space-y-8 relative">
+	<SubscriptionGate>
+	<div class="space-y-8 relative">
 
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -227,4 +220,5 @@ onMounted(async () => {
 			@confirm="deleteGame"
 		/>
 	</div>
+	</SubscriptionGate>
 </template>

@@ -64,10 +64,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 				return navigateTo('/dashboard/onboarding')
 			}
 
-			// Step 2: subscribe (only after onboarding is done)
-			if (onboardingDone && !hasActiveSubscription && to.path !== '/dashboard/subscription') {
-				return navigateTo('/dashboard/subscription')
-			}
+			// Step 2: subscription page remains accessible, other pages show a gate overlay (no forced redirect)
 		}
 	} catch (error: any) {
 		// If status check fails (401, network error, etc.), redirect to login

@@ -773,6 +773,11 @@
 		}
 	},
 	"subscription": {
+		"gate": {
+			"title": "Abonnement requis",
+			"description": "Souscrivez à un abonnement pour accéder à cette fonctionnalité.",
+			"cta": "Voir les offres"
+		},
 		"title": "Mon Abonnement",
 		"choose_plan": "Choisir votre formule",
 		"subtitle": "Gérez votre offre et vos factures en toute simplicité.",
