@@ -84,10 +84,8 @@ const periodConfig = computed(() => {
 		<!-- Features -->
 		<div class="space-y-4 mb-8 flex-1">
 			<template v-if="period === 'annual'">
-				<div class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300 font-medium">
-					<div class="p-0.5 bg-brand-100 rounded-full text-brand-600">
-						<Icon name="ph:check-bold" size="12" />
-					</div>
+				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
+					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
 					<span>{{ $t('subscription.plan_card.all_monthly_features') }}</span>
 				</div>
 			</template>

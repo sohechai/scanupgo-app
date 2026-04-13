@@ -371,7 +371,7 @@ const resetSubscriptionForTesting = async () => {
 			</div>
 
 			<!-- Plans Grid -->
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 pt-6">
 				<template v-for="plan in plans" :key="plan.id">
 					<PlanCard :plan="plan" period="monthly" :loading="loading"
 						:is-current-plan="isCurrentPlan(plan.id, 'monthly')"
