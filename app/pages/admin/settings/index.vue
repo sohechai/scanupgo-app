@@ -150,13 +150,13 @@ const handleSave = async () => {
 						<div v-else>
 							<!-- Free Trial Toggle -->
 							<div class="mb-8">
-								<h2 class="text-xl font-bold text-white mb-6">Période d'essai gratuite</h2>
+								<h2 class="text-xl font-bold text-white mb-6">{{ $t('admin.settings.billing_trial_title') }}</h2>
 								<div class="bg-white/5 border border-white/10 rounded-xl p-6 space-y-5">
 									<!-- Toggle row -->
 									<div class="flex items-center justify-between gap-4">
 										<div>
-											<p class="font-semibold text-white text-sm">Activer l'essai gratuit</p>
-											<p class="text-slate-400 text-xs mt-0.5">Les nouveaux inscrits bénéficient d'une période d'essai automatique</p>
+											<p class="font-semibold text-white text-sm">{{ $t('admin.settings.billing_trial_enable') }}</p>
+											<p class="text-slate-400 text-xs mt-0.5">{{ $t('admin.settings.billing_trial_description') }}</p>
 										</div>
 										<button
 											type="button"
@@ -175,7 +175,7 @@ const handleSave = async () => {
 
 									<!-- Days input -->
 									<div v-if="settings.freeTrialEnabled" class="flex items-center gap-4 pt-2 border-t border-white/10">
-										<label class="text-sm text-slate-400 shrink-0">Durée de l'essai</label>
+										<label class="text-sm text-slate-400 shrink-0">{{ $t('admin.settings.billing_trial_duration') }}</label>
 										<div class="flex items-center gap-2">
 											<input
 												v-model.number="settings.freeTrialDays"
@@ -184,7 +184,7 @@ const handleSave = async () => {
 												max="90"
 												class="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-center font-bold outline-none focus:border-white/30 transition-all"
 											/>
-											<span class="text-slate-400 text-sm">jours</span>
+											<span class="text-slate-400 text-sm">{{ $t('admin.settings.billing_trial_days_unit') }}</span>
 										</div>
 									</div>
 
@@ -196,7 +196,7 @@ const handleSave = async () => {
 											: 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
 									]">
 										<Icon :name="settings.freeTrialEnabled ? 'ph:check-circle-bold' : 'ph:x-circle-bold'" size="14" />
-										{{ settings.freeTrialEnabled ? `Essai de ${settings.freeTrialDays}j activé` : 'Essai désactivé — inscription directe sans période d\'essai' }}
+										{{ settings.freeTrialEnabled ? $t('admin.settings.billing_trial_active', { days: settings.freeTrialDays }) : $t('admin.settings.billing_trial_inactive') }}
 									</div>
 								</div>
 							</div>
@@ -254,41 +254,25 @@ const handleSave = async () => {
 						<div>
 							<h2 class="text-xl font-bold text-white mb-6">{{ $t('admin.settings.email_templates') }}</h2>
 							<div class="space-y-4">
-								<div
-									class="bg-white/5 border border-white/10 rounded-xl p-5 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
-									<div class="flex items-center gap-4">
-										<div
-											class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-											<Icon name="ph:envelope-simple-open-bold"
-												class="text-slate-300 group-hover:text-white transition-colors"
-												size="20" />
-										</div>
-										<div>
-											<div
-												class="font-bold text-white mb-1 group-hover:text-white transition-colors">
-												{{ $t('admin.settings.email_welcome') }}</div>
-											<div class="text-xs text-slate-500">{{ $t('admin.settings.email_welcome_description') }}</div>
-										</div>
+								<div class="bg-white/5 border border-white/10 rounded-xl p-5 flex items-center gap-4">
+									<div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+										<Icon name="ph:envelope-simple-open-bold" class="text-slate-300" size="20" />
 									</div>
-									<Icon name="ph:pencil-simple-bold"
-										class="text-slate-500 group-hover:text-white transition-colors" />
+									<div class="flex-1">
+										<div class="font-bold text-white mb-1">{{ $t('admin.settings.email_welcome') }}</div>
+										<div class="text-xs text-slate-500">{{ $t('admin.settings.email_welcome_description') }}</div>
+									</div>
+									<span class="text-xs text-slate-600 bg-white/5 px-2 py-1 rounded-lg border border-white/5">{{ $t('admin.settings.email_template_auto') }}</span>
 								</div>
-								<div
-									class="bg-white/5 border border-white/10 rounded-xl p-5 flex items-center justify-between group cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all">
-									<div class="flex items-center gap-4">
-										<div
-											class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-											<Icon name="ph:check-circle-bold" class="text-emerald-400" size="20" />
-										</div>
-										<div>
-											<div
-												class="font-bold text-white mb-1 group-hover:text-white transition-colors">
-												{{ $t('admin.settings.email_payment') }}</div>
-											<div class="text-xs text-slate-500">{{ $t('admin.settings.email_payment_description') }}</div>
-										</div>
+								<div class="bg-white/5 border border-white/10 rounded-xl p-5 flex items-center gap-4">
+									<div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+										<Icon name="ph:check-circle-bold" class="text-emerald-400" size="20" />
 									</div>
-									<Icon name="ph:pencil-simple-bold"
-										class="text-slate-500 group-hover:text-white transition-colors" />
+									<div class="flex-1">
+										<div class="font-bold text-white mb-1">{{ $t('admin.settings.email_payment') }}</div>
+										<div class="text-xs text-slate-500">{{ $t('admin.settings.email_payment_description') }}</div>
+									</div>
+									<span class="text-xs text-slate-600 bg-white/5 px-2 py-1 rounded-lg border border-white/5">{{ $t('admin.settings.email_template_auto') }}</span>
 								</div>
 							</div>
 						</div>

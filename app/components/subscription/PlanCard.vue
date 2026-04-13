@@ -90,12 +90,6 @@ const periodConfig = computed(() => {
 					</div>
 					<span>{{ $t('subscription.plan_card.all_monthly_features') }}</span>
 				</div>
-				<div class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300 font-medium">
-					<div class="p-0.5 bg-brand-100 rounded-full text-brand-600">
-						<Icon name="ph:check-bold" size="12" />
-					</div>
-					<span>{{ $t('subscription.plan_card.priority_support') }}</span>
-				</div>
 			</template>
 
 			<template v-else-if="period === 'lifetime'">
@@ -125,11 +119,6 @@ const periodConfig = computed(() => {
 				<div class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
 					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
 					<span><strong>{{ plan.features.email_credits_per_month }}</strong> {{ $t('subscription.plan_card.emails_per_month') }}</span>
-				</div>
-				<div v-if="plan.features.google_reviews"
-					class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
-					<Icon name="ph:check-bold" class="text-brand-500 shrink-0 mt-0.5" />
-					<span>{{ $t('subscription.plan_card.google_booster') }}</span>
 				</div>
 			</template>
 		</div>

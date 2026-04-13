@@ -294,15 +294,6 @@ const isEndingSoon = computed(() => {
 						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('subscription.current.emails_per_month_description') }}</p>
 					</div>
 				</div>
-				<div v-if="subscription.plan.features.google_reviews" class="flex items-start gap-3 text-sm">
-					<div class="p-1 bg-brand-100 rounded-lg text-brand-600">
-						<Icon name="ph:check-bold" size="16" />
-					</div>
-					<div>
-						<p class="font-semibold text-slate-900 dark:text-white">{{ $t('subscription.current.google_reviews_booster') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('subscription.current.google_reviews_booster_description') }}</p>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>

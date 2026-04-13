@@ -622,22 +622,6 @@ onMounted(() => {
 									<Icon name="ph:chat-circle-bold" size="15" class="text-slate-500 shrink-0" />
 									<span>{{ plan.features.sms_credits_per_month }} SMS/mois</span>
 								</li>
-								<li v-if="plan.features?.max_qr_codes" class="flex items-center gap-2 text-sm text-slate-300">
-									<Icon name="ph:qr-code-bold" size="15" class="text-slate-500 shrink-0" />
-									<span>{{ plan.features.max_qr_codes }} QR codes</span>
-								</li>
-								<li v-if="plan.features?.google_reviews" class="flex items-center gap-2 text-sm text-slate-300">
-									<Icon name="ph:star-bold" size="15" class="text-slate-500 shrink-0" />
-									<span>Avis Google activé</span>
-								</li>
-								<li v-if="plan.features?.priority_support" class="flex items-center gap-2 text-sm text-slate-300">
-									<Icon name="ph:headset-bold" size="15" class="text-slate-500 shrink-0" />
-									<span>Support prioritaire</span>
-								</li>
-								<li v-if="plan.features?.flyer_discount" class="flex items-center gap-2 text-sm text-slate-300">
-									<Icon name="ph:tag-bold" size="15" class="text-slate-500 shrink-0" />
-									<span>{{ plan.features.flyer_discount }}% remise flyers</span>
-								</li>
 							</ul>
 						</div>
 					</div>
