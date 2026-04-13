@@ -425,31 +425,27 @@ onMounted(() => {
 		<!-- SUBSCRIPTION CTA BANNER (No Active Sub)   -->
 		<!-- ========================================== -->
 		<div v-if="!subscriptionLoading && !hasActiveSubscription"
-			class="bg-gradient-to-r from-brand-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl">
-			<!-- Decorative elements -->
-			<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-			<div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl -ml-24 -mb-24"></div>
-
-			<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-				<div class="flex-1">
-					<div class="flex items-center gap-2 mb-3">
-						<Icon name="ph:crown-simple-fill" size="24" class="text-yellow-300" />
-						<span class="text-xs font-bold uppercase tracking-wider text-white/80">{{ $t('dashboard.cta_banner.label') }}</span>
+			class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_24px_-4px_rgba(6,81,237,0.1)] overflow-hidden">
+			<div class="h-0.5 w-full bg-gradient-to-r from-brand-500 via-indigo-500 to-brand-400" />
+			<div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+				<!-- Left -->
+				<div class="flex items-center gap-4 flex-1">
+					<div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center shrink-0">
+						<Icon name="ph:crown-simple-fill" size="24" class="text-brand-600 dark:text-brand-400" />
 					</div>
-					<h2 class="text-2xl md:text-3xl font-display font-bold mb-2">
-						{{ $t('dashboard.cta_banner.title') }}
-					</h2>
-					<p class="text-white/80 text-sm md:text-base max-w-xl">
-						{{ $t('dashboard.cta_banner.description') }}
-					</p>
+					<div>
+						<p class="text-xs font-bold text-brand-500 uppercase tracking-widest mb-1">{{ $t('dashboard.cta_banner.label') }}</p>
+						<h2 class="text-lg font-display font-bold text-slate-900 dark:text-white tracking-tight">
+							{{ $t('dashboard.cta_banner.title') }}
+						</h2>
+					</div>
 				</div>
-				<div class="flex flex-col sm:flex-row gap-3">
-					<NuxtLink to="/dashboard/subscription"
-						class="px-6 py-3 bg-white text-brand-600 font-bold rounded-xl hover:bg-white/90 transition-colors shadow-lg shadow-black/10 flex items-center justify-center gap-2">
-						<Icon name="ph:rocket-launch-bold" size="18" />
-						{{ $t('dashboard.cta_banner.button') }}
-					</NuxtLink>
-				</div>
+				<!-- Right -->
+				<NuxtLink to="/dashboard/subscription"
+					class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-md shadow-brand-500/20 text-sm shrink-0">
+					<Icon name="ph:rocket-launch-bold" size="16" />
+					{{ $t('dashboard.cta_banner.button') }}
+				</NuxtLink>
 			</div>
 		</div>
 
