@@ -52,15 +52,8 @@ onMounted(async () => {
 </script>
 
 <template>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('prizes.access_required')"
-		:description="$t('prizes.access_description')"
-		icon="ph:gift-fill"
-	/>
-
-	<div v-else class="space-y-8">
+	<SubscriptionGate>
+	<div class="space-y-8">
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
@@ -157,4 +150,5 @@ onMounted(async () => {
 			</table>
 		</div>
 	</div>
+	</SubscriptionGate>
 </template>

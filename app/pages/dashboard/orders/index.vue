@@ -59,15 +59,8 @@ const getStatusClasses = (status: string) => {
 </script>
 
 <template>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('orders.access_required')"
-		:description="$t('orders.access_description')"
-		icon="ph:package-fill"
-	/>
-
-	<div v-else class="space-y-8 relative">
+	<SubscriptionGate>
+	<div class="space-y-8 relative">
 		<!-- Header & Actions -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
@@ -246,4 +239,5 @@ const getStatusClasses = (status: string) => {
 		<OrdersCreateOrderModal v-model="showCreateModal" @created="handleOrderCreated" />
 		<OrdersOrderDetailsModal v-model="showDetailsModal" :order="selectedOrder" />
 	</div>
+	</SubscriptionGate>
 </template>

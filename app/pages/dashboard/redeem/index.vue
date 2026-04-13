@@ -140,15 +140,8 @@ onMounted(() => {
 </script>
 
 <template>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('redeem.access_required')"
-		:description="$t('redeem.access_description')"
-		icon="ph:qr-code-fill"
-	/>
-
-	<div v-else class="space-y-8 relative">
+	<SubscriptionGate>
+	<div class="space-y-8 relative">
 
 		<!-- Header -->
 		<div>
@@ -308,4 +301,5 @@ onMounted(() => {
 		</div>
 
 	</div>
+	</SubscriptionGate>
 </template>
