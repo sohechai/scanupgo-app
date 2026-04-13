@@ -10,6 +10,7 @@ const route = useRoute()
 const router = useRouter()
 const { $api } = useNuxtApp()
 const { show: showToast } = useToast()
+const { getPlanLimit, fetchSubscription } = useSubscription()
 import ConfirmModal from '~/components/ConfirmModal.vue'
 import RichTextEditor from '~/components/RichTextEditor.vue'
 
@@ -19,6 +20,31 @@ const campaign = ref<any>(null)
 const loading = ref(true)
 const sending = ref(false)
 const saving = ref(false)
+
+// Email usage this month
+const emailUsage = ref<{ used: number; limit: number | null } | null>(null)
+
+const fetchEmailUsage = async () => {
+	await fetchSubscription()
+	const limit = getPlanLimit('email_credits_per_month')
+	try {
+		const stats = await $api<{ sentThisMonth: number }>('/marketing/email-usage')
+		emailUsage.value = { used: stats.sentThisMonth, limit }
+	} catch {
+		emailUsage.value = { used: 0, limit }
+	}
+}
+
+const emailUsagePercent = computed(() => {
+	if (!emailUsage.value?.limit) return 0
+	return Math.min(100, Math.round((emailUsage.value.used / emailUsage.value.limit) * 100))
+})
+
+const emailUsageColor = computed(() => {
+	if (emailUsagePercent.value >= 90) return 'bg-red-500'
+	if (emailUsagePercent.value >= 70) return 'bg-amber-500'
+	return 'bg-brand-500'
+})
 
 const editing = ref(false)
 const showSendConfirm = ref(false)
@@ -138,6 +164,7 @@ const getStatusBadge = (status: string) => {
 
 onMounted(async () => {
 	await fetchCampaign()
+	await fetchEmailUsage()
 	if (campaign.value?.status === 'sending') {
 		pollSendStatus()
 	}
@@ -182,7 +209,21 @@ onMounted(async () => {
 						<Icon :name="editing ? 'ph:x-bold' : 'ph:pencil-simple-bold'" size="18" />
 						{{ editing ? $t('marketing.campaign_detail.cancel_edit') : $t('marketing.campaign_detail.edit') }}
 					</button>
-					<button @click="sendCampaign" :disabled="sending"
+					<!-- Email usage counter -->
+					<div v-if="emailUsage?.limit" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg">
+						<Icon name="ph:envelope-simple-bold" size="14" class="text-slate-400" />
+						<div class="text-xs">
+							<span :class="emailUsagePercent >= 90 ? 'text-red-600 font-bold' : emailUsagePercent >= 70 ? 'text-amber-600 font-semibold' : 'text-slate-600 dark:text-slate-300'">
+								{{ emailUsage.used }}/{{ emailUsage.limit }}
+							</span>
+							<span class="text-slate-400 ml-1">ce mois</span>
+						</div>
+						<div class="w-16 h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+							<div class="h-full rounded-full transition-all" :class="emailUsageColor" :style="{ width: emailUsagePercent + '%' }" />
+						</div>
+					</div>
+
+					<button @click="sendCampaign" :disabled="sending || (emailUsage?.limit !== null && emailUsage?.used >= (emailUsage?.limit ?? Infinity))"
 						class="px-4 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-2">
 						<Icon v-if="sending" name="ph:spinner-gap-bold" size="18" class="animate-spin" />
 						<Icon v-else name="ph:paper-plane-tilt-bold" size="18" />

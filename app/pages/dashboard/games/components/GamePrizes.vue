@@ -5,6 +5,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
+const { show: showToast } = useToast()
 
 interface Prize {
 	id?: string
@@ -135,7 +136,7 @@ const savePrize = async () => {
 	} catch (e: any) {
 		console.error('Error saving prize:', e)
 		const errorMsg = e?.data?.message || 'Erreur lors de la sauvegarde du lot.'
-		alert(errorMsg)
+		showToast(errorMsg, 'error')
 	} finally {
 		saving.value = false
 	}

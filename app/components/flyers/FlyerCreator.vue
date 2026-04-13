@@ -11,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
+const { show: showToast } = useToast()
 
 // Flyer state
 const selectedTheme = ref('black')
@@ -123,7 +124,7 @@ const downloadFlyer = async () => {
 		pdf.save(`flyer-${props.game.slug}-${selectedTheme.value}.pdf`)
 	} catch (error) {
 		console.error('Error generating PDF:', error)
-		alert('Erreur lors de la génération du PDF')
+		showToast('Erreur lors de la génération du PDF', 'error')
 	} finally {
 		isGenerating.value = false
 	}
@@ -131,7 +132,7 @@ const downloadFlyer = async () => {
 
 // Order flyer (placeholder)
 const orderFlyer = () => {
-	alert('La commande de flyers sera bientôt disponible !')
+	showToast('La commande de flyers sera bientôt disponible !', 'info')
 }
 
 onMounted(() => {

@@ -148,20 +148,20 @@ const saveGame = async () => {
 	try {
 		// Ensure businessId is present (for validation only, not sent to server)
 		if (!game.value.businessId) {
-			alert(t('games.detail.google_review_error'))
+			showToast(t('games.detail.google_review_error'), 'error')
 			return
 		}
 
 		// Validate slug format
 		const slugRegex = /^[a-z0-9-]+$/
 		if (!slugRegex.test(game.value.slug)) {
-			alert(t('games.detail.slug_format'))
+			showToast(t('games.detail.slug_format'), 'error')
 			return
 		}
 
 		// Validate Google Review URL is required
 		if (!game.value.googleReviewUrl) {
-			alert(t('games.detail.google_review_required'))
+			showToast(t('games.detail.google_review_required'), 'error')
 			return
 		}
 
@@ -188,8 +188,7 @@ const saveGame = async () => {
 		}
 	} catch (e: any) {
 		console.error('Save failed:', e)
-		const errorMessage = e?.data?.message || e?.message || 'Une erreur est survenue'
-		alert(`Erreur: ${errorMessage}`)
+		showToast(e?.data?.message || e?.message || t('common.error'), 'error')
 	} finally {
 		saving.value = false
 	}

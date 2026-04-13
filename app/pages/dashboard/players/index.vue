@@ -7,6 +7,7 @@ definePageMeta({
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
+const { show: showToast } = useToast()
 const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
 
 // State
@@ -142,7 +143,7 @@ const exportToCSV = async () => {
 		URL.revokeObjectURL(url)
 	} catch (error) {
 		console.error('CSV export failed:', error)
-		alert(t('players.export_error'))
+		showToast(t('players.export_error'), 'error')
 	} finally {
 		exporting.value = null
 	}
@@ -168,7 +169,7 @@ const exportToPDF = async () => {
 		URL.revokeObjectURL(url)
 	} catch (error) {
 		console.error('PDF export failed:', error)
-		alert(t('players.export_pdf_error'))
+		showToast(t('players.export_pdf_error'), 'error')
 	} finally {
 		exporting.value = null
 	}

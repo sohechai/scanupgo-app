@@ -21,6 +21,7 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp()
 const { t } = useI18n()
+const { show: showToast } = useToast()
 
 // State
 const qrColor = ref(props.initialColor)
@@ -136,13 +137,13 @@ const handleLogoUpload = async (event: Event) => {
 	if (!file) return
 
 	if (!file.type.startsWith('image/')) {
-		alert(t('components.qr_customizer.alert_image_only'))
+		showToast(t('components.qr_customizer.alert_image_only'), 'error')
 		return
 	}
 
 	// Validate file size (max 2MB)
 	if (file.size > 2 * 1024 * 1024) {
-		alert(t('components.qr_customizer.alert_too_large'))
+		showToast(t('components.qr_customizer.alert_too_large'), 'error')
 		return
 	}
 
@@ -164,7 +165,7 @@ const handleLogoUpload = async (event: Event) => {
 		}
 	} catch (err) {
 		console.error('Error uploading logo:', err)
-		alert(t('components.qr_customizer.error_upload_logo'))
+		showToast(t('components.qr_customizer.error_upload_logo'), 'error')
 	} finally {
 		isUploading.value = false
 	}

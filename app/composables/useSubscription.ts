@@ -43,12 +43,26 @@ export const useSubscription = () => {
 
 	const refreshSubscription = () => fetchSubscription(true)
 
+	// Check if the current plan includes a boolean feature (e.g. 'google_reviews')
+	const hasPlanFeature = (feature: string): boolean => {
+		if (isAdmin.value) return true
+		return !!subscription.value?.plan?.features?.[feature]
+	}
+
+	// Get a numeric plan limit (e.g. 'email_credits_per_month', 'max_games')
+	const getPlanLimit = (limit: string): number | null => {
+		if (isAdmin.value) return null // no limit for admins
+		return subscription.value?.plan?.features?.[limit] ?? null
+	}
+
 	return {
 		subscription,
 		loading,
 		hasActiveSubscription,
 		isAdmin,
 		fetchSubscription,
-		refreshSubscription
+		refreshSubscription,
+		hasPlanFeature,
+		getPlanLimit
 	}
 }

@@ -109,33 +109,6 @@ onMounted(async () => {
 			</NuxtLink>
 		</div>
 
-		<!-- Credits banner -->
-		<div v-if="!statsLoading" class="rounded-xl border p-4 flex items-center gap-4"
-			:class="(stats?.emailCredits ?? 0) > 0
-				? 'bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20'
-				: 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20'">
-			<div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-				:class="(stats?.emailCredits ?? 0) > 0 ? 'bg-blue-100 dark:bg-blue-500/20' : 'bg-red-100 dark:bg-red-500/20'">
-				<Icon name="ph:coins-fill" size="22"
-					:class="(stats?.emailCredits ?? 0) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500'" />
-			</div>
-			<div class="flex-1">
-				<div class="flex items-baseline gap-2">
-					<span class="text-2xl font-bold"
-						:class="(stats?.emailCredits ?? 0) > 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600 dark:text-red-400'">
-						{{ stats?.emailCredits ?? 0 }}
-					</span>
-					<span class="text-sm font-semibold text-slate-500">{{ $t('marketing.index.credits_available') }}</span>
-				</div>
-				<p v-if="(stats?.emailCredits ?? 0) === 0" class="text-xs text-red-500 dark:text-red-400 mt-0.5">
-					{{ $t('marketing.index.no_credits') }}
-				</p>
-				<p v-else class="text-xs text-slate-400 mt-0.5">
-					{{ $t('marketing.index.credits_info', { contacts: stats?.optInPlayers ?? 0 }) }}
-				</p>
-			</div>
-		</div>
-
 		<!-- Stats Cards -->
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 			<!-- Total Campaigns -->

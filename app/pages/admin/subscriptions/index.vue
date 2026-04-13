@@ -12,7 +12,6 @@ interface SubscriptionPlan {
 	features: any
 	active: boolean
 	sortOrder: number
-	trialDays: number
 	isDefault: boolean
 	createdAt: string
 	updatedAt: string
@@ -146,7 +145,6 @@ const planForm = ref({
 	priceAnnual: 0,
 	priceLifetime: 0,
 	features: '[]',
-	trialDays: 0,
 	isDefault: false,
 	active: true,
 	stripePriceIdMonthly: '',
@@ -176,7 +174,6 @@ const openNewPlanModal = () => {
 		priceAnnual: 0,
 		priceLifetime: 0,
 		features: '[]',
-		trialDays: 0,
 		isDefault: false,
 		active: true,
 		stripePriceIdMonthly: '',
@@ -196,7 +193,6 @@ const openEditPlanModal = (plan: SubscriptionPlan) => {
 		priceAnnual: Number(plan.priceAnnual),
 		priceLifetime: Number(plan.priceLifetime),
 		features: JSON.stringify(plan.features, null, 2),
-		trialDays: plan.trialDays,
 		isDefault: plan.isDefault,
 		active: plan.active,
 		stripePriceIdMonthly: plan.stripePriceIdMonthly || '',
@@ -223,7 +219,6 @@ const savePlan = async () => {
 			priceAnnual: planForm.value.priceAnnual,
 			priceLifetime: planForm.value.priceLifetime,
 			features,
-			trialDays: planForm.value.trialDays,
 			isDefault: planForm.value.isDefault,
 			active: planForm.value.active,
 			stripePriceIdMonthly: planForm.value.stripePriceIdMonthly || undefined,
@@ -532,110 +527,119 @@ onMounted(() => {
 					</button>
 				</div>
 
-				<!-- Plans Table -->
-				<div v-else
-					class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl shadow-black/10">
-					<div class="overflow-x-auto">
-						<table class="w-full">
-							<thead class="bg-white/5 border-b border-white/10">
-								<tr>
-									<th
-										class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_plan') }}</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_monthly') }}</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_annual') }}</th>
-									<th
-										class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_lifetime') }}</th>
-									<th
-										class="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_trial') }}</th>
-									<th
-										class="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_subscribers') }}</th>
-									<th
-										class="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_status') }}</th>
-									<th
-										class="px-6 py-4 text-right rtl:text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-										{{ $t('admin.subscriptions.plans_table_actions') }}</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-white/5">
-								<tr v-for="plan in plans" :key="plan.id"
-									class="group transition-colors hover:bg-white/5">
-									<td class="px-6 py-4 whitespace-nowrap">
-										<div>
-											<div class="flex items-center gap-2">
-												<span class="font-bold text-white">{{ plan.name }}</span>
-												<span v-if="plan.isDefault"
-													class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-500/20 text-brand-400 border border-brand-500/20">
-													{{ $t('admin.subscriptions.plans_default') }}
-												</span>
-											</div>
-											<div v-if="plan.description"
-												class="text-xs text-slate-500 mt-1 max-w-[200px] truncate">
-												{{ plan.description }}
-											</div>
-										</div>
-									</td>
-									<td class="px-6 py-4 whitespace-nowrap">
-										<span class="text-lg font-bold text-white">{{
-											Number(plan.priceMonthly).toFixed(2) }}</span>
-										<span class="text-xs text-slate-500 ml-1">MAD/mois</span>
-									</td>
-									<td class="px-6 py-4 whitespace-nowrap">
-										<span class="text-lg font-bold text-white">{{
-											Number(plan.priceAnnual).toFixed(2) }}</span>
-										<span class="text-xs text-slate-500 ml-1">MAD/an</span>
-									</td>
-									<td class="px-6 py-4 whitespace-nowrap">
-										<span class="text-lg font-bold text-white">{{
-											Number(plan.priceLifetime).toFixed(2) }}</span>
-										<span class="text-xs text-slate-500 ml-1">MAD</span>
-									</td>
-									<td class="px-6 py-4 text-center whitespace-nowrap">
-										<span v-if="plan.trialDays > 0" class="text-sm font-bold text-white">{{ plan.trialDays }}j</span>
-										<span v-else class="text-xs text-slate-600">-</span>
-									</td>
-									<td class="px-6 py-4 text-center whitespace-nowrap">
-										<span
-											class="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/5 text-slate-300 border border-white/5">
-											{{ plan._count.subscriptions }}
+				<!-- Plans Cards -->
+				<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					<div v-for="plan in plans" :key="plan.id"
+						class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl shadow-black/10 flex flex-col overflow-hidden transition-all hover:border-white/20">
+
+						<!-- Card Header -->
+						<div class="px-6 pt-6 pb-5 border-b border-white/10">
+							<div class="flex items-start justify-between gap-3">
+								<div>
+									<div class="flex items-center gap-2 flex-wrap">
+										<h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
+										<span v-if="plan.isDefault"
+											class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-500/20 text-brand-400 border border-brand-500/20">
+											{{ $t('admin.subscriptions.plans_default') }}
 										</span>
-									</td>
-									<td class="px-6 py-4 text-center whitespace-nowrap">
 										<span :class="[
-											'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border',
+											'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
 											plan.active
 												? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
 												: 'bg-slate-500/10 text-slate-500 border-slate-500/20'
 										]">
 											{{ plan.active ? $t('admin.subscriptions.plans_active') : $t('admin.subscriptions.plans_inactive') }}
 										</span>
-									</td>
-									<td class="px-6 py-4 text-right rtl:text-left whitespace-nowrap">
-										<div
-											class="flex items-center justify-end gap-1">
-											<button @click="openEditPlanModal(plan)"
-												class="p-2.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
-												:title="$t('admin.subscriptions.plans_edit')">
-												<Icon name="ph:pencil-line-bold" size="18" />
-											</button>
-											<button @click="deletePlan(plan)"
-												class="p-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
-												:title="$t('admin.subscriptions.plans_delete')">
-												<Icon name="ph:trash-bold" size="18" />
-											</button>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+									</div>
+									<p v-if="plan.description" class="text-sm text-slate-400 mt-1">{{ plan.description }}</p>
+								</div>
+								<div class="flex items-center gap-1 shrink-0">
+									<button @click="openEditPlanModal(plan)"
+										class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+										:title="$t('admin.subscriptions.plans_edit')">
+										<Icon name="ph:pencil-line-bold" size="16" />
+									</button>
+									<button @click="deletePlan(plan)"
+										class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+										:title="$t('admin.subscriptions.plans_delete')">
+										<Icon name="ph:trash-bold" size="16" />
+									</button>
+								</div>
+							</div>
+
+							<!-- Subscribers badge -->
+							<div class="mt-4 flex items-center gap-2">
+								<Icon name="ph:users-three-bold" size="16" class="text-slate-500" />
+								<span class="text-sm text-slate-400">
+									<span class="font-bold text-white">{{ plan._count.subscriptions }}</span>
+									abonné{{ plan._count.subscriptions !== 1 ? 's' : '' }}
+								</span>
+							</div>
+						</div>
+
+						<!-- Pricing -->
+						<div class="px-6 py-5 border-b border-white/10 space-y-3">
+							<div class="flex items-center justify-between">
+								<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ $t('admin.subscriptions.plans_table_monthly') }}</span>
+								<div>
+									<span class="text-lg font-bold text-white">{{ Number(plan.priceMonthly).toFixed(2) }}</span>
+									<span class="text-xs text-slate-500 ml-1">MAD/mois</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ $t('admin.subscriptions.plans_table_annual') }}</span>
+								<div>
+									<span class="text-lg font-bold text-white">{{ Number(plan.priceAnnual).toFixed(2) }}</span>
+									<span class="text-xs text-slate-500 ml-1">MAD/an</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ $t('admin.subscriptions.plans_table_lifetime') }}</span>
+								<div>
+									<span class="text-lg font-bold text-white">{{ Number(plan.priceLifetime).toFixed(2) }}</span>
+									<span class="text-xs text-slate-500 ml-1">MAD</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Features -->
+						<div class="px-6 py-5 flex-1">
+							<p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{{ $t('admin.subscriptions.modal_features') }}</p>
+							<ul class="space-y-2">
+								<li v-if="plan.features?.max_games" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:game-controller-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.max_games }} jeu{{ plan.features.max_games !== 1 ? 'x' : '' }} actif{{ plan.features.max_games !== 1 ? 's' : '' }}</span>
+								</li>
+								<li v-if="plan.features?.max_players" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:users-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.max_players.toLocaleString() }} joueurs max</span>
+								</li>
+								<li v-if="plan.features?.email_credits_per_month" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:envelope-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.email_credits_per_month }} emails/mois</span>
+								</li>
+								<li v-if="plan.features?.sms_credits_per_month" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:chat-circle-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.sms_credits_per_month }} SMS/mois</span>
+								</li>
+								<li v-if="plan.features?.max_qr_codes" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:qr-code-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.max_qr_codes }} QR codes</span>
+								</li>
+								<li v-if="plan.features?.google_reviews" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:star-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>Avis Google activé</span>
+								</li>
+								<li v-if="plan.features?.priority_support" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:headset-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>Support prioritaire</span>
+								</li>
+								<li v-if="plan.features?.flyer_discount" class="flex items-center gap-2 text-sm text-slate-300">
+									<Icon name="ph:tag-bold" size="15" class="text-slate-500 shrink-0" />
+									<span>{{ plan.features.flyer_discount }}% remise flyers</span>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -709,13 +713,6 @@ onMounted(() => {
 									class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-mono text-sm focus:ring-2 focus:ring-white/20 focus:border-white/20 outline-none transition-all placeholder:text-slate-600 resize-none"></textarea>
 							</div>
 
-							<!-- Trial Days -->
-							<div class="space-y-2">
-								<label class="block text-sm font-bold text-slate-300">{{ $t('admin.subscriptions.modal_trial_days') }}</label>
-								<input v-model.number="planForm.trialDays" type="number" min="0" max="90"
-									class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-white/20 focus:border-white/20 outline-none transition-all" />
-								<p class="text-xs text-slate-500">{{ $t('admin.subscriptions.modal_trial_hint') }}</p>
-							</div>
 
 							<!-- Toggles -->
 							<div class="space-y-3">
