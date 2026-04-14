@@ -3,10 +3,18 @@ const { user, signOut } = useAuth()
 const { t } = useI18n()
 const route = useRoute()
 const { startPolling, stopPolling } = useNotifications()
+const { fetchSubscription, hasActiveSubscription, isAdmin } = useSubscription()
 
-// Start polling for notifications on mount
-onMounted(() => {
-	startPolling(10000) // Poll every 10 seconds
+// Routes accessible without active subscription
+const freeRoutes = ['/dashboard/subscription', '/dashboard/account', '/dashboard/profile', '/dashboard/onboarding']
+const requiresSubscription = computed(() =>
+	!freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
+)
+
+// Always force-refresh subscription so stale SPA cache never grants access
+onMounted(async () => {
+	await fetchSubscription(true)
+	startPolling(10000)
 })
 
 onUnmounted(() => {
@@ -159,7 +167,12 @@ const toggleTheme = () => {
 				<!-- Page Content -->
 				<div class="flex-1 overflow-y-auto">
 					<div class="p-6 lg:p-8 animate-fade-in-up">
-						<slot />
+						<template v-if="requiresSubscription">
+							<SubscriptionGate>
+								<slot />
+							</SubscriptionGate>
+						</template>
+						<slot v-else />
 					</div>
 				</div>
 
