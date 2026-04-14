@@ -10,7 +10,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	}
 
 	const authStore = useAuthStore()
-	const { $api } = useNuxtApp()
+	const nuxtApp = useNuxtApp()
+	const { $api } = nuxtApp
 
 	// Determine login path based on subdomain
 	const host = window.location.hostname
@@ -38,6 +39,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		}
 		authStore.initialized = true
 		authStore._saveState()
+
+		// Apply user's preferred language via cookie (read by @nuxtjs/i18n on next load)
+		if (response.user.preferredLanguage) {
+			const localeCookie = useCookie('i18n_locale')
+			localeCookie.value = response.user.preferredLanguage
+		}
 
 		// Block access if account is suspended
 		if (response.user.status === 'suspended' && to.path !== '/account-suspended') {

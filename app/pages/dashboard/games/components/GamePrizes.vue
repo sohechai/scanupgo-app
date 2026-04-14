@@ -186,14 +186,14 @@ watch(() => props.gameId, (newId) => {
 		<div class="flex items-center justify-between">
 			<h3 class="text-lg font-display font-bold text-slate-900 dark:text-white">{{ $t('games.prizes.modal_title') }}</h3>
 			<button @click="openModal()"
-				class="text-sm font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10 px-4 py-2 rounded-xl hover:bg-brand-100 dark:hover:bg-brand-500/20 transition-colors flex items-center gap-2">
+				class="text-sm font-bold text-[#007AFF] dark:text-slate-400 bg-[#007AFF]/5 dark:bg-[#007AFF]/50/10 px-4 py-2 rounded-xl hover:bg-[#007AFF]/10 dark:hover:bg-[#007AFF]/50/20 transition-colors flex items-center gap-2">
 				<Icon name="ph:plus-bold" />
 				{{ $t('games.prizes.add_button') }}
 			</button>
 		</div>
 
 		<div v-if="loading" class="flex justify-center py-12">
-			<Icon name="ph:spinner-gap-bold" class="animate-spin text-brand-500" size="32" />
+			<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="32" />
 		</div>
 
 		<div v-else-if="prizes.length === 0"
@@ -234,7 +234,7 @@ watch(() => props.gameId, (newId) => {
 
 				<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
 					<button @click="openModal(prize)"
-						class="p-2 text-slate-400 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-colors">
+						class="p-2 text-slate-400 dark:text-slate-500 hover:text-[#007AFF] dark:hover:text-slate-400 hover:bg-[#007AFF]/5 dark:hover:bg-[#007AFF]/50/10 rounded-lg transition-colors">
 						<Icon name="ph:pencil-simple-bold" />
 					</button>
 					<button @click="confirmDelete(prize.id!)"
@@ -267,13 +267,13 @@ watch(() => props.gameId, (newId) => {
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.rank') }}</label>
 							<input v-model.number="form.rank" type="number" min="1" max="10"
-								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-center font-bold text-slate-900 dark:text-white focus:border-brand-500 outline-none">
+								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-center font-bold text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none">
 						</div>
 						<div class="col-span-3">
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.name') }}</label>
 							<input v-model="form.name" type="text" :placeholder="$t('games.prizes.name_placeholder')" required
-								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-brand-500 outline-none placeholder-slate-400 dark:placeholder-slate-500">
+								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none placeholder-slate-400 dark:placeholder-slate-500">
 						</div>
 					</div>
 
@@ -294,7 +294,7 @@ watch(() => props.gameId, (newId) => {
 								<p class="text-sm text-slate-600 dark:text-slate-300">{{ $t('games.prizes.icon_selected') }}</p>
 								<div class="flex gap-2 mt-1">
 									<button type="button" @click="showEmojiPicker = true"
-										class="text-xs text-brand-600 dark:text-brand-400 hover:underline">
+										class="text-xs text-[#007AFF] dark:text-slate-400 hover:underline">
 										{{ $t('games.prizes.icon_change') }}
 									</button>
 									<button type="button" @click="removeEmoji"
@@ -316,7 +316,7 @@ watch(() => props.gameId, (newId) => {
 									<button v-for="emoji in category.emojis" :key="emoji" type="button"
 										@click="selectEmoji(emoji)"
 										class="w-10 h-10 text-2xl rounded-lg hover:bg-white dark:hover:bg-slate-600 hover:shadow-md transition-all flex items-center justify-center"
-										:class="{ 'bg-brand-100 dark:bg-brand-500/20 ring-2 ring-brand-500': form.imageUrl === emoji }">
+										:class="{ 'bg-[#007AFF]/10 dark:bg-[#007AFF]/50/20 ring-2 ring-[#007AFF]': form.imageUrl === emoji }">
 										{{ emoji }}
 									</button>
 								</div>
@@ -334,14 +334,14 @@ watch(() => props.gameId, (newId) => {
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.quantity') }}</label>
 							<input v-model.number="form.quantity" type="number" min="0"
-								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-brand-500 outline-none">
+								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none">
 						</div>
 						<div>
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.probability') }}</label>
 							<div class="relative">
 								<input v-model.number="form.probability" type="number" min="0" max="100" step="0.1"
-									class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-brand-500 outline-none">
+									class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none">
 								<span
 									class="absolute right-4 top-2 text-slate-400 dark:text-slate-500 text-sm font-bold">%</span>
 							</div>
@@ -352,7 +352,7 @@ watch(() => props.gameId, (newId) => {
 						<label
 							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.message') }}</label>
 						<textarea v-model="form.winningMessage" rows="2"
-							class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-brand-500 outline-none resize-none"></textarea>
+							class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none resize-none"></textarea>
 					</div>
 				</div>
 
@@ -362,7 +362,7 @@ watch(() => props.gameId, (newId) => {
 						{{ $t('games.prizes.modal_cancel') }}
 					</button>
 					<button @click="savePrize" :disabled="saving"
-						class="px-6 py-2 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 shadow-lg shadow-brand-500/20 disabled:opacity-50 flex items-center gap-2">
+						class="px-6 py-2 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] shadow-lg shadow-[#007AFF]/20 disabled:opacity-50 flex items-center gap-2">
 						<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" />
 						{{ saving ? $t('games.prizes.modal_saving') : $t('games.prizes.modal_save') }}
 					</button>

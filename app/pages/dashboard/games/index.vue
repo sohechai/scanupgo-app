@@ -8,29 +8,19 @@ const { t } = useI18n()
 const { $api } = useNuxtApp()
 const router = useRouter()
 const { show: showToast } = useToast()
-const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
 const games = ref<any[]>([])
 const loading = ref(true)
 
-// Order Modal State
 const showOrderModal = ref(false)
 const selectedGameForOrder = ref<any>(null)
+const openOrderModal = (game: any) => { selectedGameForOrder.value = game; showOrderModal.value = true }
 
-const openOrderModal = (game: any) => {
-	selectedGameForOrder.value = game
-	showOrderModal.value = true
-}
-
-// Delete Game State
 const showDeleteModal = ref(false)
 const gameToDelete = ref<any>(null)
 const deleting = ref(false)
-
-const openDeleteModal = (game: any) => {
-	gameToDelete.value = game
-	showDeleteModal.value = true
-}
+const openDeleteModal = (game: any) => { gameToDelete.value = game; showDeleteModal.value = true }
 
 const deleteGame = async () => {
 	if (!gameToDelete.value) return
@@ -50,47 +40,32 @@ const deleteGame = async () => {
 const fetchGames = async () => {
 	try {
 		loading.value = true
-		const data = await $api<any[]>('/games')
-		games.value = data || []
-	} catch (e) {
-		console.error('Error fetching games:', e)
-	} finally {
-		loading.value = false
-	}
-}
-
-const getAssetUrl = (url: string | null) => {
-	if (!url) return undefined
-	return url
+		games.value = await $api<any[]>('/games') || []
+	} catch (e) { console.error(e) }
+	finally { loading.value = false }
 }
 
 onMounted(async () => {
 	await fetchSubscription()
-	if (hasActiveSubscription.value) {
-		fetchGames()
-	}
+	if (hasActiveSubscription.value) fetchGames()
 })
 </script>
 
 <template>
 	<SubscriptionGate>
-	<div class="space-y-8 relative">
+	<div class="space-y-5">
 
 		<!-- Header -->
-		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+		<div class="flex items-center justify-between">
 			<div>
 				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('games.title') }}</h1>
-				<p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">{{ $t('games.subtitle') }}</p>
+				<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">{{ $t('games.subtitle') }}</p>
 			</div>
-
-			<!-- Actions -->
-			<div class="flex items-center gap-3">
-				<NuxtLink to="/dashboard/games/new"
-					class="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 shadow-md shadow-slate-900/10 transition-all">
-					<Icon name="ph:plus-bold" size="16" />
-					<span>{{ $t('games.create_button') }}</span>
-				</NuxtLink>
-			</div>
+			<NuxtLink to="/dashboard/games/new"
+				class="flex items-center gap-2 px-4 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all text-sm shadow-lg shadow-[#007AFF]/25">
+				<Icon name="ph:plus-bold" size="16" />
+				{{ $t('games.create_button') }}
+			</NuxtLink>
 		</div>
 
 		<!-- Loading -->
@@ -100,116 +75,100 @@ onMounted(async () => {
 
 		<!-- Empty State -->
 		<div v-else-if="games.length === 0"
-			class="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-			<div
-				class="w-16 h-16 bg-slate-50 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center mb-4 text-slate-300 dark:text-slate-500">
-				<Icon name="ph:game-controller-duotone" size="32" />
+			class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-14 text-center shadow-sm">
+			<div class="w-16 h-16 bg-[#007AFF]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+				<Icon name="ph:game-controller-duotone" size="32" class="text-[#007AFF]" />
 			</div>
-			<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">{{ $t('games.no_games') }}</h3>
-			<p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-6 text-sm">{{ $t('games.no_games_description') }}</p>
+			<h3 class="text-base font-bold text-slate-900 dark:text-white mb-1.5">{{ $t('games.no_games') }}</h3>
+			<p class="text-slate-400 dark:text-slate-500 max-w-xs mx-auto mb-6 text-sm">{{ $t('games.no_games_description') }}</p>
 			<NuxtLink to="/dashboard/games/new"
-				class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors text-sm">
+				class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl transition-all text-sm shadow-md shadow-[#007AFF]/25">
+				<Icon name="ph:plus-bold" size="15" />
 				{{ $t('games.create_first') }}
 			</NuxtLink>
 		</div>
 
 		<!-- Games Grid -->
-		<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+		<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 			<div v-for="game in games" :key="game.id"
-				class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col">
+				class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
 
-				<!-- Card Header / Preview -->
-				<div
-					class="h-32 bg-slate-100 dark:bg-slate-700 relative overflow-hidden group-hover:opacity-90 transition-opacity">
-					<div
-						class="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-700 relative overflow-hidden">
-						<!-- Pattern -->
-						<div
-							class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-100 to-transparent">
-						</div>
-						<Icon name="ph:game-controller-duotone" size="48" class="text-slate-200 dark:text-slate-500" />
+				<!-- Card top — game identity -->
+				<div class="p-5 flex items-start gap-4 border-b border-[#E5E5EA] dark:border-slate-700/40">
+					<!-- App icon -->
+					<div class="w-12 h-12 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:game-controller-bold" class="text-slate-400 dark:text-slate-500" size="22" />
 					</div>
-
-					<!-- Status Badge -->
-					<div class="absolute top-3 right-3">
-						<span :class="[
-							'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm backdrop-blur-md',
-							game.active ? 'bg-emerald-500/90 text-white border-transparent' : 'bg-white/90 dark:bg-slate-800/90 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600'
-						]">
-							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
-						</span>
+					<div class="flex-1 min-w-0 pt-0.5">
+						<div class="flex items-center gap-2">
+							<h3 class="font-bold text-slate-900 dark:text-white text-sm truncate flex-1">{{ game.title }}</h3>
+							<span :class="[
+								'shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold',
+								game.active
+									? 'bg-[#34C759]/15 text-[#34C759]'
+									: 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-400 dark:text-slate-500'
+							]">
+								{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+							</span>
+						</div>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate">/{{ game.slug }}</p>
 					</div>
 				</div>
 
-				<!-- Card Body -->
-				<div class="p-5 flex-1 flex flex-col">
-					<div class="mb-4">
-						<h3
-							class="font-bold text-slate-900 dark:text-white text-lg mb-1 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-							{{ game.title }}</h3>
-						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono truncate">/{{
-							game.slug }}</p>
+				<!-- Flyer status -->
+				<div class="px-5 py-3 flex items-center justify-between">
+					<div v-if="game.flyerDesignUrl" class="flex items-center gap-2">
+						<Icon name="ph:check-circle-fill" class="text-[#34C759]" size="14" />
+						<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.flyer_ready') }}</span>
 					</div>
+					<div v-else class="flex items-center gap-2">
+						<Icon name="ph:warning-circle-fill" class="text-[#FF9500]" size="14" />
+						<span class="text-xs text-slate-400 dark:text-slate-500 font-medium">{{ $t('games.flyer_not_configured') }}</span>
+					</div>
+					<button v-if="game.flyerDesignUrl" @click.stop="openOrderModal(game)"
+						class="flex items-center gap-1.5 px-2.5 py-1 bg-[#007AFF]/10 hover:bg-[#007AFF]/20 text-[#007AFF] text-[11px] font-semibold rounded-lg transition-colors">
+						<Icon name="ph:shopping-cart-bold" size="11" />
+						{{ $t('games.order_flyers') }}
+					</button>
+				</div>
 
-					<!-- Flyer Status -->
-					<div class="pt-3 border-t border-slate-50 dark:border-slate-700 mb-4">
-						<div v-if="game.flyerDesignUrl" class="flex items-center justify-between">
-							<div class="flex items-center gap-2">
-								<Icon name="ph:check-circle-fill" class="text-emerald-500" size="16" />
-								<span class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">{{ $t('games.flyer_ready') }}</span>
-							</div>
-							<button @click.stop="openOrderModal(game)"
-								class="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-bold rounded-md transition-colors flex items-center gap-1">
-								<Icon name="ph:shopping-cart-bold" size="12" />
-								{{ $t('games.order_flyers') }}
-							</button>
-						</div>
-						<div v-else class="flex items-center gap-2">
-							<Icon name="ph:warning-circle-fill" class="text-amber-500" size="16" />
-							<span class="text-xs text-amber-700 dark:text-amber-400 font-medium">{{ $t('games.flyer_not_configured') }}</span>
-						</div>
-					</div>
-
-					<div class="mt-auto pt-4 flex gap-3">
-						<NuxtLink :to="`/dashboard/games/${game.id}`"
-							class="flex-1 py-2 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 font-bold rounded-lg text-xs transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-600">
-							<Icon name="ph:gear-six-bold" />
-							{{ $t('games.config_button') }}
-						</NuxtLink>
-						<a :href="`/play/${game.slug}`" target="_blank"
-							class="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-500 rounded-lg transition-colors"
-							:title="$t('games.preview_button')">
-							<Icon name="ph:arrow-square-out-bold" />
-						</a>
-						<button @click.stop="openDeleteModal(game)"
-							class="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500 rounded-lg transition-colors"
-							:title="$t('games.delete_button')">
-							<Icon name="ph:trash-bold" />
-						</button>
-					</div>
+				<!-- Actions -->
+				<div class="px-5 pb-4 mt-auto flex gap-2">
+					<NuxtLink :to="`/dashboard/games/${game.id}`"
+						class="flex-1 py-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C] text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
+						<Icon name="ph:gear-six-bold" size="14" />
+						{{ $t('games.config_button') }}
+					</NuxtLink>
+					<a :href="`/play/${game.slug}`" target="_blank"
+						class="p-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C] text-slate-500 dark:text-slate-400 rounded-xl transition-colors"
+						:title="$t('games.preview_button')">
+						<Icon name="ph:arrow-square-out-bold" size="15" />
+					</a>
+					<button @click.stop="openDeleteModal(game)"
+						class="p-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] hover:bg-[#FF3B30]/10 text-slate-400 hover:text-[#FF3B30] dark:text-slate-500 dark:hover:text-[#FF3B30] rounded-xl transition-colors"
+						:title="$t('games.delete_button')">
+						<Icon name="ph:trash-bold" size="15" />
+					</button>
 				</div>
 			</div>
 
-			<!-- Add New Card (at end of grid) -->
+			<!-- Add New Card -->
 			<NuxtLink to="/dashboard/games/new"
-				class="bg-slate-50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-500/5 transition-all duration-300 flex flex-col items-center justify-center text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 h-full min-h-[300px] cursor-pointer group">
-				<div
-					class="w-12 h-12 rounded-full bg-white dark:bg-indigo-500/10 shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-					<Icon name="ph:plus-bold" size="24" />
+				class="bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-2xl border-2 border-dashed border-[#C7C7CC] dark:border-slate-600 hover:border-[#007AFF] dark:hover:border-[#007AFF] hover:bg-[#007AFF]/5 transition-all flex flex-col items-center justify-center text-slate-400 hover:text-[#007AFF] min-h-[200px] cursor-pointer group">
+				<div class="w-12 h-12 rounded-2xl bg-white dark:bg-[#2C2C2E] shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+					<Icon name="ph:plus-bold" size="22" />
 				</div>
-				<span class="font-bold text-sm">{{ $t('games.new_game') }}</span>
+				<span class="font-semibold text-sm">{{ $t('games.new_game') }}</span>
 			</NuxtLink>
 		</div>
 
-		<!-- Order Modal -->
+		<!-- Modals -->
 		<OrdersCreateOrderModal
 			v-model="showOrderModal"
 			:flyer-design-url="selectedGameForOrder?.flyerDesignUrl || undefined"
 			:game-id="selectedGameForOrder?.id"
 			@created="showToast(t('games.order_created'), 'success')"
 		/>
-
-		<!-- Delete Confirmation Modal -->
 		<ConfirmModal
 			v-model="showDeleteModal"
 			:title="$t('games.delete_confirmation_title')"

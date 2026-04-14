@@ -19,6 +19,12 @@ const form = ref({
 	htmlContent: '',
 })
 
+const fieldErrors = ref({
+	name: '',
+	subject: '',
+	htmlContent: '',
+})
+
 const defaultTemplates = computed(() => [
 	{
 		name: t('marketing.new_campaign.template_simple'),
@@ -124,10 +130,22 @@ const applyTemplate = (template: any) => {
 }
 
 const saveDraft = async () => {
-	if (!form.value.name || !form.value.subject || !form.value.htmlContent) {
-		showToast(t('common.error'), 'error')
-		return
+	fieldErrors.value = { name: '', subject: '', htmlContent: '' }
+
+	let hasError = false
+	if (!form.value.name.trim()) {
+		fieldErrors.value.name = t('marketing.new_campaign.error_name_required')
+		hasError = true
 	}
+	if (!form.value.subject.trim()) {
+		fieldErrors.value.subject = t('marketing.new_campaign.error_subject_required')
+		hasError = true
+	}
+	if (!form.value.htmlContent.trim()) {
+		fieldErrors.value.htmlContent = t('marketing.new_campaign.error_content_required')
+		hasError = true
+	}
+	if (hasError) return
 
 	loading.value = true
 	try {
@@ -173,18 +191,40 @@ const saveDraft = async () => {
 						<div>
 							<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
 								{{ $t('marketing.new_campaign.campaign_name') }}
+								<span class="text-[#FF3B30] ml-0.5">*</span>
 							</label>
 							<input v-model="form.name" type="text" :placeholder="$t('marketing.new_campaign.campaign_name_placeholder')"
-								class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+								@input="fieldErrors.name = ''"
+								:class="[
+									'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all',
+									fieldErrors.name
+										? 'border-[#FF3B30] focus:ring-2 focus:ring-[#FF3B30]/20'
+										: 'border-slate-200 dark:border-slate-600 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10'
+								]" />
+							<p v-if="fieldErrors.name" class="text-xs text-[#FF3B30] mt-1.5 flex items-center gap-1">
+								<Icon name="ph:warning-circle-fill" size="13" />
+								{{ fieldErrors.name }}
+							</p>
 						</div>
 						<div>
 							<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
 								{{ $t('marketing.new_campaign.email_subject') }}
+								<span class="text-[#FF3B30] ml-0.5">*</span>
 							</label>
 							<input v-model="form.subject" type="text"
 								:placeholder="$t('marketing.new_campaign.email_subject_placeholder')"
-								class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
-							<p class="text-xs text-slate-400 mt-1">
+								@input="fieldErrors.subject = ''"
+								:class="[
+									'w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all',
+									fieldErrors.subject
+										? 'border-[#FF3B30] focus:ring-2 focus:ring-[#FF3B30]/20'
+										: 'border-slate-200 dark:border-slate-600 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10'
+								]" />
+							<p v-if="fieldErrors.subject" class="text-xs text-[#FF3B30] mt-1.5 flex items-center gap-1">
+								<Icon name="ph:warning-circle-fill" size="13" />
+								{{ fieldErrors.subject }}
+							</p>
+							<p v-else class="text-xs text-slate-400 mt-1">
 								{{ $t('marketing.new_campaign.personalize') }}
 							</p>
 						</div>
@@ -194,10 +234,19 @@ const saveDraft = async () => {
 				<!-- Content -->
 				<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
 					<div class="flex items-center justify-between mb-4">
-						<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('marketing.new_campaign.content') }}</h3>
+						<div>
+							<h3 class="font-bold text-slate-900 dark:text-white">
+								{{ $t('marketing.new_campaign.content') }}
+								<span class="text-[#FF3B30] ml-0.5">*</span>
+							</h3>
+							<p v-if="fieldErrors.htmlContent" class="text-xs text-[#FF3B30] mt-0.5 flex items-center gap-1">
+								<Icon name="ph:warning-circle-fill" size="13" />
+								{{ fieldErrors.htmlContent }}
+							</p>
+						</div>
 						<button @click="previewMode = !previewMode"
 							class="flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-lg transition-colors"
-							:class="previewMode ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+							:class="previewMode ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
 							<Icon :name="previewMode ? 'ph:code-bold' : 'ph:eye-bold'" size="16" />
 							{{ previewMode ? $t('marketing.new_campaign.edit') : $t('marketing.new_campaign.preview') }}
 						</button>
@@ -205,7 +254,8 @@ const saveDraft = async () => {
 
 					<!-- Editor -->
 					<div v-if="!previewMode">
-						<RichTextEditor v-model="form.htmlContent" placeholder="Écrivez votre contenu ici..." />
+						<RichTextEditor v-model="form.htmlContent" placeholder="Écrivez votre contenu ici..."
+							@update:modelValue="fieldErrors.htmlContent = ''" />
 					</div>
 
 					<!-- Preview -->
@@ -223,7 +273,7 @@ const saveDraft = async () => {
 						{{ $t('marketing.new_campaign.cancel') }}
 					</NuxtLink>
 					<button @click="saveDraft" :disabled="loading"
-						class="px-6 py-2.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+						class="px-6 py-2.5 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2">
 						<Icon v-if="loading" name="ph:spinner-gap-bold" size="18" class="animate-spin" />
 						<Icon v-else name="ph:floppy-disk-bold" size="18" />
 						{{ $t('marketing.new_campaign.save') }}
@@ -241,7 +291,7 @@ const saveDraft = async () => {
 							@click="applyTemplate(template)"
 							class="w-full flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left">
 							<div
-								class="w-8 h-8 rounded-md bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center text-brand-600 flex-shrink-0">
+								class="w-8 h-8 rounded-md bg-[#007AFF]/10 dark:bg-[#007AFF]/50/20 flex items-center justify-center text-[#007AFF] flex-shrink-0">
 								<Icon :name="template.icon" size="16" />
 							</div>
 							<span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ template.name
@@ -256,22 +306,22 @@ const saveDraft = async () => {
 					<div class="space-y-2 text-sm">
 						<div class="flex items-center justify-between">
 							<code
-								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-brand-600 text-xs">&#123;&#123;prenom&#125;&#125;</code>
+								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[#007AFF] text-xs">&#123;&#123;prenom&#125;&#125;</code>
 							<span class="text-slate-500">{{ $t('marketing.new_campaign.firstname') }}</span>
 						</div>
 						<div class="flex items-center justify-between">
 							<code
-								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-brand-600 text-xs">&#123;&#123;nom&#125;&#125;</code>
+								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[#007AFF] text-xs">&#123;&#123;nom&#125;&#125;</code>
 							<span class="text-slate-500">{{ $t('marketing.new_campaign.lastname') }}</span>
 						</div>
 						<div class="flex items-center justify-between">
 							<code
-								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-brand-600 text-xs">&#123;&#123;email&#125;&#125;</code>
+								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[#007AFF] text-xs">&#123;&#123;email&#125;&#125;</code>
 							<span class="text-slate-500">{{ $t('marketing.new_campaign.email') }}</span>
 						</div>
 						<div class="flex items-center justify-between">
 							<code
-								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-brand-600 text-xs">&#123;&#123;commerce&#125;&#125;</code>
+								class="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[#007AFF] text-xs">&#123;&#123;commerce&#125;&#125;</code>
 							<span class="text-slate-500">{{ $t('marketing.new_campaign.business_name') }}</span>
 						</div>
 					</div>

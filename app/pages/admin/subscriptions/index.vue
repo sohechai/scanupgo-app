@@ -788,77 +788,73 @@ onMounted(() => {
 				leave-from-class="opacity-100" leave-to-class="opacity-0">
 				<div v-if="refundModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-4"
 					@click.self="closeRefundModal">
-					<div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
-					<div
-						class="relative w-full max-w-md bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-						<!-- Header -->
-						<div
-							class="bg-red-500/10 border-b border-red-500/20 p-6 text-center text-white relative overflow-hidden">
-							<div class="absolute inset-0 bg-gradient-to-b from-red-500/20 to-transparent"></div>
-							<div class="relative z-10 flex flex-col items-center">
-								<div
-									class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-3">
-									<Icon name="ph:warning-bold" class="text-red-500 text-2xl" />
-								</div>
-								<h3 class="text-lg font-bold mb-1 text-white">
-									{{ $t('admin.subscriptions.refund_modal.title') }}
-								</h3>
-								<p class="text-red-400 text-xs font-semibold uppercase tracking-wider">
-									{{ $t('admin.subscriptions.refund_modal.irreversible') }}
-								</p>
-							</div>
-						</div>
+					<div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+					<div class="relative w-full max-w-md bg-[#0f172a] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-white/[0.07]">
 
-						<!-- Receipt Body -->
-						<div v-if="selectedSubscription" class="p-6 border-b border-white/10">
-							<div class="space-y-4">
-								<div class="flex justify-between items-center text-sm">
-									<span class="text-slate-400 font-medium">{{ $t('admin.subscriptions.refund_modal.business') }}</span>
-									<span class="text-white font-bold max-w-[200px] truncate text-right rtl:text-left">{{
-										selectedSubscription.businessName }}</span>
+						<!-- Top accent -->
+						<div class="h-0.5 w-full bg-gradient-to-r from-red-600 via-red-400 to-orange-500"></div>
+
+						<div class="p-7">
+							<!-- Icon + title -->
+							<div class="flex flex-col items-center text-center mb-6">
+								<div class="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+									<Icon name="ph:arrows-counter-clockwise-bold" class="text-red-400" size="26" />
 								</div>
-								<div class="flex justify-between items-center text-sm">
-									<span class="text-slate-400 font-medium">{{ $t('admin.subscriptions.refund_modal.plan') }}</span>
-									<span class="text-white font-bold">{{ selectedSubscription.planName }}</span>
+								<h3 class="text-xl font-bold text-white mb-1">{{ $t('admin.subscriptions.refund_modal.title') }}</h3>
+								<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
+									<div class="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+									<p class="text-red-400 text-[11px] font-bold uppercase tracking-wider">{{ $t('admin.subscriptions.refund_modal.irreversible') }}</p>
+								</span>
+							</div>
+
+							<!-- Receipt -->
+							<div v-if="selectedSubscription" class="bg-white/[0.04] border border-white/[0.07] rounded-xl divide-y divide-white/[0.07] mb-5">
+								<div class="flex justify-between items-center px-4 py-3 text-sm">
+									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.business') }}</span>
+									<span class="text-white font-semibold max-w-[200px] truncate text-right">{{ selectedSubscription.businessName }}</span>
 								</div>
-								<div class="flex justify-between items-center text-sm">
-									<span class="text-slate-400 font-medium">{{ $t('admin.subscriptions.refund_modal.amount') }}</span>
-									<span class="text-white font-bold">{{
-										formatNumber(selectedSubscription.price) }} Dhs</span>
+								<div class="flex justify-between items-center px-4 py-3 text-sm">
+									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.plan') }}</span>
+									<span class="text-white font-semibold">{{ selectedSubscription.planName }}</span>
+								</div>
+								<div class="flex justify-between items-center px-4 py-3 text-sm">
+									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.amount') }}</span>
+									<span class="text-red-400 font-bold text-base">{{ formatNumber(selectedSubscription.price) }} Dhs</span>
 								</div>
 							</div>
-						</div>
 
-						<!-- Consequences -->
-						<div class="p-6 text-left">
-							<h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{{ $t('admin.subscriptions.refund_modal.actions') }}</h4>
-							<ul class="space-y-3">
-								<li class="flex items-start gap-3 text-sm text-slate-300">
-									<Icon name="ph:check-circle-fill" class="text-red-500 mt-0.5 flex-shrink-0" />
-									<span>{{ $t('admin.subscriptions.refund_modal.immediate') }}</span>
-								</li>
-								<li class="flex items-start gap-3 text-sm text-slate-300">
-									<Icon name="ph:check-circle-fill" class="text-red-500 mt-0.5 flex-shrink-0" />
-									<span>{{ $t('admin.subscriptions.refund_modal.full_refund') }}</span>
-								</li>
-								<li class="flex items-start gap-3 text-sm text-slate-300">
-									<Icon name="ph:check-circle-fill" class="text-red-500 mt-0.5 flex-shrink-0" />
-									<span>{{ $t('admin.subscriptions.refund_modal.access_lost') }}</span>
-								</li>
-							</ul>
-						</div>
+							<!-- Consequences -->
+							<div class="bg-red-500/5 border border-red-500/10 rounded-xl p-4 mb-6">
+								<p class="text-[11px] font-bold text-red-400/70 uppercase tracking-wider mb-3">{{ $t('admin.subscriptions.refund_modal.actions') }}</p>
+								<ul class="space-y-2.5">
+									<li class="flex items-center gap-2.5 text-sm text-slate-400">
+										<Icon name="ph:x-circle-fill" class="text-red-500/70 shrink-0" size="15" />
+										<span>{{ $t('admin.subscriptions.refund_modal.immediate') }}</span>
+									</li>
+									<li class="flex items-center gap-2.5 text-sm text-slate-400">
+										<Icon name="ph:x-circle-fill" class="text-red-500/70 shrink-0" size="15" />
+										<span>{{ $t('admin.subscriptions.refund_modal.full_refund') }}</span>
+									</li>
+									<li class="flex items-center gap-2.5 text-sm text-slate-400">
+										<Icon name="ph:x-circle-fill" class="text-red-500/70 shrink-0" size="15" />
+										<span>{{ $t('admin.subscriptions.refund_modal.access_lost') }}</span>
+									</li>
+								</ul>
+							</div>
 
-						<!-- Actions -->
-						<div class="p-4 bg-white/5 flex flex-col gap-3 border-t border-white/10">
-							<button @click="closeRefundModal"
-								class="w-full py-3 bg-transparent border border-white/10 text-slate-300 font-bold rounded-xl hover:bg-white/5 hover:text-white transition-colors text-sm">
-								{{ $t('admin.subscriptions.refund_modal.cancel') }}
-							</button>
-							<button type="button" @click.stop="confirmRefund" :disabled="refundLoading"
-								class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-900/20 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-								<Icon v-if="refundLoading" name="ph:spinner-gap-bold" class="animate-spin" />
-								<span>{{ $t('admin.subscriptions.refund_modal.confirm') }}</span>
-							</button>
+							<!-- Actions -->
+							<div class="flex gap-3">
+								<button @click="closeRefundModal"
+									class="flex-1 py-3 bg-white/5 border border-white/10 text-slate-300 font-bold rounded-xl hover:bg-white/10 transition-colors text-sm">
+									{{ $t('admin.subscriptions.refund_modal.cancel') }}
+								</button>
+								<button type="button" @click.stop="confirmRefund" :disabled="refundLoading"
+									class="flex-1 py-3 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-red-900/30 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+									<Icon v-if="refundLoading" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
+									<Icon v-else name="ph:arrows-counter-clockwise-bold" size="16" />
+									<span>{{ $t('admin.subscriptions.refund_modal.confirm') }}</span>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

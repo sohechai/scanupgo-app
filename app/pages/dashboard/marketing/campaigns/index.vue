@@ -70,7 +70,7 @@ onMounted(() => {
 				</div>
 			</div>
 			<NuxtLink to="/dashboard/marketing/campaigns/new"
-				class="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20">
+				class="flex items-center gap-2 px-4 py-2.5 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] transition-colors shadow-lg shadow-[#007AFF]/20">
 				<Icon name="ph:plus-bold" size="18" />
 				{{ $t('marketing.index.new_campaign') }}
 			</NuxtLink>
@@ -92,7 +92,7 @@ onMounted(() => {
 				{{ $t('marketing.campaigns.no_campaigns_description') }}
 			</p>
 			<NuxtLink to="/dashboard/marketing/campaigns/new"
-				class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors">
+				class="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] transition-colors">
 				<Icon name="ph:plus-bold" size="18" />
 				{{ $t('marketing.index.new_campaign') }}
 			</NuxtLink>
@@ -128,7 +128,7 @@ onMounted(() => {
 						class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
 						<td class="px-6 py-4">
 							<NuxtLink :to="`/dashboard/marketing/campaigns/${campaign.id}`" class="block">
-								<p class="font-bold text-slate-900 dark:text-white hover:text-brand-600 transition-colors">
+								<p class="font-bold text-slate-900 dark:text-white hover:text-[#007AFF] transition-colors">
 									{{ campaign.name }}
 								</p>
 								<p class="text-sm text-slate-500 dark:text-slate-400 truncate max-w-xs">
@@ -155,7 +155,7 @@ onMounted(() => {
 						<td class="px-6 py-4 text-right rtl:text-left">
 							<div class="flex items-center justify-end gap-2">
 								<NuxtLink :to="`/dashboard/marketing/campaigns/${campaign.id}`"
-									class="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-colors"
+									class="p-2 text-slate-400 hover:text-[#007AFF] hover:bg-[#007AFF]/5 dark:hover:bg-[#007AFF]/50/10 rounded-lg transition-colors"
 									:title="$t('marketing.campaigns.view')">
 									<Icon name="ph:eye-bold" size="18" />
 								</NuxtLink>

@@ -673,7 +673,7 @@ const downloadFlyerPDF = async () => {
 									<label
 										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.game_title') }}</label>
 									<input v-model="game.title" type="text" required
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 										:placeholder="$t('games.detail.game_title_placeholder')">
 								</div>
 
@@ -684,7 +684,7 @@ const downloadFlyerPDF = async () => {
 										<span
 											class="absolute left-3.5 top-2.5 text-slate-400 dark:text-slate-500 font-mono text-sm">/</span>
 										<input v-model="game.slug" type="text" required
-											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg pl-7 pr-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
+											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg pl-7 pr-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
 											:placeholder="$t('games.detail.slug_placeholder')">
 									</div>
 								</div>
@@ -693,7 +693,7 @@ const downloadFlyerPDF = async () => {
 									<label
 										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.language') }}</label>
 									<select v-model="game.gameLanguage"
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-brand-500 outline-none appearance-none text-sm cursor-pointer">
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 outline-none appearance-none text-sm cursor-pointer">
 										<option value="fr">{{ $t('games.detail.language_french') }}</option>
 										<option value="en">{{ $t('games.detail.language_english') }}</option>
 										<option value="ar">{{ $t('games.detail.language_arabic') }}</option>
@@ -712,7 +712,7 @@ const downloadFlyerPDF = async () => {
 									</div>
 
 									<input v-model.number="game.winProbability" type="range" min="50" max="100" step="5"
-										class="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-brand-600 hover:accent-brand-700 transition-all">
+										class="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-[#007AFF] hover:accent-[#007AFF] transition-all">
 
 									<div
 										class="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-2 uppercase tracking-wide">
@@ -726,7 +726,7 @@ const downloadFlyerPDF = async () => {
 									<label
 										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.tagline') }}</label>
 									<textarea v-model="game.tagline" rows="2"
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 resize-none text-sm"
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 resize-none text-sm"
 										:placeholder="$t('games.detail.tagline_placeholder')"></textarea>
 								</div>
 
@@ -741,7 +741,7 @@ const downloadFlyerPDF = async () => {
 									</label>
 									<div class="flex gap-2">
 										<input v-model="game.googleReviewUrl" type="url" required
-											class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+											class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 											:placeholder="$t('games.detail.google_review_placeholder')">
 										<button type="button" @click="showGoogleHelpModal = true"
 											class="px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center gap-2 shrink-0"
@@ -794,7 +794,7 @@ const downloadFlyerPDF = async () => {
 												<input v-model="game.prizeRedemptionDelayEnabled" type="checkbox"
 													class="sr-only peer">
 												<div
-													class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 dark:peer-checked:bg-brand-600">
+													class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 dark:peer-checked:bg-[#007AFF]">
 												</div>
 											</label>
 										</div>
@@ -972,7 +972,7 @@ const downloadFlyerPDF = async () => {
 										{{ $t('common.previous') }}
 									</button>
 									<button type="button" @click="saveGame" :disabled="saving"
-										class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md shadow-emerald-600/20 transition-all flex items-center gap-2 text-sm">
+										class="px-8 py-3 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-lg shadow-md shadow-[#007AFF]/20 transition-all flex items-center gap-2 text-sm">
 										<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="18" />
 										<Icon v-else name="ph:rocket-launch-bold" size="18" />
 										{{ saving ? $t('games.detail.creating') : $t('games.detail.create_game') }}
@@ -1013,13 +1013,13 @@ const downloadFlyerPDF = async () => {
 								<!-- Compact header with link -->
 								<div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700">
 									<div class="flex items-center gap-2">
-										<Icon name="ph:qr-code-duotone" size="16" class="text-indigo-500 dark:text-indigo-400 shrink-0" />
+										<Icon name="ph:qr-code-duotone" size="16" class="text-slate-500 dark:text-slate-400 shrink-0" />
 										<h2 class="text-sm font-bold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_title') }}</h2>
 									</div>
 									<div class="flex items-center gap-1.5 min-w-0">
 										<span class="text-[11px] text-slate-400 dark:text-slate-500 truncate hidden sm:block max-w-[220px] font-mono">{{ getGameUrl() }}</span>
 										<button @click="copyLink"
-											class="p-1.5 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors shrink-0"
+											class="p-1.5 text-slate-400 hover:text-[#007AFF] dark:hover:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors shrink-0"
 											:title="$t('games.detail.flyers_game_link')">
 											<Icon name="ph:copy-bold" size="14" />
 										</button>
@@ -1031,10 +1031,10 @@ const downloadFlyerPDF = async () => {
 									<!-- Flyer Preview Card -->
 									<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
 										<!-- Header -->
-										<div class="p-5 border-b border-slate-100 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-between">
+										<div class="p-5 border-b border-slate-100 dark:border-slate-700 bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-between">
 											<div class="flex items-center gap-4">
-												<div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-													<Icon name="ph:check-circle-fill" class="text-emerald-500" size="24" />
+												<div class="w-12 h-12 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+													<Icon name="ph:check-circle-fill" class="text-[#34C759]" size="20" />
 												</div>
 												<div>
 													<h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_your_flyer') }}</h3>
@@ -1042,7 +1042,7 @@ const downloadFlyerPDF = async () => {
 												</div>
 											</div>
 											<button @click="showFlyerEditor = true"
-												class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20">
+												class="px-5 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-[#007AFF]/20">
 												<Icon name="ph:pencil-simple-bold" size="18" />
 												{{ $t('games.detail.flyers_edit') }}
 											</button>
@@ -1052,7 +1052,7 @@ const downloadFlyerPDF = async () => {
 										<div class="p-6 flex flex-col lg:flex-row items-start gap-8">
 											<!-- Flyer Image -->
 											<div class="relative group mx-auto lg:mx-0">
-												<div class="absolute inset-0 bg-gradient-to-br from-brand-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+												<div class="absolute inset-0 bg-gradient-to-br from-[#007AFF]/10 to-[#007AFF]/5 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
 												<img :src="game.flyerDesignUrl"
 													class="relative w-64 h-auto rounded-2xl border-2 border-white dark:border-slate-700 shadow-2xl" />
 											</div>
@@ -1093,7 +1093,7 @@ const downloadFlyerPDF = async () => {
 													<!-- Preview -->
 													<button @click="previewFlyer"
 														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors group text-left">
-														<div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+														<div class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center group-hover:scale-110 transition-transform">
 															<Icon name="ph:eye-bold" class="text-emerald-600 dark:text-emerald-400" size="20" />
 														</div>
 														<div>
@@ -1104,9 +1104,9 @@ const downloadFlyerPDF = async () => {
 												</div>
 
 												<!-- Order CTA -->
-												<div class="p-4 bg-gradient-to-r from-purple-50 to-brand-50 dark:from-purple-900/20 dark:to-brand-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
+												<div class="p-4 bg-gradient-to-r from-[#F2F2F7] to-[#F2F2F7] dark:from-[#2C2C2E] dark:to-[#2C2C2E] rounded-xl border border-purple-100 dark:border-purple-800/30">
 													<div class="flex items-center gap-4">
-														<div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+														<div class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
 															<Icon name="ph:printer-bold" class="text-purple-600 dark:text-purple-400" size="20" />
 														</div>
 														<div class="flex-1">
@@ -1114,7 +1114,7 @@ const downloadFlyerPDF = async () => {
 															<p class="text-xs text-slate-600 dark:text-slate-400">{{ $t('games.detail.flyers_print_description') }}</p>
 														</div>
 														<button @click="openOrderModal"
-															class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-colors">
+															class="px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white text-sm font-semibold rounded-lg transition-colors">
 															{{ $t('games.detail.flyers_order') }}
 														</button>
 													</div>
@@ -1221,7 +1221,7 @@ const downloadFlyerPDF = async () => {
 						<div class="space-y-3">
 							<h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
 								<span
-									class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">2</span>
+									class="w-6 h-6 rounded-full bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs font-bold">2</span>
 								{{ $t('games.detail.google_help_method2') }}
 							</h4>
 							<ol class="space-y-2 text-sm text-slate-600 dark:text-slate-300 ml-8">

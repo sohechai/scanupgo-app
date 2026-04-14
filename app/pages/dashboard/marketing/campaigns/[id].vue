@@ -43,7 +43,7 @@ const emailUsagePercent = computed(() => {
 const emailUsageColor = computed(() => {
 	if (emailUsagePercent.value >= 90) return 'bg-red-500'
 	if (emailUsagePercent.value >= 70) return 'bg-amber-500'
-	return 'bg-brand-500'
+	return 'bg-[#007AFF]/50'
 })
 
 const editing = ref(false)
@@ -224,7 +224,7 @@ onMounted(async () => {
 					</div>
 
 					<button @click="sendCampaign" :disabled="sending || (emailUsage?.limit !== null && emailUsage?.used >= (emailUsage?.limit ?? Infinity))"
-						class="px-4 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+						class="px-4 py-2.5 bg-[#007AFF] text-white font-semibold rounded-xl hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2">
 						<Icon v-if="sending" name="ph:spinner-gap-bold" size="18" class="animate-spin" />
 						<Icon v-else name="ph:paper-plane-tilt-bold" size="18" />
 						{{ $t('marketing.campaign_detail.send') }}
@@ -264,7 +264,7 @@ onMounted(async () => {
 			</div>
 			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
 				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.open_count') }}</p>
-				<p class="text-2xl font-bold text-brand-600">{{ campaign.openCount || 0 }}</p>
+				<p class="text-2xl font-bold text-[#007AFF]">{{ campaign.openCount || 0 }}</p>
 			</div>
 			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
 				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.open_rate') }}</p>
@@ -292,13 +292,13 @@ onMounted(async () => {
 								<label
 									class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.name') }}</label>
 								<input v-model="form.name" type="text"
-									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all" />
 							</div>
 							<div>
 								<label
 									class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.subject') }}</label>
 								<input v-model="form.subject" type="text"
-									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all" />
+									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all" />
 							</div>
 							<div>
 								<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.html_content') }}</label>
@@ -311,7 +311,7 @@ onMounted(async () => {
 								{{ $t('marketing.campaign_detail.cancel_edit') }}
 							</button>
 							<button @click="saveCampaign" :disabled="saving"
-								class="px-4 py-2 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+								class="px-4 py-2 bg-[#007AFF] text-white font-bold rounded-lg hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2">
 								<Icon v-if="saving" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 								{{ $t('marketing.campaign_detail.save') }}
 							</button>
@@ -387,7 +387,7 @@ onMounted(async () => {
 							</div>
 							<span :class="[
 								send.status === 'sent' ? 'text-emerald-600' :
-									send.status === 'opened' ? 'text-brand-600' :
+									send.status === 'opened' ? 'text-[#007AFF]' :
 										send.status === 'failed' ? 'text-red-600' : 'text-slate-400'
 							]">
 								<Icon :name="send.status === 'sent' ? 'ph:check-bold' :

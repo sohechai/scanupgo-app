@@ -135,7 +135,7 @@ onMounted(() => fetchBusiness())
 		<!-- Main content -->
 		<main class="flex-1 flex items-center justify-center p-6">
 			<div v-if="loading" class="flex justify-center py-20">
-				<Icon name="ph:spinner-gap" class="animate-spin text-brand-600" size="36" />
+				<Icon name="ph:spinner-gap" class="animate-spin text-[#007AFF]" size="36" />
 			</div>
 
 			<div v-else class="w-full max-w-2xl">
@@ -144,8 +144,8 @@ onMounted(() => fetchBusiness())
 				<Transition name="slide" mode="out-in">
 					<div v-if="step === 1" key="step1">
 						<div class="mb-8">
-							<div class="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center mb-4">
-								<Icon name="ph:storefront-duotone" size="26" class="text-brand-600" />
+							<div class="w-12 h-12 bg-[#007AFF]/5 rounded-2xl flex items-center justify-center mb-4">
+								<Icon name="ph:storefront-duotone" size="26" class="text-[#007AFF]" />
 							</div>
 							<h1 class="text-2xl font-bold text-slate-900 mb-2">Bienvenue sur ScanUpGo 👋</h1>
 							<p class="text-slate-500">Commençons par le nom de votre établissement. C'est ce que verront vos clients.</p>
@@ -159,7 +159,7 @@ onMounted(() => fetchBusiness())
 									type="text"
 									autofocus
 									placeholder="Ex: Boulangerie Dupont, Restaurant Le Jardin…"
-									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 								/>
 								<p class="text-xs text-slate-400">Ce nom sera affiché sur vos flyers et QR codes.</p>
 							</div>
@@ -182,8 +182,8 @@ onMounted(() => fetchBusiness())
 				<Transition name="slide" mode="out-in">
 					<div v-if="step === 2" key="step2">
 						<div class="mb-8">
-							<div class="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center mb-4">
-								<Icon name="ph:map-pin-duotone" size="26" class="text-violet-600" />
+							<div class="w-12 h-12 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center mb-4">
+								<Icon name="ph:map-pin-duotone" size="26" class="text-slate-400 dark:text-slate-500" />
 							</div>
 							<h1 class="text-2xl font-bold text-slate-900 mb-2">Vos coordonnées</h1>
 							<p class="text-slate-500">Ces informations permettent à vos clients de vous retrouver facilement.</p>
@@ -199,7 +199,7 @@ onMounted(() => fetchBusiness())
 											v-model="business.email"
 											type="email"
 											placeholder="contact@monshop.fr"
-											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 										/>
 									</div>
 								</div>
@@ -211,7 +211,7 @@ onMounted(() => fetchBusiness())
 											v-model="business.phone"
 											type="tel"
 											placeholder="+33 6 00 00 00 00"
-											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 										/>
 									</div>
 								</div>
@@ -223,7 +223,7 @@ onMounted(() => fetchBusiness())
 									v-model="business.addressStreet"
 									type="text"
 									placeholder="12 rue du Soleil"
-									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 								/>
 							</div>
 
@@ -234,7 +234,7 @@ onMounted(() => fetchBusiness())
 										v-model="business.addressCity"
 										type="text"
 										placeholder="Casablanca"
-										class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+										class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 									/>
 								</div>
 								<div class="space-y-2">
@@ -243,7 +243,7 @@ onMounted(() => fetchBusiness())
 										v-model="business.addressZip"
 										type="text"
 										placeholder="20000"
-										class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+										class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 									/>
 								</div>
 							</div>
@@ -254,7 +254,7 @@ onMounted(() => fetchBusiness())
 									v-model="business.addressCountry"
 									type="text"
 									placeholder="Maroc"
-									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+									class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 								/>
 							</div>
 
@@ -266,7 +266,7 @@ onMounted(() => fetchBusiness())
 										v-model="business.website"
 										type="url"
 										placeholder="https://monshop.fr"
-										class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all placeholder-slate-400"
+										class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
 									/>
 								</div>
 							</div>
@@ -390,7 +390,7 @@ onMounted(() => fetchBusiness())
 							<button
 								@click="handleSubmit"
 								:disabled="saving"
-								class="flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20"
+								class="flex items-center gap-2 px-6 py-3 bg-[#007AFF] hover:bg-[#0066DD] disabled:opacity-60 text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#007AFF]/20"
 							>
 								<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
 								<span>{{ saving ? 'Enregistrement…' : 'Accéder à mon espace' }}</span>

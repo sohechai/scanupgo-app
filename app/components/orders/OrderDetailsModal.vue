@@ -97,11 +97,14 @@ const getStatusClasses = (status: string) => {
 
 <template>
 	<Teleport to="body">
+		<Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95"
+			enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in"
+			leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
 		<div v-if="modelValue" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 			<div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="close"></div>
 
 			<div v-if="order"
-				class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+				class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-700/60">
 				<!-- Header -->
 				<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
 					<div class="flex items-center justify-between">
@@ -324,5 +327,6 @@ const getStatusClasses = (status: string) => {
 				</div>
 			</div>
 		</div>
+		</Transition>
 	</Teleport>
 </template>

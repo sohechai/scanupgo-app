@@ -425,25 +425,21 @@ onMounted(() => {
 		<!-- SUBSCRIPTION CTA BANNER (No Active Sub)   -->
 		<!-- ========================================== -->
 		<div v-if="!subscriptionLoading && !hasActiveSubscription"
-			class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_24px_-4px_rgba(6,81,237,0.1)] overflow-hidden">
-			<div class="h-0.5 w-full bg-gradient-to-r from-brand-500 via-indigo-500 to-brand-400" />
-			<div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-				<!-- Left -->
-				<div class="flex items-center gap-4 flex-1">
-					<div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center shrink-0">
-						<Icon name="ph:crown-simple-fill" size="24" class="text-brand-600 dark:text-brand-400" />
+			class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
+			<div class="h-0.5 w-full bg-[#007AFF]" />
+			<div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+				<div class="flex items-center gap-3 flex-1">
+					<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:crown-simple-bold" size="18" class="text-slate-500 dark:text-slate-400" />
 					</div>
 					<div>
-						<p class="text-xs font-bold text-brand-500 uppercase tracking-widest mb-1">{{ $t('dashboard.cta_banner.label') }}</p>
-						<h2 class="text-lg font-display font-bold text-slate-900 dark:text-white tracking-tight">
-							{{ $t('dashboard.cta_banner.title') }}
-						</h2>
+						<p class="text-xs font-semibold text-[#007AFF] uppercase tracking-widest mb-0.5">{{ $t('dashboard.cta_banner.label') }}</p>
+						<h2 class="text-sm font-bold text-slate-900 dark:text-white">{{ $t('dashboard.cta_banner.title') }}</h2>
 					</div>
 				</div>
-				<!-- Right -->
 				<NuxtLink to="/dashboard/subscription"
-					class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-md shadow-brand-500/20 text-sm shrink-0">
-					<Icon name="ph:rocket-launch-bold" size="16" />
+					class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all text-sm shadow-md shadow-[#007AFF]/25 shrink-0">
+					<Icon name="ph:rocket-launch-bold" size="15" />
 					{{ $t('dashboard.cta_banner.button') }}
 				</NuxtLink>
 			</div>
@@ -466,7 +462,7 @@ onMounted(() => {
 				<div class="relative flex items-center">
 					<Icon name="ph:calendar-blank" size="16" class="absolute left-3 rtl:left-auto rtl:right-3 text-slate-400 pointer-events-none z-10" />
 					<select v-model="selectedPeriod"
-						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 text-sm font-semibold hover:border-slate-300 dark:hover:border-slate-600 shadow-sm transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 text-sm font-semibold hover:border-slate-300 dark:hover:border-slate-600 shadow-sm transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40">
 						<option value="7d">{{ $t('dashboard.period_label.7d') }}</option>
 						<option value="30d">{{ $t('dashboard.period_label.30d') }}</option>
 						<option value="this_month">{{ $t('dashboard.period_label.this_month') }}</option>
@@ -479,107 +475,28 @@ onMounted(() => {
 		</div>
 
 		<!-- ========================================== -->
-		<!-- 2. STATS ROW (Reference Style)         -->
+		<!-- 2. STATS ROW                            -->
 		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-			<!-- JOUERS -->
-			<div
-				class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('dashboard.stats.players') }}</span>
-						<span
-							class="text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-							{{ statsLoading ? '-' : (dashboardStats?.totalPlayers || 0) }}
-						</span>
-					</div>
-					<div
-						class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
-						<Icon name="ph:users-three-fill" size="20" />
-					</div>
-				</div>
-				<div class="flex items-center gap-2">
-					<NuxtLink to="/dashboard/players" class="text-xs text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1">
-						<Icon name="ph:users-three" size="12" />
-						{{ $t('dashboard.stats.view_all') }}
-					</NuxtLink>
-				</div>
+		<div v-if="hasActiveSubscription" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.players') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white">{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}</p>
+				<NuxtLink to="/dashboard/players" class="text-[11px] text-[#007AFF] font-semibold mt-1 inline-block">{{ $t('dashboard.stats.view_all') }}</NuxtLink>
 			</div>
-
-			<!-- CONVERSIONS (Participations) -->
-			<div
-				class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span
-							class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('dashboard.stats.participations') }}</span>
-						<span
-							class="text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-							{{ statsLoading ? '-' : (dashboardStats?.totalSessions || 0) }}
-						</span>
-					</div>
-					<div
-						class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-						<Icon name="ph:cursor-click-fill" size="20" />
-					</div>
-				</div>
-				<div class="flex items-center gap-2">
-					<span v-if="dashboardStats?.winRate" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-						<Icon name="ph:trophy-fill" size="10" />
-						{{ dashboardStats.winRate }}{{ $t('dashboard.stats.winners_rate') }}
-					</span>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.participations') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white">{{ statsLoading ? '—' : (dashboardStats?.totalSessions || 0) }}</p>
+				<p v-if="dashboardStats?.winRate" class="text-[11px] text-slate-400 mt-1">{{ dashboardStats.winRate }}{{ $t('dashboard.stats.winners_rate') }}</p>
 			</div>
-
-			<!-- REVENUE (Cadeaux) -->
-			<div
-				class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('dashboard.stats.prizes_won') }}</span>
-						<div class="flex items-baseline gap-1">
-							<span
-								class="text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-								{{ statsLoading ? '-' : (dashboardStats?.totalPrizesWon || 0) }}
-							</span>
-						</div>
-					</div>
-					<div
-						class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-						<Icon name="ph:gift-fill" size="20" />
-					</div>
-				</div>
-				<div class="flex items-center gap-2">
-					<span v-if="dashboardStats?.totalPrizesRedeemed" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-						<Icon name="ph:check-circle-fill" size="10" />
-						{{ dashboardStats.totalPrizesRedeemed }} {{ $t('dashboard.stats.prizes_collected') }}
-					</span>
-					<span v-else class="text-xs text-slate-400 font-medium">{{ $t('dashboard.stats.prizes_collected_zero') }}</span>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.prizes_won') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white">{{ statsLoading ? '—' : (dashboardStats?.totalPrizesWon || 0) }}</p>
+				<p class="text-[11px] text-slate-400 mt-1">{{ dashboardStats?.totalPrizesRedeemed || 0 }} {{ $t('dashboard.stats.prizes_collected') }}</p>
 			</div>
-
-			<!-- LOTS EN ATTENTE -->
-			<div
-				class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg transition-all duration-300 group">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('dashboard.stats.pending_prizes') }}</span>
-						<span
-							class="text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-							{{ statsLoading ? '-' : ((dashboardStats?.totalPrizesWon || 0) - (dashboardStats?.totalPrizesRedeemed || 0)) }}
-						</span>
-					</div>
-					<div
-						class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-						<Icon name="ph:clock-countdown-fill" size="20" />
-					</div>
-				</div>
-				<div class="flex items-center gap-2">
-					<NuxtLink to="/dashboard/redeem" class="text-xs text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1">
-						<Icon name="ph:qr-code-bold" size="12" />
-						{{ $t('dashboard.stats.validate_prize') }}
-					</NuxtLink>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.pending_prizes') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white">{{ statsLoading ? '—' : ((dashboardStats?.totalPrizesWon || 0) - (dashboardStats?.totalPrizesRedeemed || 0)) }}</p>
+				<NuxtLink to="/dashboard/redeem" class="text-[11px] text-[#007AFF] font-semibold mt-1 inline-block">{{ $t('dashboard.stats.validate_prize') }}</NuxtLink>
 			</div>
 		</div>
 
@@ -587,66 +504,45 @@ onMounted(() => {
 		<!-- 2.5 ANALYTICS EVENTS (Compact)           -->
 		<!-- ========================================== -->
 		<div v-if="hasActiveSubscription && (analyticsEvents.page_visit || analyticsEvents.game_start || analyticsEvents.game_complete || analyticsEvents.prize_claim)"
-			class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-			<div class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
-				<div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
-					<Icon name="ph:eye-fill" size="16" />
-				</div>
-				<div>
-					<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.page_visit || 0 }}</p>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $t('dashboard.analytics.page_views') }}</p>
-				</div>
+			class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.page_views') }}</p>
+				<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.page_visit || 0 }}</p>
 			</div>
-			<div class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
-				<div class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-500">
-					<Icon name="ph:play-fill" size="16" />
-				</div>
-				<div>
-					<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.game_start || 0 }}</p>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $t('dashboard.analytics.games_started') }}</p>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.games_started') }}</p>
+				<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.game_start || 0 }}</p>
 			</div>
-			<div class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
-				<div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-					<Icon name="ph:flag-checkered-fill" size="16" />
-				</div>
-				<div>
-					<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.game_complete || 0 }}</p>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $t('dashboard.analytics.games_completed') }}</p>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.games_completed') }}</p>
+				<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.game_complete || 0 }}</p>
 			</div>
-			<div class="bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-3">
-				<div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500">
-					<Icon name="ph:hand-grabbing-fill" size="16" />
-				</div>
-				<div>
-					<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.prize_claim || 0 }}</p>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $t('dashboard.analytics.prizes_claimed') }}</p>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+				<p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.prizes_claimed') }}</p>
+				<p class="text-lg font-bold text-slate-900 dark:text-white">{{ analyticsEvents.prize_claim || 0 }}</p>
 			</div>
 		</div>
 
 		<!-- ========================================== -->
 		<!-- 3. MAIN ACTIVITY (Split: Chart & Actions) -->
 		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<div v-if="hasActiveSubscription" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 			<!-- Chart Area -->
-			<div
-				class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-6 relative overflow-hidden">
-				<div class="flex items-center justify-between mb-8">
+			<div class="lg:col-span-2 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5 relative overflow-hidden">
+				<div class="flex items-center justify-between mb-6">
 					<div>
-						<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.activity.title') }}</h3>
-						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">{{ $t('dashboard.activity.period_label') }} : {{ periodLabel }}</p>
+						<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.activity.title') }}</h3>
+						<p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ periodLabel }}</p>
 					</div>
 					<!-- Legend -->
 					<div class="flex items-center gap-3">
 						<div class="flex items-center gap-1.5">
-							<span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-							<span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.activity.participations') }}</span>
+							<span class="w-2 h-2 rounded-full bg-[#007AFF]"></span>
+							<span class="text-[11px] text-slate-500 dark:text-slate-400">{{ $t('dashboard.activity.participations') }}</span>
 						</div>
 						<div class="flex items-center gap-1.5">
-							<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-							<span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.activity.wins') }}</span>
+							<span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+							<span class="text-[11px] text-slate-500 dark:text-slate-400">{{ $t('dashboard.activity.wins') }}</span>
 						</div>
 					</div>
 				</div>
@@ -677,41 +573,30 @@ onMounted(() => {
 									stroke="currentColor" stroke-width="0.5" class="text-slate-100 dark:text-slate-700" />
 
 								<defs>
-									<!-- Sessions area gradient -->
 									<linearGradient id="sessionGradient" x1="0" y1="0" x2="0" y2="1">
-										<stop offset="0%" stop-color="#6366f1" stop-opacity="0.15" />
-										<stop offset="100%" stop-color="#6366f1" stop-opacity="0.02" />
+										<stop offset="0%" stop-color="#007AFF" stop-opacity="0.12" />
+										<stop offset="100%" stop-color="#007AFF" stop-opacity="0.01" />
 									</linearGradient>
-									<!-- Wins area gradient -->
 									<linearGradient id="winGradient" x1="0" y1="0" x2="0" y2="1">
-										<stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
-										<stop offset="100%" stop-color="#10b981" stop-opacity="0.02" />
+										<stop offset="0%" stop-color="#8E8E93" stop-opacity="0.10" />
+										<stop offset="100%" stop-color="#8E8E93" stop-opacity="0.01" />
 									</linearGradient>
 								</defs>
 
-								<!-- Sessions area fill (behind) -->
 								<path :d="lineChartData.sessionArea" fill="url(#sessionGradient)" />
-
-								<!-- Wins area fill -->
 								<path :d="lineChartData.winArea" fill="url(#winGradient)" />
 
-								<!-- Sessions line -->
 								<polyline :points="lineChartData.sessionLine"
-									fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-
-								<!-- Wins line -->
+									fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 								<polyline :points="lineChartData.winLine"
-									fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+									fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 
-								<!-- Session dots -->
 								<g v-for="(p, i) in lineChartData.points" :key="'sd'+i">
-									<circle :cx="p.x" :cy="p.sessionY" r="4" fill="#6366f1" stroke="white" stroke-width="2" class="cursor-pointer" />
+									<circle :cx="p.x" :cy="p.sessionY" r="3.5" fill="#007AFF" stroke="white" stroke-width="1.5" class="cursor-pointer" />
 									<title>{{ p.sessions }} participation(s)</title>
 								</g>
-
-								<!-- Win dots -->
 								<g v-for="(p, i) in lineChartData.points" :key="'wd'+i">
-									<circle :cx="p.x" :cy="p.winY" r="4" fill="#10b981" stroke="white" stroke-width="2" class="cursor-pointer" />
+									<circle :cx="p.x" :cy="p.winY" r="3.5" fill="#8E8E93" stroke="white" stroke-width="1.5" class="cursor-pointer" />
 									<title>{{ p.wins }} gain(s)</title>
 								</g>
 							</svg>
@@ -730,31 +615,27 @@ onMounted(() => {
 			<!-- Quick Actions / Support -->
 			<div class="space-y-6">
 				<!-- Quick Validate Widget -->
-				<div
-					class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-6">
+				<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5">
 					<div class="flex items-center gap-3 mb-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-							<Icon name="ph:qr-code-bold" size="20" />
+						<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+							<Icon name="ph:qr-code-bold" size="17" class="text-slate-500 dark:text-slate-400" />
 						</div>
 						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.quick_validate.title') }}</h3>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('dashboard.quick_validate.subtitle') }}</p>
+							<h3 class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.quick_validate.title') }}</h3>
+							<p class="text-[11px] text-slate-400 dark:text-slate-500">{{ $t('dashboard.quick_validate.subtitle') }}</p>
 						</div>
 					</div>
 
 					<!-- Success State -->
-					<div v-if="redeemResult" class="bg-emerald-50 rounded-lg p-4 border border-emerald-100 mb-2">
-						<div class="flex items-center gap-2 text-emerald-700 font-bold text-sm mb-1">
+					<div v-if="redeemResult" class="bg-[#34C759]/10 rounded-xl p-4 border border-[#34C759]/20 mb-2">
+						<div class="flex items-center gap-2 text-[#34C759] font-semibold text-sm mb-1">
 							<Icon name="ph:check-circle-fill" />
 							<span>{{ $t('dashboard.quick_validate.success') }}</span>
 						</div>
-						<p class="text-xs text-emerald-600 mb-3">
-							<span class="font-bold">{{ redeemResult.prize?.name }}</span> {{ $t('dashboard.quick_validate.for_player') }} {{
-								redeemResult.player?.firstName }}
+						<p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+							<span class="font-semibold">{{ redeemResult.prize?.name }}</span> {{ $t('dashboard.quick_validate.for_player') }} {{ redeemResult.player?.firstName }}
 						</p>
-						<button @click="resetRedeem"
-							class="text-xs font-bold text-emerald-700 underline hover:text-emerald-800">{{ $t('dashboard.quick_validate.new_validation') }}</button>
+						<button @click="resetRedeem" class="text-xs font-semibold text-[#007AFF] hover:opacity-70 transition-opacity">{{ $t('dashboard.quick_validate.new_validation') }}</button>
 					</div>
 
 					<!-- Scanner State -->
@@ -783,10 +664,10 @@ onMounted(() => {
 							<div class="relative flex-grow">
 								<input v-model="redeemCode" @keyup.enter="validatePrize" type="text"
 									:placeholder="$t('dashboard.quick_validate.code_placeholder')"
-									class="w-full pl-3 pr-10 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 outline-none transition-all uppercase"
+									class="w-full pl-3 pr-10 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all uppercase"
 									:class="{ 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800': redeemError }" />
 								<button @click="validatePrize" :disabled="redeemLoading || !redeemCode"
-									class="absolute right-1 top-1 bottom-1 aspect-square bg-white dark:bg-slate-800 rounded-md text-brand-600 dark:text-brand-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-500/10 disabled:opacity-50 transition-all border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center">
+									class="absolute right-1 top-1 bottom-1 aspect-square bg-white dark:bg-slate-800 rounded-md text-[#007AFF] dark:text-slate-400 hover:text-[#007AFF] hover:bg-[#007AFF]/5 dark:hover:bg-[#007AFF]/50/10 disabled:opacity-50 transition-all border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center">
 									<Icon v-if="redeemLoading" name="ph:spinner-gap-bold" class="animate-spin" />
 									<Icon v-else name="ph:arrow-right-bold" class="rtl:rotate-180" />
 								</button>
@@ -803,53 +684,25 @@ onMounted(() => {
 					</div>
 				</div>
 
-				<!-- Support Banner -->
-				<div
-					class="bg-indigo-950 rounded-xl p-6 text-white relative overflow-hidden shadow-lg flex flex-col justify-between group">
-					<!-- Decorative Glow -->
-					<div
-						class="absolute top-0 right-0 w-48 h-48 bg-indigo-500 rounded-full blur-[60px] -mr-16 -mt-16 opacity-20 group-hover:opacity-30 transition-opacity">
-					</div>
-
-					<div class="relative z-10">
-						<div
-							class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center mb-4 border border-white/10">
-							<Icon name="ph:lifebuoy-fill" size="20" />
-						</div>
-						<h3 class="font-bold text-lg mb-1">{{ $t('dashboard.support.title') }}</h3>
-						<p class="text-indigo-200 text-sm leading-relaxed mb-4">{{ $t('dashboard.support.description') }}</p>
-					</div>
-
-					<button
-						class="w-full py-2.5 bg-white text-indigo-950 rounded-lg text-sm font-bold hover:bg-indigo-50 transition-colors shadow-lg shadow-black/10 flex items-center justify-center gap-2 relative z-10">
-						{{ $t('dashboard.support.button') }}
-					</button>
-				</div>
-
 				<!-- Quick Links -->
-				<div
-					class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-4">
-					<h4 class="font-bold text-slate-400 text-xs uppercase tracking-wider mb-3">{{ $t('dashboard.quick_links.title') }}</h4>
-					<div class="space-y-2">
+				<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
+					<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest px-5 pt-4 pb-2">{{ $t('dashboard.quick_links.title') }}</p>
+					<div class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 						<NuxtLink to="/dashboard/games"
-							class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer group">
-							<div
-								class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-								<Icon name="ph:game-controller-fill" size="16" />
+							class="flex items-center gap-3.5 px-5 py-3 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+							<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+								<Icon name="ph:game-controller-bold" size="15" class="text-slate-500 dark:text-slate-400" />
 							</div>
-							<span class="text-sm font-bold">{{ $t('dashboard.quick_links.my_games') }}</span>
-							<Icon name="ph:caret-right-bold" size="12"
-								class="ml-auto rtl:ml-0 rtl:mr-auto text-slate-300 dark:text-slate-600 group-hover:text-brand-400 dark:group-hover:text-brand-400 rtl:rotate-180" />
+							<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-1">{{ $t('dashboard.quick_links.my_games') }}</span>
+							<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
 						</NuxtLink>
 						<NuxtLink to="/dashboard/profile"
-							class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer group">
-							<div
-								class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-								<Icon name="ph:storefront-fill" size="16" />
+							class="flex items-center gap-3.5 px-5 py-3 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+							<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+								<Icon name="ph:storefront-bold" size="15" class="text-slate-500 dark:text-slate-400" />
 							</div>
-							<span class="text-sm font-bold">{{ $t('dashboard.quick_links.my_business') }}</span>
-							<Icon name="ph:caret-right-bold" size="12"
-								class="ml-auto rtl:ml-0 rtl:mr-auto text-slate-300 dark:text-slate-600 group-hover:text-brand-400 dark:group-hover:text-brand-400 rtl:rotate-180" />
+							<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-1">{{ $t('dashboard.quick_links.my_business') }}</span>
+							<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
 						</NuxtLink>
 					</div>
 				</div>
@@ -860,17 +713,17 @@ onMounted(() => {
 		<!-- 4. TABLE SECTION (Full Width)          -->
 		<!-- ========================================== -->
 		<div v-if="hasActiveSubscription"
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden">
+			class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
 			<!-- Table Header -->
-			<div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-				<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.sessions_table.title') }}</h3>
-				<div class="flex gap-2">
+			<div class="px-5 py-4 border-b border-[#E5E5EA] dark:border-slate-700/40 flex items-center justify-between">
+				<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.sessions_table.title') }}</h3>
+				<div class="flex gap-1.5">
 					<button @click="sessionFilter = 'all'"
-						:class="sessionFilter === 'all' ? 'text-brand-600 bg-brand-50' : 'text-slate-500 hover:text-slate-700'"
-						class="text-xs font-bold px-3 py-1.5 rounded-md transition-colors">{{ $t('dashboard.sessions_table.filter_all') }}</button>
+						:class="sessionFilter === 'all' ? 'bg-[#007AFF] text-white' : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400'"
+						class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">{{ $t('dashboard.sessions_table.filter_all') }}</button>
 					<button @click="sessionFilter = 'won'"
-						:class="sessionFilter === 'won' ? 'text-emerald-600 bg-emerald-50' : 'text-slate-500 hover:text-slate-700'"
-						class="text-xs font-bold px-3 py-1.5 rounded-md transition-colors">{{ $t('dashboard.sessions_table.filter_won') }}</button>
+						:class="sessionFilter === 'won' ? 'bg-[#007AFF] text-white' : 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400'"
+						class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">{{ $t('dashboard.sessions_table.filter_won') }}</button>
 				</div>
 			</div>
 
@@ -886,151 +739,120 @@ onMounted(() => {
 			<!-- Table Content -->
 			<div v-else class="overflow-x-auto">
 				<table class="w-full text-left text-sm">
-					<thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+					<thead class="border-b border-[#E5E5EA] dark:border-slate-700/40">
 						<tr>
-							<th
-								class="px-6 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-								{{ $t('dashboard.sessions_table.header_id') }}</th>
-							<th
-								class="px-6 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-								{{ $t('dashboard.sessions_table.header_status') }}
-							</th>
-							<th
-								class="px-6 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-								{{ $t('dashboard.sessions_table.header_player') }}
-							</th>
-							<th
-								class="px-6 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-								{{ $t('dashboard.sessions_table.header_date') }}
-							</th>
-							<th
-								class="px-6 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider text-right rtl:text-left">
-								{{ $t('dashboard.sessions_table.header_prize') }}</th>
+							<th class="px-5 py-3 font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider">{{ $t('dashboard.sessions_table.header_id') }}</th>
+							<th class="px-5 py-3 font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider">{{ $t('dashboard.sessions_table.header_status') }}</th>
+							<th class="px-5 py-3 font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider">{{ $t('dashboard.sessions_table.header_player') }}</th>
+							<th class="px-5 py-3 font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider">{{ $t('dashboard.sessions_table.header_date') }}</th>
+							<th class="px-5 py-3 font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider text-right rtl:text-left">{{ $t('dashboard.sessions_table.header_prize') }}</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+					<tbody class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 						<tr v-for="session in filteredSessions.slice(0, 10)" :key="session.id"
-							class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors group">
-							<td
-								class="px-6 py-4 font-mono text-xs text-slate-400 group-hover:text-indigo-500 transition-colors">
-								#{{ session.id.slice(0, 6) }}</td>
-							<td class="px-6 py-4">
+							class="hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors">
+							<td class="px-5 py-3.5 font-mono text-xs text-slate-400">#{{ session.id.slice(0, 6) }}</td>
+							<td class="px-5 py-3.5">
 								<span v-if="session.prize"
-									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-									<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {{ $t('dashboard.sessions_table.status_won') }}
+									class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#34C759]/10 text-[#34C759]">
+									<span class="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span>{{ $t('dashboard.sessions_table.status_won') }}
 								</span>
 								<span v-else
-									class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-									<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> {{ $t('dashboard.sessions_table.status_lost') }}
+									class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-400">
+									<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>{{ $t('dashboard.sessions_table.status_lost') }}
 								</span>
 							</td>
-							<td class="px-6 py-4">
+							<td class="px-5 py-3.5">
 								<div class="flex items-center gap-2">
-									<div
-										class="w-6 h-6 rounded-full bg-brand-100/50 text-brand-600 flex items-center justify-center text-[10px] font-bold">
+									<div class="w-6 h-6 rounded-full bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center text-[10px] font-bold text-slate-500">
 										{{ (session.player?.firstName?.[0] || 'A') }}
 									</div>
-									<span class="font-bold text-slate-700 dark:text-slate-200">{{
-										session.player?.firstName || $t('dashboard.sessions_table.anonymous')
-										}}</span>
+									<span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ session.player?.firstName || $t('dashboard.sessions_table.anonymous') }}</span>
 								</div>
 							</td>
-							<td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
-								{{ formatDate(session.createdAt, {
-									month: 'short', day: 'numeric', hour: '2-digit',
-									minute: '2-digit'
-								}) }}
-							</td>
-							<td class="px-6 py-4 text-right rtl:text-left font-bold text-slate-900 dark:text-white">
-								{{ session.prize ? session.prizeName : '-' }}
-							</td>
+							<td class="px-5 py-3.5 text-slate-400 text-[11px]">{{ formatDate(session.createdAt, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</td>
+							<td class="px-5 py-3.5 text-right rtl:text-left font-semibold text-sm text-slate-900 dark:text-white">{{ session.prize ? session.prizeName : '—' }}</td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
-			<!-- Footer Link -->
-			<div
-				class="px-6 py-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800 text-center">
-				<button
-					class="text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 uppercase tracking-wide">
+			<div class="px-5 py-3 border-t border-[#E5E5EA] dark:border-slate-700/40 text-center">
+				<NuxtLink to="/dashboard/prizes" class="text-xs font-semibold text-[#007AFF] hover:opacity-70 transition-opacity uppercase tracking-wide">
 					{{ $t('dashboard.sessions_table.view_history') }}
-				</button>
+				</NuxtLink>
 			</div>
 		</div>
 
 		<!-- ========================================== -->
 		<!-- LIMITED VIEW (No Subscription)         -->
 		<!-- ========================================== -->
-		<div v-if="!subscriptionLoading && !hasActiveSubscription" class="space-y-6">
+		<div v-if="!subscriptionLoading && !hasActiveSubscription" class="space-y-4">
 			<!-- Features Preview (Blurred/Locked) -->
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<!-- Locked Feature Card: Jeux -->
-				<div class="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6 overflow-hidden">
-					<div class="absolute inset-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
+				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
+					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
 						<div class="text-center">
-							<div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-								<Icon name="ph:lock-simple-fill" size="24" class="text-slate-400" />
+							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
+								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
 							</div>
-							<p class="text-sm font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-							<p class="text-xs text-slate-400 mt-1">{{ $t('dashboard.limited_view.unlock_features') }}</p>
+							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
 						</div>
 					</div>
-					<div class="flex items-center gap-4 mb-4">
-						<div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-							<Icon name="ph:game-controller-fill" size="24" />
+					<div class="flex items-center gap-3 mb-3">
+						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+							<Icon name="ph:game-controller-bold" size="17" class="text-slate-400" />
 						</div>
 						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.limited_view.create_games') }}</h3>
-							<p class="text-sm text-slate-500">{{ $t('dashboard.limited_view.games_description') }}</p>
+							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.create_games') }}</h3>
+							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.games_description') }}</p>
 						</div>
 					</div>
-					<div class="h-24 bg-slate-50 dark:bg-slate-700/50 rounded-lg"></div>
+					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
 				</div>
 
 				<!-- Locked Feature Card: Joueurs -->
-				<div class="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6 overflow-hidden">
-					<div class="absolute inset-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
+				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
+					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
 						<div class="text-center">
-							<div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-								<Icon name="ph:lock-simple-fill" size="24" class="text-slate-400" />
+							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
+								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
 							</div>
-							<p class="text-sm font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-							<p class="text-xs text-slate-400 mt-1">{{ $t('dashboard.limited_view.unlock_features') }}</p>
+							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
 						</div>
 					</div>
-					<div class="flex items-center gap-4 mb-4">
-						<div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-							<Icon name="ph:users-three-fill" size="24" />
+					<div class="flex items-center gap-3 mb-3">
+						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+							<Icon name="ph:users-three-bold" size="17" class="text-slate-400" />
 						</div>
 						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.limited_view.player_database') }}</h3>
-							<p class="text-sm text-slate-500">{{ $t('dashboard.limited_view.players_description') }}</p>
+							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.player_database') }}</h3>
+							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.players_description') }}</p>
 						</div>
 					</div>
-					<div class="h-24 bg-slate-50 dark:bg-slate-700/50 rounded-lg"></div>
+					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
 				</div>
 
 				<!-- Locked Feature Card: Lots -->
-				<div class="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6 overflow-hidden">
-					<div class="absolute inset-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
+				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
+					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
 						<div class="text-center">
-							<div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-								<Icon name="ph:lock-simple-fill" size="24" class="text-slate-400" />
+							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
+								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
 							</div>
-							<p class="text-sm font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-							<p class="text-xs text-slate-400 mt-1">{{ $t('dashboard.limited_view.unlock_features') }}</p>
+							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
 						</div>
 					</div>
-					<div class="flex items-center gap-4 mb-4">
-						<div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600">
-							<Icon name="ph:gift-fill" size="24" />
+					<div class="flex items-center gap-3 mb-3">
+						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+							<Icon name="ph:gift-bold" size="17" class="text-slate-400" />
 						</div>
 						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.limited_view.prize_management') }}</h3>
-							<p class="text-sm text-slate-500">{{ $t('dashboard.limited_view.prizes_description') }}</p>
+							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.prize_management') }}</h3>
+							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.prizes_description') }}</p>
 						</div>
 					</div>
-					<div class="h-24 bg-slate-50 dark:bg-slate-700/50 rounded-lg"></div>
+					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
 				</div>
 
 				<!-- Locked Feature Card: Validation -->
@@ -1060,51 +882,48 @@ onMounted(() => {
 			<!-- Available Actions -->
 			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
 				<h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('dashboard.limited_view.available_actions') }}</h3>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<NuxtLink to="/dashboard/profile"
-						class="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-brand-200 dark:hover:border-brand-800 hover:bg-brand-50/50 dark:hover:bg-brand-500/5 transition-all group">
-						<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-brand-100 dark:group-hover:bg-brand-500/20 group-hover:text-brand-600 transition-colors">
-							<Icon name="ph:storefront-fill" size="20" />
+						class="flex items-center gap-3.5 p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 bg-white dark:bg-[#1C1C1E] hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-all">
+						<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+							<Icon name="ph:storefront-bold" size="17" class="text-slate-500 dark:text-slate-400" />
 						</div>
 						<div class="flex-1">
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.quick_links.my_business') }}</p>
-							<p class="text-xs text-slate-500">{{ $t('dashboard.limited_view.available_actions') }}</p>
+							<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.quick_links.my_business') }}</p>
+							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.available_actions') }}</p>
 						</div>
-						<Icon name="ph:caret-right-bold" size="16" class="text-slate-300 group-hover:text-brand-500 rtl:rotate-180" />
+						<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
 					</NuxtLink>
 
 					<NuxtLink to="/dashboard/subscription"
-						class="flex items-center gap-4 p-4 rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-500/5 hover:bg-brand-100/50 dark:hover:bg-brand-500/10 transition-all group">
-						<div class="w-10 h-10 rounded-lg bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center text-brand-600">
-							<Icon name="ph:crown-simple-fill" size="20" />
+						class="flex items-center gap-3.5 p-4 rounded-2xl border border-[#007AFF]/30 bg-[#007AFF]/5 hover:bg-[#007AFF]/10 transition-all">
+						<div class="w-9 h-9 rounded-lg bg-[#007AFF]/10 flex items-center justify-center">
+							<Icon name="ph:crown-simple-bold" size="17" class="text-[#007AFF]" />
 						</div>
 						<div class="flex-1">
-							<p class="font-bold text-brand-700 dark:text-brand-400 text-sm">{{ $t('dashboard.limited_view.subscribe') }}</p>
-							<p class="text-xs text-brand-600/70 dark:text-brand-400/70">{{ $t('dashboard.limited_view.unlock_all') }}</p>
+							<p class="font-semibold text-[#007AFF] text-sm">{{ $t('dashboard.limited_view.subscribe') }}</p>
+							<p class="text-[11px] text-[#007AFF]/70">{{ $t('dashboard.limited_view.unlock_all') }}</p>
 						</div>
-						<Icon name="ph:arrow-right-bold" size="16" class="text-brand-500 rtl:rotate-180" />
+						<Icon name="ph:arrow-right-bold" size="13" class="text-[#007AFF]" />
 					</NuxtLink>
 				</div>
 			</div>
 
 			<!-- Support Card -->
-			<div class="bg-indigo-950 rounded-xl p-6 text-white relative overflow-hidden shadow-lg">
-				<div class="absolute top-0 right-0 w-48 h-48 bg-indigo-500 rounded-full blur-[60px] -mr-16 -mt-16 opacity-20"></div>
-				<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-					<div class="flex items-center gap-4">
-						<div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/10">
-							<Icon name="ph:question-fill" size="24" />
-						</div>
-						<div>
-							<h3 class="font-bold text-lg">{{ $t('dashboard.limited_view.have_questions') }}</h3>
-							<p class="text-indigo-200 text-sm">{{ $t('dashboard.limited_view.questions_description') }}</p>
-						</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+				<div class="flex items-center gap-3 flex-1">
+					<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:question-bold" size="17" class="text-slate-500 dark:text-slate-400" />
 					</div>
-					<a href="mailto:support@scanupgo.com"
-						class="px-6 py-2.5 bg-white text-indigo-950 rounded-lg text-sm font-bold hover:bg-indigo-50 transition-colors shadow-lg shadow-black/10">
-						{{ $t('dashboard.limited_view.contact_us') }}
-					</a>
+					<div>
+						<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.have_questions') }}</p>
+						<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.questions_description') }}</p>
+					</div>
 				</div>
+				<a href="mailto:support@scanupgo.com"
+					class="px-4 py-2 bg-[#007AFF] text-white rounded-xl text-sm font-semibold hover:bg-[#0066DD] transition-colors shadow-md shadow-[#007AFF]/25 shrink-0">
+					{{ $t('dashboard.limited_view.contact_us') }}
+				</a>
 			</div>
 		</div>
 

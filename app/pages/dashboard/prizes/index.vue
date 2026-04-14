@@ -8,7 +8,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()
-const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 const { formatDate } = useLocaleDate()
 
 const sessions = ref<any[]>([])
@@ -17,138 +17,119 @@ const filter = ref<'all' | 'won' | 'lost'>('all')
 
 const fetchSessions = async () => {
 	loading.value = true
-	try {
-		sessions.value = await $api('/gameplay/sessions')
-	} catch (error) {
-		console.error('Failed to fetch sessions:', error)
-	} finally {
-		loading.value = false
-	}
+	try { sessions.value = await $api('/gameplay/sessions') }
+	catch (error) { console.error('Failed to fetch sessions:', error) }
+	finally { loading.value = false }
 }
 
 const filteredSessions = computed(() => {
-	if (filter.value === 'won') {
-		return sessions.value.filter(s => s.prize !== null)
-	}
-	if (filter.value === 'lost') {
-		return sessions.value.filter(s => s.prize === null)
-	}
+	if (filter.value === 'won') return sessions.value.filter(s => s.prize !== null)
+	if (filter.value === 'lost') return sessions.value.filter(s => s.prize === null)
 	return sessions.value
 })
 
 const stats = computed(() => {
 	const total = sessions.value.length
 	const won = sessions.value.filter(s => s.prize !== null).length
-	const lost = total - won
-	return { total, won, lost }
+	return { total, won, lost: total - won }
 })
 
 onMounted(async () => {
 	await fetchSubscription()
-	if (hasActiveSubscription.value) {
-		fetchSessions()
-	}
+	if (hasActiveSubscription.value) fetchSessions()
 })
 </script>
 
 <template>
 	<SubscriptionGate>
-	<div class="space-y-8">
-		<!-- Header -->
-		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-			<div>
-				<h1 class="font-display text-3xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">{{ $t('prizes.title') }}</h1>
-				<p class="text-slate-500 dark:text-slate-400 font-medium">{{ $t('prizes.subtitle') }}</p>
-			</div>
+	<div class="space-y-5">
 
-			<!-- Stats Cards (Mini) -->
-			<div class="flex gap-4">
-				<div
-					class="px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center min-w-[100px]">
-					<span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">{{ $t('prizes.stats.won') }}</span>
-					<span class="text-xl font-display font-bold text-brand-600 dark:text-brand-400">{{ stats.won
-					}}</span>
-				</div>
-				<div
-					class="px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center min-w-[100px]">
-					<span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">{{ $t('prizes.stats.lost') }}</span>
-					<span class="text-xl font-display font-bold text-slate-600 dark:text-slate-200">{{ stats.lost
-					}}</span>
-				</div>
+		<!-- Header -->
+		<div class="flex items-center justify-between">
+			<div>
+				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('prizes.title') }}</h1>
+				<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">{{ $t('prizes.subtitle') }}</p>
 			</div>
 		</div>
 
-		<!-- Filter Tabs -->
-		<div
-			class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 w-fit shadow-sm">
-			<button v-for="f in ['all', 'won', 'lost']" :key="f" @click="filter = f as any"
-				class="px-4 py-2 rounded-lg text-sm font-bold transition-all capitalize"
-				:class="filter === f ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'">
+		<!-- Stats iOS widgets -->
+		<div class="grid grid-cols-3 gap-3">
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('prizes.filter_all') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : stats.total }}</p>
+			</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('prizes.stats.won') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : stats.won }}</p>
+			</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('prizes.stats.lost') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : stats.lost }}</p>
+			</div>
+		</div>
+
+		<!-- Filter pills — iOS segmented style -->
+		<div class="flex gap-2">
+			<button
+				v-for="f in ['all', 'won', 'lost']" :key="f"
+				@click="filter = f as any"
+				class="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+				:class="filter === f
+					? 'bg-[#007AFF] text-white shadow-md shadow-[#007AFF]/25'
+					: 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-600 dark:text-slate-300 hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C]'">
 				{{ f === 'all' ? $t('prizes.filter_all') : f === 'won' ? $t('prizes.filter_won') : $t('prizes.filter_lost') }}
 			</button>
 		</div>
 
-		<!-- Sessions List -->
-		<div
-			class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
-			<div v-if="loading" class="p-12 text-center">
-				<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300 dark:text-slate-600 mx-auto"
-					size="32" />
+		<!-- Sessions list — iOS grouped -->
+		<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
+
+			<div v-if="loading" class="p-10 flex items-center justify-center">
+				<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="28" />
 			</div>
 
 			<div v-else-if="filteredSessions.length === 0" class="p-12 text-center">
-				<div
-					class="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-slate-500">
-					<Icon name="ph:gift-duotone" size="32" />
+				<div class="w-14 h-14 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center mx-auto mb-3">
+					<Icon name="ph:gift-duotone" size="28" class="text-slate-400" />
 				</div>
-				<p class="text-slate-500 dark:text-slate-400 font-medium">{{ $t('prizes.no_sessions') }}</p>
+				<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ $t('prizes.no_sessions') }}</p>
 			</div>
 
-			<table v-else class="w-full text-left">
-				<thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
-					<tr>
-						<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{{ $t('prizes.table.player') }}</th>
-						<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{{ $t('prizes.table.game_result') }}</th>
-						<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase text-right rtl:text-left">
-							{{ $t('prizes.table.date') }}</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-					<tr v-for="session in filteredSessions" :key="session.id"
-						class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
-						<td class="px-6 py-4">
-							<div class="font-bold text-slate-900 dark:text-white">{{ session.player?.firstName ||
-								$t('prizes.anonymous') }}
-								{{ session.player?.lastName || '' }}
-							</div>
-							<div class="text-xs text-slate-500 dark:text-slate-400">
-								{{ session.player?.email || $t('prizes.no_email') }}
-							</div>
-						</td>
-						<td class="px-6 py-4">
-							<div class="flex items-center gap-3">
-								<div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-									:class="session.prize ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-300'">
-									<Icon :name="session.prize ? 'ph:trophy-fill' : 'ph:smiley-sad-duotone'"
-										size="20" />
-								</div>
-								<div>
-									<div class="font-bold text-sm"
-										:class="session.prize ? 'text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400'">
-										{{ session.prize ? session.prizeName : $t('prizes.lost_status') }}
-									</div>
-									<div class="text-xs text-slate-400 dark:text-slate-500">{{ session.game?.title ||
-										$t('prizes.unknown_game') }}</div>
-								</div>
-							</div>
-						</td>
-						<td class="px-6 py-4 text-right rtl:text-left text-sm text-slate-500 dark:text-slate-400 tabular-nums">
-							{{ formatDate(session.createdAt) }}
-						</td>
-					</tr>
-				</tbody>
-			</table>
+			<div v-else class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+				<div
+					v-for="session in filteredSessions" :key="session.id"
+					class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors">
+					<!-- Result icon -->
+					<div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+						:class="session.prize ? 'bg-[#FF9500]/15 shadow-sm' : 'bg-[#F2F2F7] dark:bg-[#2C2C2E]'">
+						<Icon
+							:name="session.prize ? 'ph:trophy-fill' : 'ph:smiley-sad-fill'"
+							:class="session.prize ? 'text-[#FF9500]' : 'text-slate-400'"
+							size="19" />
+					</div>
+					<!-- Content -->
+					<div class="flex-1 min-w-0">
+						<p class="font-semibold text-slate-900 dark:text-white text-sm truncate">
+							{{ session.player?.firstName || $t('prizes.anonymous') }} {{ session.player?.lastName || '' }}
+						</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+							{{ session.player?.email || $t('prizes.no_email') }}
+						</p>
+					</div>
+					<!-- Prize / game -->
+					<div class="text-right shrink-0">
+						<p class="text-sm font-semibold"
+							:class="session.prize ? 'text-[#FF9500]' : 'text-slate-400 dark:text-slate-500'">
+							{{ session.prize ? session.prizeName : $t('prizes.lost_status') }}
+						</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ session.game?.title || $t('prizes.unknown_game') }}</p>
+					</div>
+					<!-- Date -->
+					<p class="text-[11px] text-slate-400 dark:text-slate-500 shrink-0 w-20 text-right">{{ formatDate(session.createdAt) }}</p>
+				</div>
+			</div>
 		</div>
+
 	</div>
 	</SubscriptionGate>
 </template>

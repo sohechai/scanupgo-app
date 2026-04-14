@@ -4,8 +4,27 @@ definePageMeta({
 	middleware: 'auth'
 })
 
-const { t } = useI18n()
+const { t, locale, setLocale } = useI18n()
 const { user, signOut } = useAuth()
+
+// Language
+const languages = [
+	{ code: 'fr', label: 'Français', flag: '🇫🇷' },
+	{ code: 'ar', label: 'العربية', flag: '🇲🇦' },
+	{ code: 'en', label: 'English', flag: '🇬🇧' },
+]
+
+const changeLanguage = async (code: string) => {
+	await setLocale(code as any)
+	try {
+		await $api('/auth/update-language', {
+			method: 'POST',
+			body: { preferredLanguage: code }
+		})
+	} catch (e) {
+		console.error('Failed to save language preference:', e)
+	}
+}
 const { $api } = useNuxtApp()
 const { show: showToast } = useToast()
 
@@ -236,85 +255,98 @@ watch(user, (newUser) => {
 </script>
 
 <template>
-	<div class="space-y-8 max-w-3xl">
+	<div class="space-y-5 max-w-3xl">
+
 		<!-- Header -->
-		<div>
-			<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('account.title') }}</h1>
-			<p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">{{ $t('account.subtitle') }}
-			</p>
+		<div class="flex items-center gap-4">
+			<!-- Avatar -->
+			<div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#5856D6] to-[#007AFF] flex items-center justify-center shadow-lg shadow-[#007AFF]/30 shrink-0">
+				<span class="text-white text-xl font-bold">
+					{{ (user?.firstName?.[0] || user?.username?.[0] || '?').toUpperCase() }}
+				</span>
+			</div>
+			<div>
+				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+					{{ displayName || user?.username || $t('account.title') }}
+				</h1>
+				<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">{{ user?.email }}</p>
+			</div>
 		</div>
 
 		<!-- Profile Section -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.profile_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.profile_subtitle') }}</p>
-			</div>
-			<form @submit.prevent="updateProfile" class="p-6 space-y-6">
-				<!-- Display Name -->
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.firstname') }}</label>
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.profile_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
+				<form @submit.prevent="updateProfile" class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+					<!-- First name -->
+					<div class="flex items-center gap-4 px-5 py-3.5">
+						<p class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.firstname') }}</p>
 						<input v-model="profileForm.firstName" type="text" :placeholder="$t('account.firstname_placeholder')"
-							class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-colors" />
+							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
 					</div>
-					<div>
-						<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.lastname') }}</label>
+					<!-- Last name -->
+					<div class="flex items-center gap-4 px-5 py-3.5">
+						<p class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.lastname') }}</p>
 						<input v-model="profileForm.lastName" type="text" :placeholder="$t('account.lastname_placeholder')"
-							class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-colors" />
+							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
 					</div>
-				</div>
+					<!-- Phone -->
+					<div class="flex items-center gap-4 px-5 py-3.5">
+						<p class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.phone') }}</p>
+						<input v-model="profileForm.phone" type="tel" :placeholder="$t('account.phone_placeholder')"
+							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
+					</div>
+					<!-- Save -->
+					<div class="px-5 py-3.5 flex justify-end">
+						<button type="submit" :disabled="profileLoading"
+							class="flex items-center gap-2 px-5 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-[#007AFF]/25 disabled:opacity-50">
+							<Icon v-if="profileLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+							<span>{{ profileLoading ? $t('profile.saving') : $t('account.save_button') }}</span>
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
 
-				<!-- Phone -->
-				<div>
-					<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.phone') }}</label>
-					<input v-model="profileForm.phone" type="tel" :placeholder="$t('account.phone_placeholder')"
-						class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-colors" />
-				</div>
-
-				<!-- Save Button -->
-				<div class="flex justify-end">
-					<button type="submit" :disabled="profileLoading"
-						class="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors disabled:opacity-50 flex items-center gap-2">
-						<Icon v-if="profileLoading" name="svg-spinners:ring-resize" size="16" />
-						<span>{{ profileLoading ? $t('profile.saving') : $t('account.save_button') }}</span>
+		<!-- Language Section -->
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.language_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-4">
+				<div class="flex gap-2">
+					<button v-for="lang in languages" :key="lang.code" @click="changeLanguage(lang.code)"
+						class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+						:class="locale === lang.code
+							? 'bg-[#007AFF] text-white shadow-md shadow-[#007AFF]/25'
+							: 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-600 dark:text-slate-300 hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C]'">
+						<span class="text-base">{{ lang.flag }}</span>
+						<span>{{ lang.label }}</span>
 					</button>
 				</div>
-			</form>
+			</div>
 		</div>
 
 		<!-- Account Info Section -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.account_info_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.account_info_subtitle') }}</p>
-			</div>
-			<div class="p-6 space-y-6">
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.account_info_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 				<!-- Username -->
-				<div>
-					<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.username') }}</label>
-					<div class="flex items-center gap-3">
-						<div
-							class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 text-sm font-mono">
-							{{ user?.username || '—' }}
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:at-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<p class="text-xs text-slate-400 mt-1.5">{{ $t('account.username_hint') }}</p>
+					<p class="text-sm font-medium text-slate-900 dark:text-white flex-1">{{ $t('account.username') }}</p>
+					<p class="text-sm text-slate-400 dark:text-slate-500 font-mono">{{ user?.username || '—' }}</p>
 				</div>
-
 				<!-- Email -->
-				<div>
-					<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.email') }}</label>
-					<div class="flex items-center gap-3">
-						<div
-							class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 text-sm">
-							{{ user?.email }}
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:envelope-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<p class="text-sm font-medium text-slate-900 dark:text-white flex-1">{{ $t('account.email') }}</p>
+					<div class="flex items-center gap-2">
+						<p class="text-sm text-slate-400 dark:text-slate-500 truncate max-w-[140px]">{{ user?.email }}</p>
 						<button @click="showEmailModal = true"
-							class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+							class="text-[#007AFF] text-xs font-semibold hover:opacity-70 transition-opacity shrink-0">
 							{{ $t('account.email_change_button') }}
 						</button>
 					</div>
@@ -323,66 +355,50 @@ watch(user, (newUser) => {
 		</div>
 
 		<!-- Security Section -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.security_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.security_subtitle') }}</p>
-			</div>
-			<div class="p-6 space-y-4">
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.security_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 				<!-- Change Password -->
-				<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-					<div class="flex items-center gap-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300">
-							<Icon name="ph:lock-key-fill" size="20" />
-						</div>
-						<div>
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.password') }}</p>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.password_change') }}</p>
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:lock-key-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.password') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.password_change') }}</p>
 					</div>
 					<button @click="showPasswordModal = true"
-						class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+						class="text-[#007AFF] text-xs font-semibold hover:opacity-70 transition-opacity shrink-0">
 						{{ $t('account.password_button') }}
 					</button>
 				</div>
 
 				<!-- Two-Factor Auth (placeholder) -->
-				<div
-					class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl opacity-60">
-					<div class="flex items-center gap-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300">
-							<Icon name="ph:shield-check-fill" size="20" />
-						</div>
-						<div>
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.two_factor') }}
-							</p>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.two_factor_coming') }}</p>
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5 opacity-50">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:shield-check-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<span
-						class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold rounded-full">
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.two_factor') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.two_factor_coming') }}</p>
+					</div>
+					<span class="text-[10px] font-bold bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-400 px-2 py-1 rounded-full uppercase tracking-wide shrink-0">
 						{{ $t('account.two_factor_coming') }}
 					</span>
 				</div>
 
 				<!-- Logout All Devices -->
-				<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-					<div class="flex items-center gap-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
-							<Icon name="ph:devices-fill" size="20" />
-						</div>
-						<div>
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.logout_all') }}</p>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.logout_all_description') }}</p>
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:devices-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.logout_all') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.logout_all_description') }}</p>
 					</div>
 					<button @click="logoutAllDevices" :disabled="logoutAllLoading"
-						class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center gap-2">
-						<Icon v-if="logoutAllLoading" name="svg-spinners:ring-resize" size="14" />
+						class="text-[#FF3B30] text-xs font-semibold hover:opacity-70 transition-opacity disabled:opacity-30 shrink-0 flex items-center gap-1">
+						<Icon v-if="logoutAllLoading" name="ph:spinner-gap-bold" size="12" class="animate-spin" />
 						<span>{{ $t('account.logout_button') }}</span>
 					</button>
 				</div>
@@ -390,29 +406,21 @@ watch(user, (newUser) => {
 		</div>
 
 		<!-- Payment Section -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.payment_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.payment_subtitle') }}</p>
-			</div>
-			<div class="p-6 space-y-4">
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.payment_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 				<!-- Payment Methods -->
-				<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-					<div class="flex items-center gap-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-							<Icon name="ph:credit-card-fill" size="20" />
-						</div>
-						<div>
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.payment_methods') }}</p>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.payment_methods_description') }}
-							</p>
-						</div>
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:credit-card-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.payment_methods') }}</p>
+							<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.payment_methods_description') }}</p>
 					</div>
 					<button @click="openBillingPortal" :disabled="billingPortalLoading"
-						class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center gap-2">
-						<Icon v-if="billingPortalLoading" name="svg-spinners:ring-resize" size="14" />
+						class="text-[#007AFF] text-xs font-semibold hover:opacity-70 transition-opacity disabled:opacity-30 shrink-0 flex items-center gap-1">
+						<Icon v-if="billingPortalLoading" name="ph:spinner-gap-bold" size="12" class="animate-spin" />
 						<span>{{ $t('account.payment_manage_button') }}</span>
 					</button>
 				</div>
@@ -420,87 +428,74 @@ watch(user, (newUser) => {
 		</div>
 
 		<!-- Quick Links Section -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.shortcuts_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.shortcuts_subtitle') }}
-				</p>
-			</div>
-			<div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.shortcuts_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 				<NuxtLink to="/dashboard/profile"
-					class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-					<div
-						class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-						<Icon name="ph:storefront-fill" size="20" />
+					class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:storefront-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<div>
-						<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.my_business') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.my_business_description') }}</p>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.my_business') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.my_business_description') }}</p>
 					</div>
+					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0" />
 				</NuxtLink>
 
 				<NuxtLink to="/dashboard/subscription"
-					class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-					<div
-						class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
-						<Icon name="ph:crown-fill" size="20" />
+					class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:crown-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<div>
-						<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.my_subscription') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.my_subscription_description') }}</p>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.my_subscription') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.my_subscription_description') }}</p>
 					</div>
+					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0" />
 				</NuxtLink>
 
 				<NuxtLink to="/dashboard/subscription/invoices"
-					class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-					<div
-						class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-						<Icon name="ph:receipt-fill" size="20" />
+					class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:receipt-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<div>
-						<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.my_invoices') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.my_invoices_description') }}</p>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.my_invoices') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.my_invoices_description') }}</p>
 					</div>
+					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0" />
 				</NuxtLink>
 
 				<a href="mailto:support@scanupgo.com"
-					class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-					<div
-						class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-						<Icon name="ph:lifebuoy-fill" size="20" />
+					class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:lifebuoy-bold" class="text-slate-500 dark:text-slate-400" size="14" />
 					</div>
-					<div>
-						<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.support') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.support_description') }}</p>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.support') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.support_description') }}</p>
 					</div>
+					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0" />
 				</a>
 			</div>
 		</div>
 
 		<!-- Data & Privacy (RGPD) -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-				<h2 class="font-bold text-slate-900 dark:text-white">{{ $t('account.data_privacy_section') }}</h2>
-				<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.data_privacy_subtitle') }}</p>
-			</div>
-			<div class="p-6 space-y-4">
-				<!-- Export Data -->
-				<div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-					<div class="flex items-center gap-4">
-						<div
-							class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-							<Icon name="ph:download-simple-fill" size="20" />
-						</div>
-						<div>
-							<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.export_data') }}</p>
-							<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('account.export_data_description') }}</p>
-						</div>
+		<div>
+			<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">{{ $t('account.data_privacy_section') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+				<div class="flex items-center gap-4 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:download-simple-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.export_data') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.export_data_description') }}</p>
 					</div>
 					<button @click="exportData" :disabled="exportLoading"
-						class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center gap-2">
-						<Icon v-if="exportLoading" name="svg-spinners:ring-resize" size="14" />
+						class="text-[#007AFF] text-xs font-semibold hover:opacity-70 transition-opacity disabled:opacity-30 shrink-0 flex items-center gap-1">
+						<Icon v-if="exportLoading" name="ph:spinner-gap-bold" size="12" class="animate-spin" />
 						<span>{{ exportLoading ? 'Export...' : $t('account.export_button') }}</span>
 					</button>
 				</div>
@@ -508,19 +503,19 @@ watch(user, (newUser) => {
 		</div>
 
 		<!-- Danger Zone -->
-		<div
-			class="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm overflow-hidden">
-			<div class="p-6 border-b border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10">
-				<p class="text-sm text-red-600/70 dark:text-red-400/70 mt-1">{{ $t('account.delete_account_description') }}</p>
-			</div>
-			<div class="p-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('account.delete_account') }}</p>
-						<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $t('account.delete_account_description') }}</p>
+		<div>
+			<p class="text-[11px] font-semibold text-[#FF3B30] uppercase tracking-widest px-1 mb-2">{{ $t('account.delete_account') }}</p>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#FF3B30]/30 shadow-sm overflow-hidden">
+				<div class="flex items-center gap-4 px-5 py-4">
+					<div class="w-8 h-8 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+						<Icon name="ph:trash-bold" class="text-slate-500 dark:text-slate-400" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.delete_account') }}</p>
+						<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.delete_account_description') }}</p>
 					</div>
 					<button @click="showDeleteModal = true"
-						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors">
+						class="text-[#FF3B30] text-xs font-semibold hover:opacity-70 transition-opacity shrink-0">
 						{{ $t('account.delete_button') }}
 					</button>
 				</div>
@@ -530,47 +525,51 @@ watch(user, (newUser) => {
 		<!-- Password Change Modal -->
 		<Teleport to="body">
 			<Transition name="modal">
-				<div v-if="showPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showPasswordModal = false"></div>
-					<div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-						<button @click="showPasswordModal = false"
-							class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-							<Icon name="ph:x-bold" size="20" />
-						</button>
-
-						<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">{{ $t('account.password_modal_title') }}</h3>
-
-						<form @submit.prevent="changePassword" class="space-y-4">
-							<div>
-								<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.password_current') }}</label>
-								<input v-model="passwordForm.currentPassword" type="password" required
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
+				<div v-if="showPasswordModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showPasswordModal = false" />
+					<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+						<div class="h-1 w-full bg-[#007AFF]" />
+						<div class="p-6">
+							<!-- Header -->
+							<div class="flex items-center gap-3 mb-5">
+								<div class="w-10 h-10 rounded-xl bg-[#007AFF]/10 flex items-center justify-center">
+									<Icon name="ph:lock-key-bold" class="text-[#007AFF]" size="20" />
+								</div>
+								<div>
+									<h3 class="font-bold text-slate-900 dark:text-white text-base">{{ $t('account.password_modal_title') }}</h3>
+								</div>
 							</div>
-							<div>
-								<label
-									class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.password_new') }}</label>
-								<input v-model="passwordForm.newPassword" type="password" required minlength="8"
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
-							</div>
-							<div>
-								<label
-									class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.password_confirm') }}</label>
-								<input v-model="passwordForm.confirmPassword" type="password" required minlength="8"
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
-							</div>
-
-							<div class="flex gap-3 pt-4">
-								<button type="button" @click="showPasswordModal = false"
-									class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-									{{ $t('account.cancel') }}
-								</button>
-								<button type="submit" :disabled="passwordLoading"
-									class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50">
-									<span v-if="passwordLoading">{{ $t('common.loading') }}</span>
-									<span v-else>{{ $t('account.modify') }}</span>
-								</button>
-							</div>
-						</form>
+							<form @submit.prevent="changePassword" class="space-y-3">
+								<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_current') }}</label>
+										<input v-model="passwordForm.currentPassword" type="password" required
+											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
+									</div>
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_new') }}</label>
+										<input v-model="passwordForm.newPassword" type="password" required minlength="8"
+											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
+									</div>
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_confirm') }}</label>
+										<input v-model="passwordForm.confirmPassword" type="password" required minlength="8"
+											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
+									</div>
+								</div>
+								<div class="flex flex-col gap-2 pt-1">
+									<button type="submit" :disabled="passwordLoading"
+										class="w-full py-3 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-[#007AFF]/25">
+										<Icon v-if="passwordLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+										<span>{{ passwordLoading ? $t('common.loading') : $t('account.modify') }}</span>
+									</button>
+									<button type="button" @click="showPasswordModal = false"
+										class="w-full py-2.5 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:opacity-70 transition-opacity">
+										{{ $t('account.cancel') }}
+									</button>
+								</div>
+							</form>
+						</div>
 					</div>
 				</div>
 			</Transition>
@@ -579,49 +578,50 @@ watch(user, (newUser) => {
 		<!-- Email Change Modal -->
 		<Teleport to="body">
 			<Transition name="modal">
-				<div v-if="showEmailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showEmailModal = false"></div>
-					<div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-						<button @click="showEmailModal = false"
-							class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-							<Icon name="ph:x-bold" size="20" />
-						</button>
-
-						<h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">{{ $t('account.email_modal_title') }}</h3>
-
-						<form @submit.prevent="changeEmail" class="space-y-4">
-							<div>
-								<label
-									class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.email_current') }}</label>
-								<div
-									class="px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400 text-sm">
-									{{ user?.email }}
+				<div v-if="showEmailModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showEmailModal = false" />
+					<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+						<div class="h-1 w-full bg-[#007AFF]" />
+						<div class="p-6">
+							<!-- Header -->
+							<div class="flex items-center gap-3 mb-5">
+								<div class="w-10 h-10 rounded-xl bg-[#007AFF]/10 flex items-center justify-center">
+									<Icon name="ph:envelope-bold" class="text-[#007AFF]" size="20" />
+								</div>
+								<div>
+									<h3 class="font-bold text-slate-900 dark:text-white text-base">{{ $t('account.email_modal_title') }}</h3>
 								</div>
 							</div>
-							<div>
-								<label
-									class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.email_new') }}</label>
-								<input v-model="emailForm.newEmail" type="email" required
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
-							</div>
-							<div>
-								<label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $t('account.email_password') }}</label>
-								<input v-model="emailForm.password" type="password" required
-									class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none" />
-							</div>
-
-							<div class="flex gap-3 pt-4">
-								<button type="button" @click="showEmailModal = false"
-									class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-									{{ $t('account.cancel') }}
-								</button>
-								<button type="submit" :disabled="emailLoading"
-									class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50">
-									<span v-if="emailLoading">{{ $t('common.loading') }}</span>
-									<span v-else>{{ $t('account.modify') }}</span>
-								</button>
-							</div>
-						</form>
+							<form @submit.prevent="changeEmail" class="space-y-3">
+								<div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_current') }}</label>
+										<p class="flex-1 text-sm text-slate-400 dark:text-slate-500 text-right truncate">{{ user?.email }}</p>
+									</div>
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_new') }}</label>
+										<input v-model="emailForm.newEmail" type="email" required
+											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
+									</div>
+									<div class="flex items-center px-4 py-3">
+										<label class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_password') }}</label>
+										<input v-model="emailForm.password" type="password" required
+											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
+									</div>
+								</div>
+								<div class="flex flex-col gap-2 pt-1">
+									<button type="submit" :disabled="emailLoading"
+										class="w-full py-3 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-[#007AFF]/25">
+										<Icon v-if="emailLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+										<span>{{ emailLoading ? $t('common.loading') : $t('account.modify') }}</span>
+									</button>
+									<button type="button" @click="showEmailModal = false"
+										class="w-full py-2.5 text-slate-500 dark:text-slate-400 font-semibold text-sm hover:opacity-70 transition-opacity">
+										{{ $t('account.cancel') }}
+									</button>
+								</div>
+							</form>
+						</div>
 					</div>
 				</div>
 			</Transition>

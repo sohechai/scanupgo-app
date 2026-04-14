@@ -281,51 +281,49 @@ const resetSubscriptionForTesting = async () => {
 	<div class="space-y-8 relative pb-20">
 
 		<!-- Header -->
-		<div class="text-center max-w-3xl mx-auto">
-			<h1 class="font-display text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+		<div>
+			<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
 				{{ currentSubscription ? $t('subscription.title') : $t('subscription.choose_plan') }}
 			</h1>
-			<p class="text-slate-500 dark:text-slate-400 text-lg">
+			<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">
 				{{ currentSubscription ? $t('subscription.subtitle') : $t('subscription.choose_subtitle') }}
 			</p>
 		</div>
 
 		<!-- Loading State -->
 		<div v-if="subscriptionLoading" class="text-center py-20">
-			<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-brand-600 animate-spin mb-3" />
+			<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-slate-300 animate-spin mb-3" />
 			<p class="text-slate-500 font-medium">{{ $t('subscription.loading') }}</p>
 		</div>
 
 		<!-- Error State -->
-		<div v-else-if="planError" class="max-w-md mx-auto bg-red-50 border border-red-100 rounded-xl p-6 text-center">
-			<Icon name="ph:warning-circle-fill" size="32" class="mx-auto text-red-500 mb-3" />
-			<h3 class="font-bold text-red-900 mb-1">{{ $t('subscription.error') }}</h3>
-			<p class="text-sm text-red-700">{{ planError.message }}</p>
+		<div v-else-if="planError" class="max-w-md mx-auto bg-[#FF3B30]/5 border border-[#FF3B30]/20 rounded-2xl p-6 text-center">
+			<Icon name="ph:warning-circle-fill" size="32" class="mx-auto text-[#FF3B30] mb-3" />
+			<h3 class="font-bold text-slate-900 dark:text-white mb-1">{{ $t('subscription.error') }}</h3>
+			<p class="text-sm text-slate-500">{{ planError.message }}</p>
 		</div>
 
 		<!-- Admin Cancellation Notice -->
 		<div v-else-if="wasImmediatelyCancelled && !showPlanSelector" class="max-w-2xl mx-auto">
-			<div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 shadow-sm">
+			<div class="bg-white dark:bg-[#1C1C1E] border border-[#FF3B30]/20 rounded-2xl p-6 shadow-sm">
 				<div class="flex items-start gap-4">
-					<div class="flex-shrink-0">
-						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-							<Icon name="ph:x-circle-fill" class="text-red-600" size="24" />
-						</div>
+					<div class="w-11 h-11 rounded-xl bg-[#FF3B30]/10 flex items-center justify-center shrink-0">
+						<Icon name="ph:x-circle-fill" class="text-[#FF3B30]" size="22" />
 					</div>
 					<div class="flex-1">
-						<h3 class="font-bold text-red-900 text-lg mb-2">
+						<h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">
 							{{ $t('subscription.cancelled') }}
 						</h3>
-						<p class="text-red-700 text-sm mb-4">
+						<p class="text-slate-400 text-sm mb-4">
 							{{ $t('subscription.cancelled_description') }}
 						</p>
-						<div class="flex flex-wrap gap-3">
+						<div class="flex flex-wrap gap-2">
 							<NuxtLink to="/dashboard"
-								class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg text-sm transition-colors">
+								class="px-4 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold rounded-xl text-sm transition-colors">
 								{{ $t('subscription.back_to_dashboard') }}
 							</NuxtLink>
 							<button @click="showPlanSelector = true"
-								class="px-4 py-2 bg-white border border-red-300 hover:bg-red-50 text-red-700 font-medium rounded-lg text-sm transition-colors">
+								class="px-4 py-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C] text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-sm transition-colors">
 								{{ $t('subscription.see_plans') }}
 							</button>
 						</div>
@@ -355,16 +353,15 @@ const resetSubscriptionForTesting = async () => {
 
 			<!-- Free Trial Banner -->
 			<div v-if="trialInfo.eligible"
-				class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-5 flex items-center gap-4">
-				<div
-					class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shrink-0">
-					<Icon name="ph:gift-bold" class="text-purple-600 dark:text-purple-400" size="24" />
+				class="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+				<div class="w-10 h-10 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+					<Icon name="ph:gift-bold" class="text-slate-500 dark:text-slate-400" size="20" />
 				</div>
 				<div>
-					<h3 class="font-bold text-purple-900 dark:text-purple-200 text-sm">
+					<h3 class="font-bold text-slate-900 dark:text-white text-sm">
 						{{ $t('subscription.trial.title', { days: trialInfo.days }) }}
 					</h3>
-					<p class="text-sm text-purple-700 dark:text-purple-300/70">
+					<p class="text-sm text-slate-500 dark:text-slate-400">
 						{{ $t('subscription.trial.description') }}
 					</p>
 				</div>
@@ -390,7 +387,7 @@ const resetSubscriptionForTesting = async () => {
 
 		<!-- Empty State Fallback -->
 		<div v-else-if="!plans.length && !currentSubscription"
-			class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-12 text-center max-w-2xl mx-auto">
+			class="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 rounded-2xl p-12 text-center max-w-2xl mx-auto shadow-sm">
 			<Icon name="ph:warning-circle" size="48" class="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
 			<p class="text-slate-600 dark:text-slate-300 font-medium">{{ $t('subscription.no_plans') }}</p>
 			<p class="text-xs text-slate-400 mt-2">{{ $t('subscription.contact_support') }}</p>
@@ -420,22 +417,24 @@ const resetSubscriptionForTesting = async () => {
 
 					<!-- Modal -->
 					<div
-						class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5">
+						class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5">
 						<!-- Header -->
-						<div class="text-center">
-							<div
-								class="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center">
-								<Icon name="ph:arrows-clockwise-bold" size="32" class="text-brand-600" />
+						<div class="flex items-center gap-3">
+							<div class="w-10 h-10 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+								<Icon name="ph:arrows-clockwise-bold" size="18" class="text-slate-500 dark:text-slate-400" />
 							</div>
-							<h3 class="text-xl font-bold text-slate-900 dark:text-white">
-								{{ $t('subscription.confirm_change') }}
-							</h3>
+							<div>
+								<h3 class="text-[15px] font-bold text-slate-900 dark:text-white leading-tight">
+									{{ $t('subscription.confirm_change') }}
+								</h3>
+								<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('subscription.confirm_change_subtitle') }}</p>
+							</div>
 						</div>
 
 						<!-- Content -->
 						<div class="space-y-4">
 							<!-- Current plan -->
-							<div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+							<div class="p-4 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl">
 								<p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-1">{{ $t('subscription.current_plan') }}</p>
 								<p class="font-bold text-slate-900 dark:text-white">
 									{{ currentSubscription?.plan?.name }} - {{
@@ -445,16 +444,16 @@ const resetSubscriptionForTesting = async () => {
 
 							<!-- Arrow -->
 							<div class="flex justify-center">
-								<Icon name="ph:arrow-down-bold" size="24" class="text-brand-500" />
+								<Icon name="ph:arrow-down-bold" size="24" class="text-slate-400" />
 							</div>
 
 							<!-- New plan -->
-							<div class="p-4 bg-brand-50 dark:bg-brand-900/20 rounded-xl border-2 border-brand-500">
-								<p class="text-xs text-brand-600 dark:text-brand-400 uppercase font-bold mb-1">{{ $t('subscription.new_plan') }}</p>
+							<div class="p-4 bg-[#007AFF]/5 dark:bg-[#007AFF]/10 rounded-xl border-2 border-[#007AFF]">
+								<p class="text-xs text-[#007AFF] uppercase font-bold mb-1">{{ $t('subscription.new_plan') }}</p>
 								<p class="font-bold text-slate-900 dark:text-white">
 									{{ pendingUpgrade.plan?.name }} - {{ getPeriodLabel(pendingUpgrade.period) }}
 								</p>
-								<p class="text-lg font-bold text-brand-600 mt-1">
+								<p class="text-lg font-bold text-[#007AFF] mt-1">
 									{{ getPriceForPeriod(pendingUpgrade.plan, pendingUpgrade.period) }} Dhs
 									<span class="text-sm font-normal text-slate-500">
 										{{ pendingUpgrade.period === 'monthly' ? '/mois' : pendingUpgrade.period ===
@@ -465,10 +464,9 @@ const resetSubscriptionForTesting = async () => {
 							</div>
 
 							<!-- Info message -->
-							<div
-								class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-								<p class="text-sm text-amber-800 dark:text-amber-200">
-									<Icon name="ph:info-bold" class="inline mr-1" />
+							<div class="flex items-start gap-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl px-4 py-3">
+								<Icon name="ph:info" class="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" size="14" />
+								<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
 									<template v-if="pendingUpgrade.period === 'lifetime' ||
 										(pendingUpgrade.period === 'annual' && currentSubscription?.billingPeriod === 'monthly')">
 										{{ $t('subscription.prorated_message') }}
@@ -483,11 +481,11 @@ const resetSubscriptionForTesting = async () => {
 						<!-- Actions -->
 						<div class="flex gap-3 pt-2">
 							<button @click="cancelUpgrade"
-								class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+								class="flex-1 px-4 py-3 bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-[#E5E5EA] dark:hover:bg-[#3A3A3C] transition-colors">
 								{{ $t('common.cancel') }}
 							</button>
 							<button @click="confirmUpgrade" :disabled="loading"
-								class="flex-1 px-4 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50">
+								class="flex-1 px-4 py-3 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all disabled:opacity-40">
 								<Icon v-if="loading" name="ph:spinner-gap-bold" class="animate-spin mr-2" />
 								{{ $t('subscription.confirm_change') }}
 							</button>

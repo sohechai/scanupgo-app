@@ -45,15 +45,15 @@ onMounted(async () => {
 const getStatusBadge = (status: string) => {
 	switch (status) {
 		case 'paid':
-			return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+			return 'bg-[#34C759]/10 text-[#34C759] border-[#34C759]/20'
 		case 'open':
-			return 'bg-blue-50 text-blue-700 border-blue-200'
+			return 'bg-[#FF9500]/10 text-[#FF9500] border-[#FF9500]/20'
 		case 'void':
-			return 'bg-slate-50 text-slate-700 border-slate-200'
+			return 'bg-[#F2F2F7] text-slate-500 border-[#E5E5EA]'
 		case 'uncollectible':
-			return 'bg-red-50 text-red-700 border-red-200'
+			return 'bg-[#FF3B30]/10 text-[#FF3B30] border-[#FF3B30]/20'
 		default:
-			return 'bg-slate-50 text-slate-600 border-slate-200'
+			return 'bg-[#F2F2F7] text-slate-500 border-[#E5E5EA]'
 	}
 }
 
@@ -79,7 +79,7 @@ const getStatusLabel = (status: string) => {
 		<!-- Header -->
 		<div class="flex items-center justify-between">
 			<div>
-				<h1 class="font-display text-2xl font-bold text-slate-900 tracking-tight mb-2">
+				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
 					{{ $t('subscription.invoices.title') }}
 				</h1>
 				<p class="text-slate-500">
@@ -87,7 +87,7 @@ const getStatusLabel = (status: string) => {
 				</p>
 			</div>
 			<NuxtLink to="/dashboard/subscription"
-				class="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-lg text-sm transition-colors">
+				class="px-4 py-2 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] text-slate-700 dark:text-slate-300 font-medium rounded-lg text-sm transition-colors">
 				<Icon name="ph:arrow-left-bold" class="inline mr-2 rtl:rotate-180" />
 				{{ $t('subscription.invoices.back') }}
 			</NuxtLink>
@@ -95,7 +95,7 @@ const getStatusLabel = (status: string) => {
 
 		<!-- Loading State -->
 		<div v-if="loading" class="text-center py-20">
-			<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-brand-600 animate-spin mb-3" />
+			<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-slate-300 animate-spin mb-3" />
 			<p class="text-slate-500 font-medium">{{ $t('subscription.invoices.loading') }}</p>
 		</div>
 
@@ -108,18 +108,18 @@ const getStatusLabel = (status: string) => {
 
 		<!-- Empty State -->
 		<div v-else-if="!invoices.length"
-			class="bg-slate-50 border border-slate-200 rounded-xl p-12 text-center max-w-2xl mx-auto">
+			class="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 rounded-2xl p-12 text-center max-w-2xl mx-auto shadow-sm">
 			<Icon name="ph:receipt" size="48" class="mx-auto text-slate-300 mb-4" />
 			<p class="text-slate-600 font-medium">{{ $t('subscription.invoices.no_invoices') }}</p>
 			<p class="text-xs text-slate-400 mt-2">{{ $t('subscription.invoices.no_invoices_message') }}</p>
 		</div>
 
 		<!-- Invoices Table -->
-		<div v-else class="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+		<div v-else class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
 			<div class="overflow-x-auto">
 				<table class="w-full">
 					<thead>
-						<tr class="bg-slate-50 border-b border-slate-100">
+						<tr class="bg-[#F2F2F7] dark:bg-[#2C2C2E] border-b border-[#E5E5EA] dark:border-slate-700/40">
 							<th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
 								{{ $t('subscription.invoices.number') }}
 							</th>
@@ -140,9 +140,9 @@ const getStatusLabel = (status: string) => {
 							</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-slate-100">
+					<tbody class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 						<tr v-for="invoice in invoices" :key="invoice.id"
-							class="hover:bg-slate-50/50 transition-colors">
+							class="hover:bg-[#F2F2F7]/50 dark:hover:bg-[#2C2C2E]/50 transition-colors">
 							<td class="px-6 py-4">
 								<span class="text-sm font-medium text-slate-900">
 									{{ invoice.number || invoice.id.slice(-8) }}
@@ -178,7 +178,7 @@ const getStatusLabel = (status: string) => {
 										{{ $t('subscription.invoices.view') }}
 									</a>
 									<a v-if="invoice.invoicePdf" :href="invoice.invoicePdf" target="_blank"
-										class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition-colors">
+										class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] hover:bg-[#0066DD] text-white text-xs font-medium rounded-lg transition-colors">
 										<Icon name="ph:download-bold" size="14" />
 										{{ $t('subscription.invoices.download') }}
 									</a>

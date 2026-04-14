@@ -7,63 +7,51 @@ definePageMeta({
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
-const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
-// Stats
 const stats = ref<any>(null)
 const statsLoading = ref(true)
-
-// Campaigns
 const campaigns = ref<any[]>([])
 const campaignsLoading = ref(true)
-
-// Automations
 const automations = ref<any[]>([])
 const automationsLoading = ref(true)
 
 const fetchStats = async () => {
 	statsLoading.value = true
-	try {
-		stats.value = await $api('/marketing/stats')
-	} catch (e) {
-		console.error('Error fetching marketing stats:', e)
-	} finally {
-		statsLoading.value = false
-	}
+	try { stats.value = await $api('/marketing/stats') }
+	catch (e) { console.error(e) }
+	finally { statsLoading.value = false }
 }
 
 const fetchCampaigns = async () => {
 	campaignsLoading.value = true
-	try {
-		campaigns.value = await $api('/marketing/campaigns')
-	} catch (e) {
-		console.error('Error fetching campaigns:', e)
-	} finally {
-		campaignsLoading.value = false
-	}
+	try { campaigns.value = await $api('/marketing/campaigns') }
+	catch (e) { console.error(e) }
+	finally { campaignsLoading.value = false }
 }
 
 const fetchAutomations = async () => {
 	automationsLoading.value = true
-	try {
-		automations.value = await $api('/marketing/automations')
-	} catch (e) {
-		console.error('Error fetching automations:', e)
-	} finally {
-		automationsLoading.value = false
-	}
+	try { automations.value = await $api('/marketing/automations') }
+	catch (e) { console.error(e) }
+	finally { automationsLoading.value = false }
 }
 
-const getStatusBadge = (status: string) => {
-	const badges: Record<string, { label: string; class: string }> = {
-		draft: { label: t('marketing.campaigns.status_draft'), class: 'bg-slate-100 text-slate-600' },
-		scheduled: { label: t('marketing.campaigns.status_scheduled'), class: 'bg-blue-100 text-blue-700' },
-		sending: { label: t('marketing.campaigns.status_sending'), class: 'bg-yellow-100 text-yellow-700' },
-		sent: { label: t('marketing.campaigns.status_sent'), class: 'bg-emerald-100 text-emerald-700' },
-		cancelled: { label: t('marketing.campaigns.status_cancelled'), class: 'bg-red-100 text-red-700' },
-	}
-	return badges[status] || { label: status, class: 'bg-slate-100 text-slate-600' }
+const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
+	draft:     { label: t('marketing.campaigns.status_draft'),     dot: 'bg-slate-400',  bg: 'bg-slate-100 dark:bg-slate-700',  text: 'text-slate-500 dark:text-slate-300' },
+	scheduled: { label: t('marketing.campaigns.status_scheduled'), dot: 'bg-[#007AFF]',  bg: 'bg-[#007AFF]/10',                 text: 'text-[#007AFF]' },
+	sending:   { label: t('marketing.campaigns.status_sending'),   dot: 'bg-[#FF9500]',  bg: 'bg-[#FF9500]/10',                 text: 'text-[#FF9500]' },
+	sent:      { label: t('marketing.campaigns.status_sent'),      dot: 'bg-[#34C759]',  bg: 'bg-[#34C759]/10',                 text: 'text-[#34C759]' },
+	cancelled: { label: t('marketing.campaigns.status_cancelled'), dot: 'bg-[#FF3B30]',  bg: 'bg-[#FF3B30]/10',                 text: 'text-[#FF3B30]' },
 }
+
+const getStatus = (s: string) => statusConfig[s] || statusConfig.draft
+
+const automationsList = computed(() => [
+	{ type: 'welcome',    label: t('marketing.automations.welcome_type'),        icon: 'ph:hand-waving-fill',    configured: !!automations.value.find(a => a.type === 'welcome'),    enabled: automations.value.find(a => a.type === 'welcome')?.enabled },
+	{ type: 'inactivity', label: t('marketing.automations.inactivity_type'),     icon: 'ph:clock-clockwise-fill', configured: !!automations.value.find(a => a.type === 'inactivity'), enabled: automations.value.find(a => a.type === 'inactivity')?.enabled },
+	{ type: 'post_win',   label: t('marketing.automations.prize_reminder_type'), icon: 'ph:gift-fill',           configured: !!automations.value.find(a => a.type === 'post_win'),   enabled: automations.value.find(a => a.type === 'post_win')?.enabled },
+])
 
 onMounted(async () => {
 	await fetchSubscription()
@@ -76,198 +64,170 @@ onMounted(async () => {
 </script>
 
 <template>
-	<!-- Subscription Required -->
 	<SubscriptionGate>
-	<div class="space-y-8">
-		<!-- Header -->
-		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+	<div class="space-y-5">
+
+		<!-- ── Header ── -->
+		<div class="flex items-center justify-between">
 			<div>
-				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-					{{ $t('marketing.index.title') }}
-				</h1>
-				<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
-					{{ $t('marketing.index.subtitle') }}
-				</p>
+				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('marketing.index.title') }}</h1>
+				<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">{{ $t('marketing.index.subtitle') }}</p>
 			</div>
 			<NuxtLink to="/dashboard/marketing/campaigns/new"
-				class="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20">
-				<Icon name="ph:plus-bold" size="18" />
+				class="flex items-center gap-2 px-4 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all text-sm shadow-lg shadow-[#007AFF]/25 whitespace-nowrap">
+				<Icon name="ph:plus-bold" size="15" />
 				{{ $t('marketing.index.new_campaign') }}
 			</NuxtLink>
 		</div>
 
-		<!-- Stats Cards -->
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-			<!-- Total Campaigns -->
-			<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('marketing.index.stats.campaigns') }}</span>
-						<span class="text-3xl font-display font-bold text-slate-900 dark:text-white">
-							{{ statsLoading ? '-' : (stats?.totalCampaigns || 0) }}
-						</span>
-					</div>
-					<div class="w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center text-brand-600">
-						<Icon name="ph:envelope-simple-fill" size="20" />
-					</div>
-				</div>
+		<!-- ── Stats strip ── -->
+		<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">{{ $t('marketing.index.stats.campaigns') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ statsLoading ? '—' : (stats?.totalCampaigns || 0) }}</p>
 			</div>
-
-			<!-- Total Sent -->
-			<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('marketing.index.stats.sent') }}</span>
-						<span class="text-3xl font-display font-bold text-slate-900 dark:text-white">
-							{{ statsLoading ? '-' : (stats?.totalSent || 0) }}
-						</span>
-					</div>
-					<div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-						<Icon name="ph:paper-plane-tilt-fill" size="20" />
-					</div>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">{{ $t('marketing.index.stats.sent') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ statsLoading ? '—' : (stats?.totalSent || 0) }}</p>
 			</div>
-
-			<!-- Open Rate -->
-			<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('marketing.index.stats.open_rate') }}</span>
-						<span class="text-3xl font-display font-bold text-slate-900 dark:text-white">
-							{{ statsLoading ? '-' : `${stats?.openRate || 0}%` }}
-						</span>
-					</div>
-					<div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600">
-						<Icon name="ph:eye-fill" size="20" />
-					</div>
-				</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">{{ $t('marketing.index.stats.open_rate') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ statsLoading ? '—' : `${stats?.openRate || 0}%` }}</p>
 			</div>
-
-			<!-- Active Automations -->
-			<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('marketing.index.stats.automations') }}</span>
-						<span class="text-3xl font-display font-bold text-slate-900 dark:text-white">
-							{{ statsLoading ? '-' : (stats?.activeAutomations || 0) }}
-						</span>
-					</div>
-					<div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600">
-						<Icon name="ph:lightning-fill" size="20" />
-					</div>
-				</div>
-				<NuxtLink to="/dashboard/marketing/automations" class="text-xs text-brand-500 hover:text-brand-600 font-medium">
-					{{ $t('marketing.index.stats.configure') }}
-				</NuxtLink>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">{{ $t('marketing.index.stats.automations') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ statsLoading ? '—' : (stats?.activeAutomations || 0) }}</p>
 			</div>
-
-			<!-- Opt-in Players -->
-			<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-				<div class="flex items-start justify-between mb-4">
-					<div class="flex flex-col">
-						<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ $t('marketing.index.stats.optin_players') }}</span>
-						<span class="text-3xl font-display font-bold text-slate-900 dark:text-white">
-							{{ statsLoading ? '-' : (stats?.optInPlayers || 0) }}
-						</span>
-					</div>
-					<div class="w-10 h-10 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center text-cyan-600">
-						<Icon name="ph:users-three-fill" size="20" />
-					</div>
-				</div>
-				<NuxtLink to="/dashboard/players" class="text-xs text-brand-500 hover:text-brand-600 font-medium">
-					{{ $t('marketing.index.stats.see_players') }}
-				</NuxtLink>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
+				<p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1 font-medium">{{ $t('marketing.index.stats.optin_players') }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ statsLoading ? '—' : (stats?.optInPlayers || 0) }}</p>
 			</div>
 		</div>
 
-		<!-- Main Content Grid -->
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Recent Campaigns -->
-			<div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-				<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-					<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('marketing.index.recent_campaigns') }}</h3>
-					<NuxtLink to="/dashboard/marketing/campaigns" class="text-sm text-brand-600 hover:text-brand-700 font-medium">
-						{{ $t('marketing.index.see_all') }}
+		<!-- ── Main grid ── -->
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+			<!-- Recent campaigns -->
+			<div class="lg:col-span-2 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
+				<!-- Header -->
+				<div class="flex items-center justify-between px-5 py-4 border-b border-[#E5E5EA] dark:border-slate-700/40">
+					<p class="text-sm font-bold text-slate-800 dark:text-white">{{ $t('marketing.index.recent_campaigns') }}</p>
+					<NuxtLink to="/dashboard/marketing/campaigns" class="text-xs font-semibold text-[#007AFF] hover:text-[#0066DD] transition-colors">
+						{{ $t('marketing.index.see_all') }} →
 					</NuxtLink>
 				</div>
 
 				<!-- Loading -->
-				<div v-if="campaignsLoading" class="p-12 text-center">
-					<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-slate-300 animate-spin" />
+				<div v-if="campaignsLoading" class="p-10 flex items-center justify-center">
+					<Icon name="ph:spinner-gap-bold" size="28" class="text-slate-300 animate-spin" />
 				</div>
 
 				<!-- Empty -->
-				<div v-else-if="campaigns.length === 0" class="p-12 text-center">
-					<div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-						<Icon name="ph:envelope-simple" size="32" class="text-slate-400" />
+				<div v-else-if="campaigns.length === 0" class="p-10 text-center">
+					<div class="w-14 h-14 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center mx-auto mb-3">
+						<Icon name="ph:envelope-simple" size="26" class="text-slate-400" />
 					</div>
-					<p class="text-slate-500 dark:text-slate-400 mb-4">{{ $t('marketing.index.no_campaigns') }}</p>
+					<p class="text-slate-500 dark:text-slate-400 text-sm mb-4">{{ $t('marketing.index.no_campaigns') }}</p>
 					<NuxtLink to="/dashboard/marketing/campaigns/new"
-						class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white font-bold rounded-lg text-sm hover:bg-brand-700 transition-colors">
-						<Icon name="ph:plus-bold" size="16" />
+						class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#007AFF] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#007AFF]/25">
+						<Icon name="ph:plus-bold" size="14" />
 						{{ $t('marketing.index.create_campaign') }}
 					</NuxtLink>
 				</div>
 
 				<!-- List -->
-				<div v-else class="divide-y divide-slate-100 dark:divide-slate-700">
-					<NuxtLink v-for="campaign in campaigns.slice(0, 5)" :key="campaign.id"
+				<div v-else class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+					<NuxtLink
+						v-for="campaign in campaigns.slice(0, 5)" :key="campaign.id"
 						:to="`/dashboard/marketing/campaigns/${campaign.id}`"
-						class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+						class="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+						<!-- Status dot accent -->
+						<div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+							:class="getStatus(campaign.status).bg">
+							<span :class="[getStatus(campaign.status).dot, 'w-2.5 h-2.5 rounded-full']"></span>
+						</div>
 						<div class="flex-1 min-w-0">
-							<p class="font-bold text-slate-900 dark:text-white truncate">{{ campaign.name }}</p>
-							<p class="text-sm text-slate-500 dark:text-slate-400 truncate">{{ campaign.subject }}</p>
+							<p class="font-semibold text-slate-900 dark:text-white truncate text-sm">{{ campaign.name }}</p>
+							<p class="text-xs text-slate-400 truncate mt-0.5">{{ campaign.subject }}</p>
 						</div>
-						<div class="flex items-center gap-3">
-							<span :class="[getStatusBadge(campaign.status).class, 'text-xs font-bold px-2.5 py-1 rounded-full']">
-								{{ getStatusBadge(campaign.status).label }}
+						<div class="flex flex-col items-end gap-1 shrink-0">
+							<span :class="[getStatus(campaign.status).bg, getStatus(campaign.status).text]"
+								class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+								{{ getStatus(campaign.status).label }}
 							</span>
-							<span class="text-xs text-slate-400">{{ formatDate(campaign.createdAt) }}</span>
+							<span class="text-[11px] text-slate-400">{{ formatDate(campaign.createdAt) }}</span>
 						</div>
+						<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0" />
 					</NuxtLink>
 				</div>
 			</div>
 
-			<!-- Automations Sidebar -->
-			<div class="space-y-6">
-				<!-- Quick Actions -->
-				<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
-					<h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('marketing.index.quick_actions') }}</h3>
-					<div class="space-y-3">
+			<!-- Sidebar -->
+			<div class="space-y-3">
+
+				<!-- Quick actions -->
+				<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
+					<div class="px-5 py-3.5 border-b border-[#E5E5EA] dark:border-slate-700/40">
+						<p class="text-sm font-bold text-slate-800 dark:text-white">{{ $t('marketing.index.quick_actions') }}</p>
+					</div>
+					<div class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
 						<NuxtLink to="/dashboard/marketing/campaigns/new"
-							class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-							<div class="w-8 h-8 rounded-md bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center text-brand-600">
-								<Icon name="ph:plus-bold" size="16" />
+							class="flex items-center gap-3.5 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+							<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+								<Icon name="ph:plus-bold" class="text-slate-500 dark:text-slate-400" size="16" />
 							</div>
-							<span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ $t('marketing.index.new_campaign') }}</span>
-						</NuxtLink>
-						<NuxtLink to="/dashboard/marketing/automations"
-							class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-							<div class="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600">
-								<Icon name="ph:lightning-fill" size="16" />
-							</div>
-							<span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ $t('marketing.index.automations_link') }}</span>
+							<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-1">{{ $t('marketing.index.new_campaign') }}</span>
+							<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
 						</NuxtLink>
 						<NuxtLink to="/dashboard/players"
-							class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-							<div class="w-8 h-8 rounded-md bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600">
-								<Icon name="ph:users-three-fill" size="16" />
+							class="flex items-center gap-3.5 px-5 py-3.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors group">
+							<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+								<Icon name="ph:users-three-fill" class="text-slate-500 dark:text-slate-400" size="16" />
 							</div>
-							<span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ $t('marketing.index.stats.see_players') }}</span>
+							<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-1">{{ $t('marketing.index.stats.see_players') }}</span>
+							<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
 						</NuxtLink>
 					</div>
 				</div>
 
-				<!-- Tips -->
-				<div class="bg-gradient-to-br from-brand-600 to-indigo-600 rounded-xl p-6 text-white">
-					<div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mb-4">
-						<Icon name="ph:lightbulb-fill" size="20" />
+				<!-- Automations card -->
+				<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
+					<div class="flex items-center justify-between px-5 py-3.5 border-b border-[#E5E5EA] dark:border-slate-700/40">
+						<div class="flex items-center gap-2">
+							<Icon name="ph:lightning-fill" class="text-slate-400 dark:text-slate-500" size="14" />
+							<p class="text-sm font-bold text-slate-800 dark:text-white">{{ $t('marketing.index.automations_link') }}</p>
+						</div>
+						<NuxtLink to="/dashboard/marketing/automations"
+							class="text-xs font-semibold text-[#007AFF] hover:text-[#0066DD] transition-colors">
+							{{ $t('marketing.index.manage') }} →
+						</NuxtLink>
 					</div>
-					<h4 class="font-bold mb-2">{{ $t('marketing.index.tip_title') }}</h4>
-					<p class="text-sm text-white/80 leading-relaxed">
-						{{ $t('marketing.index.tip_message') }}
-					</p>
+
+					<!-- Loading -->
+					<div v-if="automationsLoading" class="p-5 flex items-center justify-center">
+						<Icon name="ph:spinner-gap-bold" size="20" class="text-slate-300 animate-spin" />
+					</div>
+
+					<div v-else class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+						<NuxtLink v-for="auto in automationsList" :key="auto.type"
+							to="/dashboard/marketing/automations"
+							class="flex items-center gap-3 px-5 py-3 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors">
+							<div class="w-7 h-7 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
+								<Icon :name="auto.icon" class="text-slate-400 dark:text-slate-500" size="13" />
+							</div>
+							<span class="text-sm font-medium text-slate-700 dark:text-slate-300 flex-1">{{ auto.label }}</span>
+							<span :class="auto.enabled
+									? 'bg-[#34C759]/10 text-[#34C759] border-[#34C759]/20'
+									: auto.configured
+										? 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-400 border-[#E5E5EA] dark:border-slate-700/40'
+										: 'bg-[#FF9500]/8 text-[#FF9500] border-[#FF9500]/20'"
+								class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border">
+								{{ auto.enabled ? $t('marketing.automations.active') : auto.configured ? $t('marketing.automations.inactive') : $t('marketing.index.to_configure') }}
+							</span>
+						</NuxtLink>
+					</div>
 				</div>
+
 			</div>
 		</div>
 	</div>
