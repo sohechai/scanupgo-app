@@ -1,5 +1,6 @@
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
+import pkg from 'file-saver'
+const { saveAs } = pkg
 
 export interface Order {
 	id: string
