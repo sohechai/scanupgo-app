@@ -37,15 +37,15 @@ const fetchAutomations = async () => {
 	finally { automationsLoading.value = false }
 }
 
-const statusConfig: Record<string, { label: string; dot: string; bg: string; text: string }> = {
+const statusConfig = computed(() => ({
 	draft:     { label: t('marketing.campaigns.status_draft'),     dot: 'bg-slate-400',  bg: 'bg-slate-100 dark:bg-slate-700',  text: 'text-slate-500 dark:text-slate-300' },
 	scheduled: { label: t('marketing.campaigns.status_scheduled'), dot: 'bg-[#007AFF]',  bg: 'bg-[#007AFF]/10',                 text: 'text-[#007AFF]' },
 	sending:   { label: t('marketing.campaigns.status_sending'),   dot: 'bg-[#FF9500]',  bg: 'bg-[#FF9500]/10',                 text: 'text-[#FF9500]' },
 	sent:      { label: t('marketing.campaigns.status_sent'),      dot: 'bg-[#34C759]',  bg: 'bg-[#34C759]/10',                 text: 'text-[#34C759]' },
 	cancelled: { label: t('marketing.campaigns.status_cancelled'), dot: 'bg-[#FF3B30]',  bg: 'bg-[#FF3B30]/10',                 text: 'text-[#FF3B30]' },
-}
+}))
 
-const getStatus = (s: string) => statusConfig[s] || statusConfig.draft
+const getStatus = (s: string) => statusConfig.value[s] || statusConfig.value.draft
 
 const automationsList = computed(() => [
 	{ type: 'welcome',    label: t('marketing.automations.welcome_type'),        icon: 'ph:hand-waving-fill',    configured: !!automations.value.find(a => a.type === 'welcome'),    enabled: automations.value.find(a => a.type === 'welcome')?.enabled },
