@@ -6,6 +6,7 @@ import CancelModal from '~/components/subscription/CancelModal.vue'
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const toast = useToast()
+const { fetchSubscription: refreshSharedSubscription, subscription: sharedSubscription } = useSubscription()
 
 definePageMeta({
 	layout: 'dashboard',
@@ -94,8 +95,9 @@ onMounted(async () => {
 		}
 
 		// Fetch current subscription, plans and trial info in parallel
+		// Use refreshSharedSubscription so SubscriptionGate lifts immediately after subscribing
 		const [subscription, rawPlans, trial] = await Promise.all([
-			$api<any>('/subscriptions/current'),
+			refreshSharedSubscription(true),
 			$api<any[]>('/subscriptions/plans'),
 			$api<{ eligible: boolean; days: number }>('/subscriptions/trial-info'),
 		])
@@ -207,6 +209,10 @@ const cancelSubscription = async (reason?: string) => {
 		})
 
 		if (response.success) {
+			// Immediately update shared subscription state so SubscriptionGate blocks access at once
+			if ((response as any).subscription) {
+				sharedSubscription.value = (response as any).subscription
+			}
 			toast.show(response.message, 'success')
 			showCancelModal.value = false
 			setTimeout(reloadClean, 1500)

@@ -1,3 +1,6 @@
+// Module-level dedup: one in-flight fetch at a time
+let _pendingFetch: Promise<any> | null = null
+
 export const useSubscription = () => {
 	const { $api } = useNuxtApp()
 	const { user } = useAuth()
@@ -28,16 +31,20 @@ export const useSubscription = () => {
 		// Don't fetch again if already fetched (unless forced)
 		if (fetched.value && !force) return subscription.value
 
+		// Dedup: if a fetch is already in-flight, wait for it instead of firing another
+		if (_pendingFetch) return _pendingFetch
+
 		loading.value = true
-		try {
-			subscription.value = await $api('/subscriptions/current')
-		} catch (error) {
-			console.error('Failed to fetch subscription:', error)
-			subscription.value = null
-		} finally {
-			loading.value = false
-			fetched.value = true
-		}
+		_pendingFetch = $api('/subscriptions/current', { params: force ? { sync: 'true' } : {} })
+			.then((data: any) => { subscription.value = data })
+			.catch(() => { subscription.value = null })
+			.finally(() => {
+				loading.value = false
+				fetched.value = true
+				_pendingFetch = null
+			})
+
+		await _pendingFetch
 		return subscription.value
 	}
 

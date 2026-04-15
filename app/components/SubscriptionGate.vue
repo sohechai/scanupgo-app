@@ -1,8 +1,10 @@
 <script setup lang="ts">
-const { subscription, isAdmin } = useSubscription()
+const { subscription, loading, isAdmin } = useSubscription()
 
 const hasAccess = computed(() => {
 	if (isAdmin.value) return true
+	// Optimistic: show content while loading to avoid blocking render
+	if (loading.value) return true
 	if (!subscription.value) return false
 	return ['active', 'trialing'].includes(subscription.value.status)
 })

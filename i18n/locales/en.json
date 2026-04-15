@@ -876,6 +876,7 @@
 			"status_active": "Active",
 			"status_ending_soon": "Ending soon",
 			"my_invoices": "My invoices",
+			"billing_portal": "Manage billing",
 			"choose_new_plan": "Choose a new plan",
 			"reactivate": "Reactivate my subscription",
 			"loading": "Loading...",

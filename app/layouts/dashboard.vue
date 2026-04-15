@@ -11,9 +11,12 @@ const requiresSubscription = computed(() =>
 	!freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
 )
 
-// Always force-refresh subscription so stale SPA cache never grants access
-onMounted(async () => {
-	await fetchSubscription(true)
+// Fetch fresh subscription on layout mount (fires once per session login).
+// Fire-and-forget: content renders immediately, gate updates reactively.
+const lastSubscriptionFetch = ref(0)
+onMounted(() => {
+	lastSubscriptionFetch.value = Date.now()
+	fetchSubscription(true)
 	startPolling(10000)
 })
 
@@ -37,11 +40,16 @@ const isActive = (path: string) => route.path === path || (path !== '/dashboard'
 
 const isSidebarOpen = ref(false)
 
-// Close sidebar on route change (mobile)
+// Close sidebar on route change (mobile) + re-check subscription (2min TTL, fire-and-forget)
 watch(
 	() => route.path,
 	() => {
 		isSidebarOpen.value = false
+		const now = Date.now()
+		if (now - lastSubscriptionFetch.value > 2 * 60 * 1000) {
+			lastSubscriptionFetch.value = now
+			fetchSubscription(true) // no await — non-blocking
+		}
 	}
 )
 

@@ -13,6 +13,20 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
+const { $api } = useNuxtApp()
+
+const portalLoading = ref(false)
+const openBillingPortal = async () => {
+	portalLoading.value = true
+	try {
+		const { url } = await $api<{ url: string }>('/subscriptions/billing-portal', { method: 'POST' })
+		window.open(url, '_blank')
+	} catch {
+		// silently fail — portal not configured
+	} finally {
+		portalLoading.value = false
+	}
+}
 
 const billingPeriodLabel = computed(() => {
 	if (props.subscription?.billingPeriod === 'monthly') return t('subscription.current.monthly')
@@ -191,6 +205,14 @@ const statusBadgeClass = computed(() => {
 					<Icon name="ph:receipt-bold" size="15" />
 					{{ $t('subscription.current.my_invoices') }}
 				</NuxtLink>
+
+				<!-- Stripe Billing Portal -->
+				<button v-if="subscription.billingPeriod !== 'lifetime'" @click="openBillingPortal" :disabled="portalLoading"
+					class="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-sm shadow-sm transition-colors hover:bg-[#F2F2F7] disabled:opacity-50">
+					<Icon v-if="portalLoading" name="ph:spinner-gap-bold" class="animate-spin" size="15" />
+					<Icon v-else name="ph:credit-card-bold" size="15" />
+					{{ $t('subscription.current.billing_portal') }}
+				</button>
 
 				<!-- Expired: choose new plan -->
 				<button v-if="isExpired" @click="emit('changePlan')"
