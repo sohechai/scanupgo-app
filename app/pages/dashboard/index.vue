@@ -410,7 +410,17 @@ const exportPlayersCSV = () => {
 
 // Lifecycle
 onMounted(() => {
-	fetchSubscription()
+	fetchSubscription() // non-blocking
+
+	// If the cache already tells us the user is not subscribed (loading=false, no active sub),
+	// skip the heavy data calls — the gate will hide the content anyway.
+	if (!subscriptionLoading.value && !hasActiveSubscription.value) {
+		sessionsLoading.value = false
+		statsLoading.value = false
+		playersLoading.value = false
+		return
+	}
+
 	fetchSessions()
 	fetchPlayers()
 	fetchDashboardStats()

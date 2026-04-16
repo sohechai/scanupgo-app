@@ -1,3 +1,11 @@
+// Cache auth status for 60s — avoids a backend round-trip on every tab click.
+// The backend session is still the authority; this just reduces chattiness.
+const _authCache = {
+	user: null as any,
+	checkedAt: 0,
+	TTL: 60_000, // 1 minute
+}
+
 export default defineNuxtRouteMiddleware(async (to) => {
 	// Skip middleware on server-side
 	if (import.meta.server) {
@@ -18,67 +26,80 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const isAdminSubdomain = host.startsWith('admin.')
 	const loginPath = isAdminSubdomain ? '/admin/login' : '/login'
 
-	try {
-		// Always verify session with backend
-		// This ensures we have a valid server-side session
-		const response = await $api<{ authenticated: boolean; user: any }>('/auth/status')
+	let user: any = null
 
-		if (!response.authenticated || !response.user) {
-			// Clear local state and redirect to login
+	// Use cached auth result if fresh enough — skip the backend call
+	const now = Date.now()
+	if (_authCache.user && now - _authCache.checkedAt < _authCache.TTL) {
+		user = _authCache.user
+	} else {
+		try {
+			// 5-second timeout — if the backend doesn't respond, fail fast
+			const controller = new AbortController()
+			const timeout = setTimeout(() => controller.abort(), 5000)
+
+			const response = await $api<{ authenticated: boolean; user: any }>('/auth/status', {
+				signal: controller.signal,
+			})
+			clearTimeout(timeout)
+
+			if (!response.authenticated || !response.user) {
+				_authCache.user = null
+				_authCache.checkedAt = 0
+				authStore.user = null
+				authStore._saveState()
+				return navigateTo(loginPath)
+			}
+
+			user = response.user
+			_authCache.user = user
+			_authCache.checkedAt = now
+		} catch (error: any) {
+			// Timeout or network error — redirect to login
+			console.warn('Auth check failed:', error?.message || error)
+			_authCache.user = null
+			_authCache.checkedAt = 0
 			authStore.user = null
+			authStore.initialized = true
 			authStore._saveState()
 			return navigateTo(loginPath)
 		}
+	}
 
-		// Update local state with server user data
-		// Only replace the user object if the ID changed to avoid unnecessary re-renders
-		if (authStore.user?.id !== response.user.id) {
-			authStore.user = response.user
-		} else {
-			Object.assign(authStore.user, response.user)
+	// Update local state
+	if (authStore.user?.id !== user.id) {
+		authStore.user = user
+	} else {
+		Object.assign(authStore.user, user)
+	}
+	authStore.initialized = true
+	authStore._saveState()
+
+	// Apply user's preferred language via cookie
+	if (user.preferredLanguage) {
+		const localeCookie = useCookie('i18n_locale')
+		localeCookie.value = user.preferredLanguage
+	}
+
+	// Block access if account is suspended
+	if (user.status === 'suspended' && to.path !== '/account-suspended') {
+		return navigateTo('/account-suspended')
+	}
+
+	// Block access to dashboard if email is not verified
+	if (!user.emailVerified && to.path.startsWith('/dashboard')) {
+		return navigateTo('/verify-email-pending')
+	}
+
+	// Onboarding flow
+	if (user.emailVerified && to.path.startsWith('/dashboard')) {
+		const business = user.business
+		const onboardingDone = business?.name &&
+			business.name.trim() !== '' &&
+			business.name.trim() !== user.email?.trim()
+
+		if (!onboardingDone && to.path !== '/dashboard/onboarding') {
+			return navigateTo('/dashboard/onboarding')
 		}
-		authStore.initialized = true
-		authStore._saveState()
-
-		// Apply user's preferred language via cookie (read by @nuxtjs/i18n on next load)
-		if (response.user.preferredLanguage) {
-			const localeCookie = useCookie('i18n_locale')
-			localeCookie.value = response.user.preferredLanguage
-		}
-
-		// Block access if account is suspended
-		if (response.user.status === 'suspended' && to.path !== '/account-suspended') {
-			return navigateTo('/account-suspended')
-		}
-
-		// Block access to dashboard if email is not verified
-		if (!response.user.emailVerified && to.path.startsWith('/dashboard')) {
-			return navigateTo('/verify-email-pending')
-		}
-
-		// Onboarding flow (only for dashboard routes, not for the target pages themselves)
-		if (response.user.emailVerified && to.path.startsWith('/dashboard')) {
-			const business = response.user.business
-			const userEmail = response.user.email
-			const onboardingDone = business?.name &&
-				business.name.trim() !== '' &&
-				business.name.trim() !== userEmail?.trim()
-			const hasActiveSubscription = business?.subscription &&
-				['active', 'trialing'].includes(business.subscription.status)
-
-			// Step 1: fill business info
-			if (!onboardingDone && to.path !== '/dashboard/onboarding') {
-				return navigateTo('/dashboard/onboarding')
-			}
-
-			// Step 2: subscription page remains accessible, other pages show a gate overlay (no forced redirect)
-		}
-	} catch (error: any) {
-		// If status check fails (401, network error, etc.), redirect to login
-		console.warn('Auth check failed:', error)
-		authStore.user = null
-		authStore.initialized = true
-		authStore._saveState()
-		return navigateTo(loginPath)
 	}
 })

@@ -38,6 +38,11 @@ export default defineNuxtConfig({
 		fallback: 'light',
 		storageKey: 'nuxt-color-mode'
 	},
+	// Dashboard routes are auth-only — SSR provides no value and causes hydration mismatches
+	// because user/subscription data is only available client-side.
+	routeRules: {
+		'/dashboard/**': { ssr: false },
+	},
 	compatibilityDate: '2025-07-15',
 	runtimeConfig: {
 		public: {
