@@ -3,7 +3,9 @@ const { subscription, loading, isAdmin } = useSubscription()
 
 const hasAccess = computed(() => {
 	if (isAdmin.value) return true
-	// Optimistic: show content while loading to avoid blocking render
+	// Optimistic: show content while loading.
+	// For returning users, the localStorage cache (subscription-cache.client plugin)
+	// sets loading=false before the first render, so this branch is rarely hit.
 	if (loading.value) return true
 	if (!subscription.value) return false
 	return ['active', 'trialing'].includes(subscription.value.status)
@@ -17,11 +19,11 @@ const features = [
 </script>
 
 <template>
-	<div v-if="hasAccess">
+	<div v-show="hasAccess">
 		<slot />
 	</div>
 
-	<div v-else class="flex flex-col items-center justify-center py-16 px-4">
+	<div v-show="!hasAccess" class="flex flex-col items-center justify-center py-16 px-4">
 		<div class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_24px_-4px_rgba(6,81,237,0.1)] overflow-hidden">
 
 			<!-- Top accent line -->
