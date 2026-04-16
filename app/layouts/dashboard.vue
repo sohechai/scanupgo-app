@@ -15,13 +15,21 @@ const requiresSubscription = computed(() => {
 
 // Fetch fresh subscription on layout mount (fires once per session login).
 // Fire-and-forget: content renders immediately, gate updates reactively.
+const handleVisibilityChange = () => {
+	if (document.visibilityState === 'visible') {
+		fetchSubscription()
+	}
+}
+
 onMounted(() => {
 	fetchSubscription() // Read DB only — no Stripe sync on every page load
 	startPolling(10000)
+	document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
 	stopPolling()
+	document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 const navItems = computed(() => [

@@ -1,7 +1,7 @@
 // Module-level dedup: one in-flight fetch at a time
 let _pendingFetch: Promise<any> | null = null
 let _lastFetchedAt: number = 0
-const SUBSCRIPTION_TTL = 2 * 60 * 1000 // 2 minutes
+const SUBSCRIPTION_TTL = 30 * 1000 // 30 seconds — short enough to pick up refunds/cancellations quickly
 
 export const useSubscription = () => {
 	const { $api } = useNuxtApp()
