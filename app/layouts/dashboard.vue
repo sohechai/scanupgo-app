@@ -41,12 +41,13 @@ const isActive = (path: string) => route.path === path || (path !== '/dashboard'
 const isSidebarOpen = ref(false)
 
 // Close sidebar on route change (mobile).
-// Subscription re-sync only happens on the subscription page itself (see that page's onMounted).
-// On other tab changes we just use the cached DB value — webhooks keep it up to date in production.
+// Also trigger a subscription re-fetch on navigation — the composable has a 2-min TTL,
+// so this only hits the backend when the cached value is stale (no spam).
 watch(
 	() => route.path,
 	() => {
 		isSidebarOpen.value = false
+		fetchSubscription()
 	}
 )
 

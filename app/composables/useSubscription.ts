@@ -1,5 +1,7 @@
 // Module-level dedup: one in-flight fetch at a time
 let _pendingFetch: Promise<any> | null = null
+let _lastFetchedAt: number = 0
+const SUBSCRIPTION_TTL = 2 * 60 * 1000 // 2 minutes
 
 export const useSubscription = () => {
 	const { $api } = useNuxtApp()
@@ -28,8 +30,9 @@ export const useSubscription = () => {
 	})
 
 	const fetchSubscription = async (force = false) => {
-		// Don't fetch again if already fetched (unless forced)
-		if (fetched.value && !force) return subscription.value
+		// Don't fetch again if recently fetched (unless forced or TTL expired)
+		const cacheExpired = Date.now() - _lastFetchedAt > SUBSCRIPTION_TTL
+		if (fetched.value && !force && !cacheExpired) return subscription.value
 
 		// Dedup: if a fetch is already in-flight, wait for it instead of firing another
 		if (_pendingFetch) return _pendingFetch
@@ -41,6 +44,7 @@ export const useSubscription = () => {
 			.finally(() => {
 				loading.value = false
 				fetched.value = true
+				_lastFetchedAt = Date.now()
 				_pendingFetch = null
 			})
 
