@@ -6,29 +6,20 @@ definePageMeta({
 
 const { t } = useI18n()
 const router = useRouter()
-const {
-	notifications,
-	unreadCount,
-	loading,
-	fetchNotifications,
-	markAsRead,
-	markAllAsRead,
-	deleteNotification,
-	getNotificationIcon,
-	getNotificationColor,
-	formatRelativeTime,
-} = useNotifications()
+const { getNotificationIcon, getNotificationColor, formatRelativeTime } = useNotifications()
+const { data: notifications, isLoading: loading } = useNotificationsListQuery({ alwaysEnabled: true })
+const { data: unreadCount } = useNotificationsCountQuery()
+const { mutateAsync: markAsRead } = useMarkAsReadMutation()
+const { mutateAsync: markAllAsRead } = useMarkAllAsReadMutation()
+const { mutateAsync: deleteNotification } = useDeleteNotificationMutation()
 
 const filterType = ref<string>('all')
 
-onMounted(() => {
-	fetchNotifications()
-})
-
 const filteredNotifications = computed(() => {
-	if (filterType.value === 'all') return notifications.value
-	if (filterType.value === 'unread') return notifications.value.filter(n => !n.read)
-	return notifications.value.filter(n => n.type.startsWith(filterType.value))
+	const list = notifications.value ?? []
+	if (filterType.value === 'all') return list
+	if (filterType.value === 'unread') return list.filter(n => !n.read)
+	return list.filter(n => n.type.startsWith(filterType.value))
 })
 
 const filterOptions = computed(() => [

@@ -5,37 +5,11 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
-const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
-const stats = ref<any>(null)
-const statsLoading = ref(true)
-const campaigns = ref<any[]>([])
-const campaignsLoading = ref(true)
-const automations = ref<any[]>([])
-const automationsLoading = ref(true)
-
-const fetchStats = async () => {
-	statsLoading.value = true
-	try { stats.value = await $api('/marketing/stats') }
-	catch (e) { console.error(e) }
-	finally { statsLoading.value = false }
-}
-
-const fetchCampaigns = async () => {
-	campaignsLoading.value = true
-	try { campaigns.value = await $api('/marketing/campaigns') }
-	catch (e) { console.error(e) }
-	finally { campaignsLoading.value = false }
-}
-
-const fetchAutomations = async () => {
-	automationsLoading.value = true
-	try { automations.value = await $api('/marketing/automations') }
-	catch (e) { console.error(e) }
-	finally { automationsLoading.value = false }
-}
+const { data: stats, isLoading: statsLoading } = useMarketingStatsQuery()
+const { data: campaigns, isLoading: campaignsLoading } = useCampaignsQuery()
+const { data: automations, isLoading: automationsLoading } = useAutomationsQuery()
 
 const statusConfig = computed(() => ({
 	draft:     { label: t('marketing.campaigns.status_draft'),     dot: 'bg-slate-400',  bg: 'bg-slate-100 dark:bg-slate-700',  text: 'text-slate-500 dark:text-slate-300' },
@@ -47,19 +21,13 @@ const statusConfig = computed(() => ({
 
 const getStatus = (s: string) => statusConfig.value[s] || statusConfig.value.draft
 
-const automationsList = computed(() => [
-	{ type: 'welcome',    label: t('marketing.automations.welcome_type'),        icon: 'ph:hand-waving-fill',    configured: !!automations.value.find(a => a.type === 'welcome'),    enabled: automations.value.find(a => a.type === 'welcome')?.enabled },
-	{ type: 'inactivity', label: t('marketing.automations.inactivity_type'),     icon: 'ph:clock-clockwise-fill', configured: !!automations.value.find(a => a.type === 'inactivity'), enabled: automations.value.find(a => a.type === 'inactivity')?.enabled },
-	{ type: 'post_win',   label: t('marketing.automations.prize_reminder_type'), icon: 'ph:gift-fill',           configured: !!automations.value.find(a => a.type === 'post_win'),   enabled: automations.value.find(a => a.type === 'post_win')?.enabled },
-])
-
-onMounted(async () => {
-	await fetchSubscription()
-	if (hasActiveSubscription.value) {
-		fetchStats()
-		fetchCampaigns()
-		fetchAutomations()
-	}
+const automationsList = computed(() => {
+	const list = automations.value ?? []
+	return [
+		{ type: 'welcome',    label: t('marketing.automations.welcome_type'),        icon: 'ph:hand-waving-fill',    configured: !!list.find(a => a.type === 'welcome'),    enabled: list.find(a => a.type === 'welcome')?.enabled },
+		{ type: 'inactivity', label: t('marketing.automations.inactivity_type'),     icon: 'ph:clock-clockwise-fill', configured: !!list.find(a => a.type === 'inactivity'), enabled: list.find(a => a.type === 'inactivity')?.enabled },
+		{ type: 'post_win',   label: t('marketing.automations.prize_reminder_type'), icon: 'ph:gift-fill',           configured: !!list.find(a => a.type === 'post_win'),   enabled: list.find(a => a.type === 'post_win')?.enabled },
+	]
 })
 </script>
 

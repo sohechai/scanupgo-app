@@ -1,18 +1,11 @@
 <script setup lang="ts">
 const router = useRouter()
-const {
-	notifications,
-	unreadCount,
-	loading,
-	isDropdownOpen,
-	toggleDropdown,
-	closeDropdown,
-	markAsRead,
-	markAllAsRead,
-	getNotificationIcon,
-	getNotificationColor,
-	formatRelativeTime,
-} = useNotifications()
+const { getNotificationIcon, getNotificationColor, formatRelativeTime } = useNotifications()
+const { data: notifications, isLoading: loading } = useNotificationsListQuery({ limit: 10 })
+const { data: unreadCount } = useNotificationsCountQuery()
+const { isDropdownOpen, toggleDropdown, closeDropdown } = useNotificationsDropdown()
+const { mutateAsync: markAsRead } = useMarkAsReadMutation()
+const { mutateAsync: markAllAsRead } = useMarkAllAsReadMutation()
 
 // Close dropdown when clicking outside
 const dropdownRef = ref<HTMLElement | null>(null)
