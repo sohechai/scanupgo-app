@@ -17,7 +17,7 @@ const requiresSubscription = computed(() => {
 // Fire-and-forget: content renders immediately, gate updates reactively.
 const handleVisibilityChange = () => {
 	if (document.visibilityState === 'visible') {
-		fetchSubscription()
+		fetchSubscription(true) // force bypass cache — picks up refunds/cancellations immediately
 	}
 }
 

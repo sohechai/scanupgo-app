@@ -1,10 +1,6 @@
 // Cache auth status for 60s — avoids a backend round-trip on every tab click.
-// The backend session is still the authority; this just reduces chattiness.
-const _authCache = {
-	user: null as any,
-	checkedAt: 0,
-	TTL: 60_000, // 1 minute
-}
+// Uses useState so signOut() can reset it when switching accounts.
+const AUTH_CACHE_TTL = 60_000 // 1 minute
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	// Skip middleware on server-side
@@ -21,6 +17,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	const nuxtApp = useNuxtApp()
 	const { $api } = nuxtApp
 
+	// Shared cache via useState — accessible from signOut() to clear on logout
+	const authCache = useState<{ user: any; checkedAt: number }>('_auth_cache', () => ({ user: null, checkedAt: 0 }))
+
 	// Determine login path based on subdomain
 	const host = window.location.hostname
 	const isAdminSubdomain = host.startsWith('admin.')
@@ -30,8 +29,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 	// Use cached auth result if fresh enough — skip the backend call
 	const now = Date.now()
-	if (_authCache.user && now - _authCache.checkedAt < _authCache.TTL) {
-		user = _authCache.user
+	if (authCache.value.user && now - authCache.value.checkedAt < AUTH_CACHE_TTL) {
+		user = authCache.value.user
 	} else {
 		try {
 			// 5-second timeout — if the backend doesn't respond, fail fast
@@ -44,21 +43,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			clearTimeout(timeout)
 
 			if (!response.authenticated || !response.user) {
-				_authCache.user = null
-				_authCache.checkedAt = 0
+				authCache.value = { user: null, checkedAt: 0 }
 				authStore.user = null
 				authStore._saveState()
 				return navigateTo(loginPath)
 			}
 
 			user = response.user
-			_authCache.user = user
-			_authCache.checkedAt = now
+			authCache.value = { user, checkedAt: now }
 		} catch (error: any) {
 			// Timeout or network error — redirect to login
 			console.warn('Auth check failed:', error?.message || error)
-			_authCache.user = null
-			_authCache.checkedAt = 0
+			authCache.value = { user: null, checkedAt: 0 }
 			authStore.user = null
 			authStore.initialized = true
 			authStore._saveState()

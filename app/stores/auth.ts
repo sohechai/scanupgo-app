@@ -193,6 +193,9 @@ export const useAuthStore = defineStore('auth', {
 			} finally {
 				this.user = null
 				this._saveState()
+				// Clear the auth middleware cache so the next login isn't served stale data
+				const authCache = useState<{ user: any; checkedAt: number }>('_auth_cache')
+				if (authCache.value) authCache.value = { user: null, checkedAt: 0 }
 				// Stay on current subdomain
 				await navigateTo('/login', { external: false })
 			}
