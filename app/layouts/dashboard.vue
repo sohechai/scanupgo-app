@@ -6,10 +6,12 @@ const { startPolling, stopPolling } = useNotifications()
 const { fetchSubscription, hasActiveSubscription, isAdmin } = useSubscription()
 
 // Routes accessible without active subscription
+// /dashboard (exact) handles its own subscription display inline — don't wrap it in the layout gate
 const freeRoutes = ['/dashboard/subscription', '/dashboard/account', '/dashboard/profile', '/dashboard/onboarding']
-const requiresSubscription = computed(() =>
-	!freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
-)
+const requiresSubscription = computed(() => {
+	if (route.path === '/dashboard') return false
+	return !freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
+})
 
 // Fetch fresh subscription on layout mount (fires once per session login).
 // Fire-and-forget: content renders immediately, gate updates reactively.

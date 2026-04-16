@@ -432,30 +432,6 @@ onMounted(() => {
 	<div class="space-y-8 relative">
 
 		<!-- ========================================== -->
-		<!-- SUBSCRIPTION CTA BANNER (No Active Sub)   -->
-		<!-- ========================================== -->
-		<div v-if="!subscriptionLoading && !hasActiveSubscription"
-			class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
-			<div class="h-0.5 w-full bg-[#007AFF]" />
-			<div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-				<div class="flex items-center gap-3 flex-1">
-					<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
-						<Icon name="ph:crown-simple-bold" size="18" class="text-slate-500 dark:text-slate-400" />
-					</div>
-					<div>
-						<p class="text-xs font-semibold text-[#007AFF] uppercase tracking-widest mb-0.5">{{ $t('dashboard.cta_banner.label') }}</p>
-						<h2 class="text-sm font-bold text-slate-900 dark:text-white">{{ $t('dashboard.cta_banner.title') }}</h2>
-					</div>
-				</div>
-				<NuxtLink to="/dashboard/subscription"
-					class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all text-sm shadow-md shadow-[#007AFF]/25 shrink-0">
-					<Icon name="ph:rocket-launch-bold" size="15" />
-					{{ $t('dashboard.cta_banner.button') }}
-				</NuxtLink>
-			</div>
-		</div>
-
-		<!-- ========================================== -->
 		<!-- 1. HEADER (Minimal)                    -->
 		<!-- ========================================== -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -794,147 +770,130 @@ onMounted(() => {
 		</div>
 
 		<!-- ========================================== -->
-		<!-- LIMITED VIEW (No Subscription)         -->
+		<!-- DASHBOARD PREVIEW (No Subscription)     -->
 		<!-- ========================================== -->
-		<div v-if="!subscriptionLoading && !hasActiveSubscription" class="space-y-4">
-			<!-- Features Preview (Blurred/Locked) -->
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<!-- Locked Feature Card: Jeux -->
-				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
-					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
-						<div class="text-center">
-							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
-								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
-							</div>
-							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-						</div>
+		<div v-if="!subscriptionLoading && !hasActiveSubscription">
+
+			<!-- ── Fake dashboard skeleton (grayed, behind overlay) ── -->
+			<div class="pointer-events-none select-none space-y-8 opacity-40">
+
+				<!-- Fake stats row -->
+				<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.players') }}</p>
+						<div class="h-7 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
+						<div class="h-2.5 w-14 bg-slate-100 dark:bg-slate-800 rounded"></div>
 					</div>
-					<div class="flex items-center gap-3 mb-3">
-						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-							<Icon name="ph:game-controller-bold" size="17" class="text-slate-400" />
-						</div>
-						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.create_games') }}</h3>
-							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.games_description') }}</p>
-						</div>
+					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.participations') }}</p>
+						<div class="h-7 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
+						<div class="h-2.5 w-20 bg-slate-100 dark:bg-slate-800 rounded"></div>
 					</div>
-					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
+					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.prizes_won') }}</p>
+						<div class="h-7 w-10 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
+						<div class="h-2.5 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div>
+					</div>
+					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
+						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.pending_prizes') }}</p>
+						<div class="h-7 w-8 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
+						<div class="h-2.5 w-16 bg-slate-100 dark:bg-slate-800 rounded"></div>
+					</div>
 				</div>
 
-				<!-- Locked Feature Card: Joueurs -->
-				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
-					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
-						<div class="text-center">
-							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
-								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
+				<!-- Fake chart + right column -->
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+					<div class="lg:col-span-2 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5">
+						<div class="flex items-center justify-between mb-6">
+							<div class="space-y-1.5">
+								<div class="h-3.5 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
+								<div class="h-2.5 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
 							</div>
-							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
+						</div>
+						<div class="h-48 flex items-end gap-2.5 px-1">
+							<div class="flex-1 h-[45%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[70%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[38%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[85%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[55%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[65%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
+							<div class="flex-1 h-[30%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
 						</div>
 					</div>
-					<div class="flex items-center gap-3 mb-3">
-						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-							<Icon name="ph:users-three-bold" size="17" class="text-slate-400" />
-						</div>
-						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.player_database') }}</h3>
-							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.players_description') }}</p>
+					<div class="space-y-4">
+						<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5 h-48">
+							<div class="flex items-center gap-3 mb-4">
+								<div class="w-9 h-9 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+								<div class="space-y-1.5">
+									<div class="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+									<div class="h-2.5 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+								</div>
+							</div>
+							<div class="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
 						</div>
 					</div>
-					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
 				</div>
 
-				<!-- Locked Feature Card: Lots -->
-				<div class="relative bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-5 overflow-hidden shadow-sm">
-					<div class="absolute inset-0 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
-						<div class="text-center">
-							<div class="w-10 h-10 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl flex items-center justify-center mx-auto mb-2">
-								<Icon name="ph:lock-simple-bold" size="18" class="text-slate-400" />
-							</div>
-							<p class="text-sm font-semibold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-						</div>
+				<!-- Fake table -->
+				<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm overflow-hidden">
+					<div class="px-5 py-4 border-b border-[#E5E5EA] dark:border-slate-700/40 flex items-center justify-between">
+						<div class="h-3.5 w-36 bg-slate-200 dark:bg-slate-700 rounded"></div>
 					</div>
-					<div class="flex items-center gap-3 mb-3">
-						<div class="w-9 h-9 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-							<Icon name="ph:gift-bold" size="17" class="text-slate-400" />
+					<div v-for="i in 4" :key="i" class="px-5 py-4 border-b border-[#E5E5EA]/60 dark:border-slate-700/20 flex items-center gap-6">
+						<div class="h-3 w-8 bg-slate-200 dark:bg-slate-700 rounded"></div>
+						<div class="h-5 w-14 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+						<div class="flex items-center gap-2">
+							<div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+							<div class="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
 						</div>
-						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.prize_management') }}</h3>
-							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.prizes_description') }}</p>
-						</div>
+						<div class="h-2.5 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto"></div>
 					</div>
-					<div class="h-20 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl"></div>
 				</div>
 
-				<!-- Locked Feature Card: Validation -->
-				<div class="relative bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6 overflow-hidden">
-					<div class="absolute inset-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
-						<div class="text-center">
-							<div class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-								<Icon name="ph:lock-simple-fill" size="24" class="text-slate-400" />
-							</div>
-							<p class="text-sm font-bold text-slate-600 dark:text-slate-300">{{ $t('dashboard.limited_view.no_subscription') }}</p>
-							<p class="text-xs text-slate-400 mt-1">{{ $t('dashboard.limited_view.unlock_features') }}</p>
-						</div>
-					</div>
-					<div class="flex items-center gap-4 mb-4">
-						<div class="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600">
-							<Icon name="ph:qr-code-fill" size="24" />
-						</div>
-						<div>
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('dashboard.limited_view.qr_validation') }}</h3>
-							<p class="text-sm text-slate-500">{{ $t('dashboard.limited_view.qr_description') }}</p>
-						</div>
-					</div>
-					<div class="h-24 bg-slate-50 dark:bg-slate-700/50 rounded-lg"></div>
-				</div>
 			</div>
 
-			<!-- Available Actions -->
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-				<h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('dashboard.limited_view.available_actions') }}</h3>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<NuxtLink to="/dashboard/profile"
-						class="flex items-center gap-3.5 p-4 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 bg-white dark:bg-[#1C1C1E] hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-all">
-						<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-							<Icon name="ph:storefront-bold" size="17" class="text-slate-500 dark:text-slate-400" />
+			<!-- ── Overlay fixe centré sur la zone de contenu (après sidebar + header) ── -->
+			<Teleport to="body">
+				<div class="fixed top-16 left-0 lg:left-64 right-0 bottom-0 z-10 flex items-center justify-center p-4 pointer-events-none">
+					<!-- CTA card -->
+					<div class="relative z-10 w-full max-w-md pointer-events-auto">
+						<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-xl overflow-hidden">
+							<div class="h-0.5 w-full bg-[#007AFF]" />
+							<div class="p-7 text-center">
+								<div class="flex justify-center mb-5">
+									<div class="w-14 h-14 rounded-2xl bg-[#007AFF]/10 dark:bg-[#007AFF]/15 flex items-center justify-center">
+										<Icon name="ph:crown-simple-fill" size="28" class="text-[#007AFF]" />
+									</div>
+								</div>
+								<p class="text-xs font-bold text-[#007AFF] uppercase tracking-widest mb-1.5">{{ $t('subscription.gate.label') }}</p>
+								<h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">{{ $t('subscription.gate.title') }}</h2>
+								<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{{ $t('subscription.gate.description') }}</p>
+								<div class="grid grid-cols-3 gap-2.5 mb-6">
+									<div class="flex flex-col items-center gap-1.5 p-3 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl">
+										<Icon name="ph:chart-line-up-bold" size="16" class="text-[#007AFF]" />
+										<span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_games') }}</span>
+									</div>
+									<div class="flex flex-col items-center gap-1.5 p-3 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl">
+										<Icon name="ph:users-three-bold" size="16" class="text-indigo-500" />
+										<span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_players') }}</span>
+									</div>
+									<div class="flex flex-col items-center gap-1.5 p-3 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl">
+										<Icon name="ph:envelope-bold" size="16" class="text-emerald-500" />
+										<span class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_marketing') }}</span>
+									</div>
+								</div>
+								<NuxtLink to="/dashboard/subscription"
+									class="flex items-center justify-center gap-2 w-full py-3 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-md shadow-[#007AFF]/25 text-sm">
+									<Icon name="ph:rocket-launch-bold" size="17" />
+									{{ $t('subscription.gate.cta') }}
+								</NuxtLink>
+								<p class="text-xs text-slate-400 dark:text-slate-500 mt-3">{{ $t('subscription.gate.hint') }}</p>
+							</div>
 						</div>
-						<div class="flex-1">
-							<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.quick_links.my_business') }}</p>
-							<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.available_actions') }}</p>
-						</div>
-						<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600" />
-					</NuxtLink>
-
-					<NuxtLink to="/dashboard/subscription"
-						class="flex items-center gap-3.5 p-4 rounded-2xl border border-[#007AFF]/30 bg-[#007AFF]/5 hover:bg-[#007AFF]/10 transition-all">
-						<div class="w-9 h-9 rounded-lg bg-[#007AFF]/10 flex items-center justify-center">
-							<Icon name="ph:crown-simple-bold" size="17" class="text-[#007AFF]" />
-						</div>
-						<div class="flex-1">
-							<p class="font-semibold text-[#007AFF] text-sm">{{ $t('dashboard.limited_view.subscribe') }}</p>
-							<p class="text-[11px] text-[#007AFF]/70">{{ $t('dashboard.limited_view.unlock_all') }}</p>
-						</div>
-						<Icon name="ph:arrow-right-bold" size="13" class="text-[#007AFF]" />
-					</NuxtLink>
-				</div>
-			</div>
-
-			<!-- Support Card -->
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-				<div class="flex items-center gap-3 flex-1">
-					<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
-						<Icon name="ph:question-bold" size="17" class="text-slate-500 dark:text-slate-400" />
 					</div>
-					<div>
-						<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.limited_view.have_questions') }}</p>
-						<p class="text-[11px] text-slate-400">{{ $t('dashboard.limited_view.questions_description') }}</p>
-					</div>
 				</div>
-				<a href="mailto:support@scanupgo.com"
-					class="px-4 py-2 bg-[#007AFF] text-white rounded-xl text-sm font-semibold hover:bg-[#0066DD] transition-colors shadow-md shadow-[#007AFF]/25 shrink-0">
-					{{ $t('dashboard.limited_view.contact_us') }}
-				</a>
-			</div>
+			</Teleport>
+
 		</div>
 
 	</div>
