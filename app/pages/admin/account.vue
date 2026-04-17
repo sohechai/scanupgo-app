@@ -147,7 +147,7 @@ const updatePassword = async () => {
 			<div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 				<!-- Profile Information -->
 				<div
-					class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-xl shadow-black/10">
+					class="bg-white/5 border border-white/10 rounded-2xl p-8 shadow-xl shadow-black/10">
 					<div class="flex items-center gap-4 mb-8">
 						<div
 							class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
@@ -229,7 +229,7 @@ const updatePassword = async () => {
 				<div class="space-y-8">
 					<!-- Change Password -->
 					<div
-						class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-xl shadow-black/10">
+						class="bg-white/5 border border-white/10 rounded-2xl p-8 shadow-xl shadow-black/10">
 						<div class="flex items-center gap-4 mb-8">
 							<div
 								class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
@@ -304,7 +304,7 @@ const updatePassword = async () => {
 					</div>
 
 					<!-- Account Info -->
-					<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-6">
 						<div class="flex items-center gap-3 mb-4">
 							<Icon name="ph:info-bold" size="20" class="text-slate-400" />
 							<h3 class="font-bold text-white">{{ $t('admin.account.account_details') }}</h3>

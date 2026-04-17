@@ -175,7 +175,7 @@ onMounted(fetchBusiness)
 				<!-- Info Cards Grid -->
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<!-- Informations generales -->
-					<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-6">
 						<h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
 							<Icon name="ph:storefront-fill" size="20" class="text-brand-400" />
 							{{ $t('admin.businesses.detail.info_title') }}
@@ -204,7 +204,7 @@ onMounted(fetchBusiness)
 					</div>
 
 					<!-- Proprietaire -->
-					<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-6">
 						<h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
 							<Icon name="ph:user-fill" size="20" class="text-purple-400" />
 							{{ $t('admin.businesses.detail.owner_title') }}
@@ -235,7 +235,7 @@ onMounted(fetchBusiness)
 				</div>
 
 				<!-- Abonnement -->
-				<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+				<div class="bg-white/5 border border-white/10 rounded-2xl p-6">
 					<h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
 						<Icon name="ph:credit-card-fill" size="20" class="text-emerald-400" />
 						{{ $t('admin.businesses.detail.subscription_title') }}
@@ -292,7 +292,7 @@ onMounted(fetchBusiness)
 				</div>
 
 				<!-- Crédits email -->
-				<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+				<div class="bg-white/5 border border-white/10 rounded-2xl p-6">
 					<h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
 						<Icon name="ph:envelope-simple-fill" size="20" class="text-blue-400" />
 						Crédits email marketing
@@ -340,30 +340,30 @@ onMounted(fetchBusiness)
 
 				<!-- Stats -->
 				<div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-					<div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-5">
 						<p class="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">{{ $t('admin.businesses.detail.players_label') }}</p>
 						<p class="text-2xl font-bold text-white">{{ business.stats.totalPlayers }}</p>
 					</div>
-					<div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-5">
 						<p class="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">{{ $t('admin.businesses.detail.games_label') }}</p>
 						<p class="text-2xl font-bold text-white">{{ business.stats.totalGames }}</p>
 					</div>
-					<div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-5">
 						<p class="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">{{ $t('admin.businesses.detail.sessions_label') }}</p>
 						<p class="text-2xl font-bold text-white">{{ business.stats.totalSessions }}</p>
 					</div>
-					<div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-5">
 						<p class="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">{{ $t('admin.businesses.detail.wins_label') }}</p>
 						<p class="text-2xl font-bold text-emerald-400">{{ business.stats.totalWins }}</p>
 					</div>
-					<div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5">
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-5">
 						<p class="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">{{ $t('admin.businesses.detail.win_rate_label') }}</p>
 						<p class="text-2xl font-bold text-white">{{ business.stats.winRate }}%</p>
 					</div>
 				</div>
 
 				<!-- Jeux -->
-				<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+				<div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
 					<div class="px-6 py-4 border-b border-white/10 flex items-center gap-2">
 						<Icon name="ph:game-controller-fill" size="20" class="text-orange-400" />
 						<h2 class="text-lg font-bold text-white">{{ $t('admin.businesses.detail.games_title') }} ({{ business.games.length }})</h2>
@@ -414,7 +414,7 @@ onMounted(fetchBusiness)
 		<!-- Suspend Modal -->
 		<Teleport to="body">
 			<div v-if="showSuspendModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showSuspendModal = false"></div>
+				<div class="absolute inset-0 bg-black/60" @click="showSuspendModal = false"></div>
 				<div class="relative bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl">
 					<div class="text-center">
 						<div class="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
@@ -442,7 +442,7 @@ onMounted(fetchBusiness)
 		<!-- Reactivate Modal -->
 		<Teleport to="body">
 			<div v-if="showReactivateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showReactivateModal = false"></div>
+				<div class="absolute inset-0 bg-black/60" @click="showReactivateModal = false"></div>
 				<div class="relative bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl">
 					<div class="text-center">
 						<div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">

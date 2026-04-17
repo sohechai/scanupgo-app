@@ -85,7 +85,7 @@ const handleLogin = async () => {
 				<p class="text-sm text-slate-400">{{ $t('admin.administration') }}</p>
 			</div>
 
-			<div class="bg-slate-950/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+			<div class="bg-slate-950/50 border border-white/10 rounded-2xl p-8 shadow-2xl">
 				<h2 class="text-xl font-bold text-white mb-6">{{ $t('admin.login.title') }}</h2>
 
 				<div v-if="error" class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
