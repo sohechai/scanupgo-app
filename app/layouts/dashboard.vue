@@ -2,7 +2,7 @@
 const { user, signOut } = useAuth()
 const { t } = useI18n()
 const route = useRoute()
-// Notifications polling is handled by Vue Query refetchInterval in useNotificationsCountQuery
+const { startPolling, stopPolling } = useNotifications()
 const { fetchSubscription, hasActiveSubscription, isAdmin } = useSubscription()
 
 // Routes accessible without active subscription
@@ -23,10 +23,12 @@ const handleVisibilityChange = () => {
 
 onMounted(() => {
 	fetchSubscription() // Read DB only — no Stripe sync on every page load
+	startPolling(10000)
 	document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
+	stopPolling()
 	document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 

@@ -5,14 +5,34 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
+const { show: showToast } = useToast()
 
-const { data: campaigns, isLoading: loading } = useCampaignsQuery()
-const deleteCampaignMutation = useDeleteCampaignMutation()
+const campaigns = ref<any[]>([])
+const loading = ref(true)
+
+const fetchCampaigns = async () => {
+	loading.value = true
+	try {
+		campaigns.value = await $api('/marketing/campaigns')
+	} catch (e) {
+		console.error('Error fetching campaigns:', e)
+	} finally {
+		loading.value = false
+	}
+}
 
 const deleteCampaign = async (id: string) => {
 	if (!confirm(t('marketing.campaign_detail.delete_confirmation_message'))) return
-	await deleteCampaignMutation.mutateAsync(id)
+
+	try {
+		await $api(`/marketing/campaigns/${id}`, { method: 'DELETE' })
+		campaigns.value = campaigns.value.filter(c => c.id !== id)
+		showToast(t('marketing.campaigns.delete'), 'success')
+	} catch (e) {
+		showToast(t('common.error'), 'error')
+	}
 }
 
 const getStatusBadge = (status: string) => {
@@ -26,6 +46,9 @@ const getStatusBadge = (status: string) => {
 	return badges[status] || { label: status, class: 'bg-slate-100 text-slate-600', icon: 'ph:question' }
 }
 
+onMounted(() => {
+	fetchCampaigns()
+})
 </script>
 
 <template>
@@ -42,7 +65,7 @@ const getStatusBadge = (status: string) => {
 						{{ $t('marketing.campaigns.title') }}
 					</h1>
 					<p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-						{{ campaigns?.length ?? 0 }} {{ $t('marketing.campaigns.campaigns_count') }}{{ (campaigns?.length ?? 0) > 1 ? 's' : '' }}
+						{{ campaigns.length }} {{ $t('marketing.campaigns.campaigns_count') }}{{ campaigns.length > 1 ? 's' : '' }}
 					</p>
 				</div>
 			</div>
@@ -59,7 +82,7 @@ const getStatusBadge = (status: string) => {
 		</div>
 
 		<!-- Empty -->
-		<div v-else-if="!campaigns?.length"
+		<div v-else-if="campaigns.length === 0"
 			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-12 text-center">
 			<div class="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
 				<Icon name="ph:envelope-simple" size="40" class="text-slate-400" />

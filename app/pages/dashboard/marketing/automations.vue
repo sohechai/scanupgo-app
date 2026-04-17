@@ -5,15 +5,13 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 const { show: showToast } = useToast()
 import ConfirmModal from '~/components/ConfirmModal.vue'
 import RichTextEditor from '~/components/RichTextEditor.vue'
 
-const { data: automations, isLoading: loading } = useAutomationsQuery()
-const createAutomationMutation = useCreateAutomationMutation()
-const saveAutomationMutation = useSaveAutomationMutation()
-const deleteAutomationMutation = useDeleteAutomationMutation()
-const toggleAutomationMutation = useToggleAutomationMutation()
+const automations = ref<any[]>([])
+const loading = ref(true)
 
 // Modal state
 const showModal = ref(false)
@@ -78,9 +76,20 @@ const getAutomationType = (type: string) => {
 	return automationTypes.value.find(t => t.type === type)
 }
 
+const fetchAutomations = async () => {
+	loading.value = true
+	try {
+		automations.value = await $api('/marketing/automations')
+	} catch (e) {
+		console.error('Error fetching automations:', e)
+	} finally {
+		loading.value = false
+	}
+}
+
 const openCreateModal = (type: string) => {
 	previewMode.value = false
-	const existing = (automations.value ?? []).find(a => a.type === type)
+	const existing = automations.value.find(a => a.type === type)
 	if (existing) {
 		// Edit existing
 		editingAutomation.value = existing
@@ -168,20 +177,28 @@ const saveAutomation = async () => {
 	saving.value = true
 	try {
 		if (editingAutomation.value) {
-			await saveAutomationMutation.mutateAsync({
-				id: editingAutomation.value.id,
-				name: form.value.name,
-				subject: form.value.subject,
-				htmlContent: form.value.htmlContent,
-				enabled: form.value.enabled,
-				triggerDelayDays: form.value.triggerDelayDays,
+			// Update
+			await $api(`/marketing/automations/${editingAutomation.value.id}`, {
+				method: 'PATCH',
+				body: {
+					name: form.value.name,
+					subject: form.value.subject,
+					htmlContent: form.value.htmlContent,
+					enabled: form.value.enabled,
+					triggerDelayDays: form.value.triggerDelayDays,
+				},
 			})
 			showToast(t('marketing.automations.saved_updated'), 'success')
 		} else {
-			await createAutomationMutation.mutateAsync(form.value)
+			// Create
+			await $api('/marketing/automations', {
+				method: 'POST',
+				body: form.value,
+			})
 			showToast(t('marketing.automations.saved'), 'success')
 		}
 		showModal.value = false
+		fetchAutomations()
 	} catch (e: any) {
 		showToast(e?.data?.message || t('common.error'), 'error')
 	} finally {
@@ -191,8 +208,12 @@ const saveAutomation = async () => {
 
 const toggleAutomation = async (automation: any) => {
 	try {
-		await toggleAutomationMutation.mutateAsync({ id: automation.id, active: !automation.enabled })
-		showToast(!automation.enabled ? t('marketing.automations.enabled') : t('marketing.automations.disabled'), 'success')
+		await $api(`/marketing/automations/${automation.id}/toggle`, {
+			method: 'PATCH',
+			body: { enabled: !automation.enabled },
+		})
+		automation.enabled = !automation.enabled
+		showToast(automation.enabled ? t('marketing.automations.enabled') : t('marketing.automations.disabled'), 'success')
 	} catch (e) {
 		showToast(t('common.error'), 'error')
 	}
@@ -206,8 +227,10 @@ const deleteAutomation = (id: string) => {
 const confirmDelete = async () => {
 	if (!deleteTargetId.value) return
 	showDeleteConfirm.value = false
+
 	try {
-		await deleteAutomationMutation.mutateAsync(deleteTargetId.value)
+		await $api(`/marketing/automations/${deleteTargetId.value}`, { method: 'DELETE' })
+		automations.value = automations.value.filter(a => a.id !== deleteTargetId.value)
 		showToast(t('marketing.automations.delete_button'), 'success')
 	} catch (e) {
 		showToast(t('common.error'), 'error')
@@ -220,6 +243,9 @@ const getColorClasses = (_color: string) => {
 	return { bg: 'bg-[#F2F2F7] dark:bg-[#2C2C2E]', text: 'text-slate-500 dark:text-slate-400', border: 'border-[#E5E5EA] dark:border-slate-700/40' }
 }
 
+onMounted(() => {
+	fetchAutomations()
+})
 </script>
 
 <template>

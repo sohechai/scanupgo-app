@@ -5,9 +5,13 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
+const router = useRouter()
+const { show: showToast } = useToast()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
-const { data: games, isLoading: loading } = useGamesListQuery()
-const deleteGameMutation = useDeleteGameMutation()
+const games = ref<any[]>([])
+const loading = ref(true)
 
 const showOrderModal = ref(false)
 const selectedGameForOrder = ref<any>(null)
@@ -15,13 +19,36 @@ const openOrderModal = (game: any) => { selectedGameForOrder.value = game; showO
 
 const showDeleteModal = ref(false)
 const gameToDelete = ref<any>(null)
+const deleting = ref(false)
 const openDeleteModal = (game: any) => { gameToDelete.value = game; showDeleteModal.value = true }
 
 const deleteGame = async () => {
 	if (!gameToDelete.value) return
-	await deleteGameMutation.mutateAsync(gameToDelete.value.id)
-	showDeleteModal.value = false
+	try {
+		deleting.value = true
+		await $api(`/games/${gameToDelete.value.id}`, { method: 'DELETE' })
+		games.value = games.value.filter(g => g.id !== gameToDelete.value.id)
+		showDeleteModal.value = false
+		showToast(t('games.game_deleted'), 'success')
+	} catch (e: any) {
+		showToast(e?.data?.message || t('games.delete_error'), 'error')
+	} finally {
+		deleting.value = false
+	}
 }
+
+const fetchGames = async () => {
+	try {
+		loading.value = true
+		games.value = await $api<any[]>('/games') || []
+	} catch (e) { console.error(e) }
+	finally { loading.value = false }
+}
+
+onMounted(async () => {
+	await fetchSubscription()
+	if (hasActiveSubscription.value) fetchGames()
+})
 </script>
 
 <template>
@@ -148,7 +175,7 @@ const deleteGame = async () => {
 			:description="$t('games.delete_confirmation_message', { title: gameToDelete?.title })"
 			:confirm-text="$t('games.delete_confirmation_button')"
 			type="danger"
-			:loading="deleteGameMutation.isPending.value"
+			:loading="deleting"
 			@confirm="deleteGame"
 		/>
 	</div>

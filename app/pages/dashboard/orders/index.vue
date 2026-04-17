@@ -8,19 +8,24 @@ definePageMeta({
 
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
-const { getStatusLabel, getStatusColor } = useOrders()
-const { data: orders, isLoading: loading } = useOrdersListQuery()
-const { data: stats } = useOrderStatsQuery()
+const { orders, stats, loading, fetchOrders, fetchStats, getStatusLabel, getStatusColor } = useOrders()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
 const showCreateModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedOrder = ref<Order | null>(null)
 const filterStatus = ref<string>('all')
 
-const filteredOrders = computed(() => {
-	const list = orders.value ?? []
-	return filterStatus.value === 'all' ? list : list.filter(o => o.status === filterStatus.value)
+onMounted(async () => {
+	await fetchSubscription()
+	if (hasActiveSubscription.value) await Promise.all([fetchOrders(), fetchStats()])
 })
+
+const filteredOrders = computed(() =>
+	filterStatus.value === 'all' ? orders.value : orders.value.filter(o => o.status === filterStatus.value)
+)
+
+const handleOrderCreated = async () => await Promise.all([fetchOrders(), fetchStats()])
 
 const viewOrderDetails = (order: Order) => {
 	selectedOrder.value = order
@@ -28,11 +33,11 @@ const viewOrderDetails = (order: Order) => {
 }
 
 const statusFilters = computed(() => [
-	{ value: 'all',        label: t('orders.stats.total'),      count: stats.value?.total ?? 0 },
-	{ value: 'pending',    label: t('orders.stats.pending'),    count: stats.value?.pending ?? 0 },
-	{ value: 'processing', label: t('orders.stats.processing'), count: stats.value?.processing ?? 0 },
-	{ value: 'shipped',    label: t('orders.stats.shipped'),    count: stats.value?.shipped ?? 0 },
-	{ value: 'delivered',  label: t('orders.stats.delivered'),  count: stats.value?.delivered ?? 0 },
+	{ value: 'all',        label: t('orders.stats.total'),      count: stats.value.total },
+	{ value: 'pending',    label: t('orders.stats.pending'),    count: stats.value.pending },
+	{ value: 'processing', label: t('orders.stats.processing'), count: stats.value.processing },
+	{ value: 'shipped',    label: t('orders.stats.shipped'),    count: stats.value.shipped },
+	{ value: 'delivered',  label: t('orders.stats.delivered'),  count: stats.value.delivered },
 ])
 
 const statusDotColor: Record<string, string> = {
@@ -79,23 +84,23 @@ const statusBgColor: Record<string, string> = {
 		<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
 			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
 				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('orders.stats.total') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats?.total ?? 0 }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats.total }}</p>
 			</div>
 			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
 				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('orders.stats.pending') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats?.pending ?? 0 }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats.pending }}</p>
 			</div>
 			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
 				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('orders.stats.processing') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats?.processing ?? 0 }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats.processing }}</p>
 			</div>
 			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
 				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('orders.stats.shipped') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats?.shipped ?? 0 }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats.shipped }}</p>
 			</div>
 			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
 				<p class="text-[11px] text-slate-400 mb-1 font-medium">{{ $t('orders.stats.delivered') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats?.delivered ?? 0 }}</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ stats.delivered }}</p>
 			</div>
 		</div>
 
@@ -167,7 +172,7 @@ const statusBgColor: Record<string, string> = {
 		</div>
 
 		<!-- Modals -->
-		<OrdersCreateOrderModal v-model="showCreateModal" />
+		<OrdersCreateOrderModal v-model="showCreateModal" @created="handleOrderCreated" />
 		<OrdersOrderDetailsModal v-model="showDetailsModal" :order="selectedOrder" />
 	</div>
 	</SubscriptionGate>

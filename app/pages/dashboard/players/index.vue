@@ -5,10 +5,13 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
 const { show: showToast } = useToast()
+const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
-const { data: players, isLoading: loading } = usePlayersQuery()
+const players = ref<any[]>([])
+const loading = ref(true)
 const searchQuery = ref('')
 const exporting = ref<'csv' | 'pdf' | null>(null)
 const showExportMenu = ref(false)
@@ -36,16 +39,15 @@ const clearFilters = () => {
 }
 
 const stats = computed(() => {
-	const list = players.value ?? []
-	const total = list.length
-	const loyalPlayers = list.filter(p => p._count.sessions > 1).length
+	const total = players.value.length
+	const loyalPlayers = players.value.filter(p => p._count.sessions > 1).length
 	const loyaltyRate = total > 0 ? Math.round((loyalPlayers / total) * 100) : 0
-	const totalSessions = list.reduce((sum, p) => sum + (p._count.sessions || 0), 0)
+	const totalSessions = players.value.reduce((sum, p) => sum + (p._count.sessions || 0), 0)
 	return { total, loyaltyRate, totalSessions }
 })
 
 const filteredPlayers = computed(() => {
-	let result = players.value ?? []
+	let result = players.value
 	if (searchQuery.value) {
 		const q = searchQuery.value.toLowerCase()
 		result = result.filter(p =>
@@ -68,6 +70,13 @@ const filteredPlayers = computed(() => {
 	else if (filterParticipations.value === '5+') result = result.filter(p => (p._count?.sessions || 0) >= 5)
 	return result
 })
+
+const fetchPlayers = async () => {
+	loading.value = true
+	try { players.value = await $api('/players') }
+	catch (e) { console.error(e) }
+	finally { loading.value = false }
+}
 
 const exportToCSV = async () => {
 	exporting.value = 'csv'; showExportMenu.value = false
@@ -99,6 +108,10 @@ const exportToPDF = async () => {
 	finally { exporting.value = null }
 }
 
+onMounted(async () => {
+	await fetchSubscription()
+	if (hasActiveSubscription.value) fetchPlayers()
+})
 </script>
 
 <template>
@@ -130,7 +143,7 @@ const exportToPDF = async () => {
 				</button>
 				<!-- Export -->
 				<div class="relative">
-					<button @click="showExportMenu = !showExportMenu" :disabled="!players?.length || !!exporting"
+					<button @click="showExportMenu = !showExportMenu" :disabled="players.length === 0 || !!exporting"
 						class="flex items-center gap-2 px-4 py-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-sm transition-all disabled:opacity-40">
 						<Icon v-if="exporting" name="ph:spinner-gap-bold" size="15" class="animate-spin" />
 						<Icon v-else name="ph:export-bold" size="15" />
