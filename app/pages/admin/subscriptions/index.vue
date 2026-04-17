@@ -39,7 +39,6 @@ const tabs = computed(() => [
 	{ id: 'subscriptions', label: t('admin.subscriptions.tab_subscriptions'), icon: 'ph:crown-bold' },
 	{ id: 'plans', label: t('admin.subscriptions.tab_plans'), icon: 'ph:gear-six-bold' },
 	{ id: 'manual', label: 'Accès manuels', icon: 'ph:user-circle-gear-bold' },
-	{ id: 'promo', label: 'Codes promo', icon: 'ph:tag-bold' },
 ])
 
 // ============================================
@@ -260,7 +259,7 @@ const deletePlan = async (plan: SubscriptionPlan) => {
 const handleNew = () => {
 	if (activeTab.value === 'plans') openNewPlanModal()
 	if (activeTab.value === 'manual') showGrantModal.value = true
-	if (activeTab.value === 'promo') showPromoModal.value = true
+
 }
 
 // ============================================
@@ -326,77 +325,11 @@ const revokeSubscription = async (sub: any) => {
 }
 
 // ============================================
-// PROMO CODES
-// ============================================
-const promoCodes = ref<any[]>([])
-const loadingPromos = ref(false)
-const showPromoModal = ref(false)
-const promoLoading = ref(false)
-const deactivateLoadingId = ref<string | null>(null)
-
-const promoForm = ref({
-	code: '',
-	discountPercent: 10,
-	maxRedemptions: '',
-	expiresAt: '',
-})
-
-const fetchPromoCodes = async () => {
-	loadingPromos.value = true
-	try {
-		promoCodes.value = await $api('/admin/promo-codes')
-	} catch (e) {
-		console.error('Failed to fetch promo codes:', e)
-	} finally {
-		loadingPromos.value = false
-	}
-}
-
-const submitPromo = async () => {
-	if (!promoForm.value.code || !promoForm.value.discountPercent) return
-	promoLoading.value = true
-	try {
-		await $api('/admin/promo-codes', {
-			method: 'POST',
-			body: {
-				code: promoForm.value.code.toUpperCase(),
-				discountPercent: Number(promoForm.value.discountPercent),
-				maxRedemptions: promoForm.value.maxRedemptions ? Number(promoForm.value.maxRedemptions) : undefined,
-				expiresAt: promoForm.value.expiresAt || undefined,
-			}
-		})
-		toast.show("Code promo créé avec succès", 'success')
-		showPromoModal.value = false
-		promoForm.value = { code: '', discountPercent: 10, maxRedemptions: '', expiresAt: '' }
-		await fetchPromoCodes()
-	} catch (e: any) {
-		toast.show(e?.data?.message || "Erreur lors de la création du code promo", 'error')
-	} finally {
-		promoLoading.value = false
-	}
-}
-
-const deactivatePromoCode = async (id: string, code: string) => {
-	if (!confirm(`Désactiver le code "${code}" ?`)) return
-	deactivateLoadingId.value = id
-	try {
-		await $api(`/admin/promo-codes/${id}`, { method: 'DELETE' })
-		toast.show("Code promo désactivé", 'success')
-		await fetchPromoCodes()
-	} catch (e: any) {
-		toast.show(e?.data?.message || "Erreur lors de la désactivation", 'error')
-	} finally {
-		deactivateLoadingId.value = null
-	}
-}
-
-// ============================================
 // INITIAL LOAD
 // ============================================
 onMounted(() => {
 	fetchSubscriptions()
 	fetchPlans()
-	fetchPromoCodes()
 })
 </script>
 
@@ -405,9 +338,9 @@ onMounted(() => {
 		<!-- Background Elements -->
 		<div class="fixed inset-0 pointer-events-none z-0">
 			<div
-				class="absolute top-0 right-0 w-[800px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] opacity-30 mix-blend-screen animate-pulse-slow">
+				class="absolute top-0 right-0 w-[800px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] opacity-30 mix-blend-screen">
 			</div>
-			<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px] opacity-30 mix-blend-screen animate-pulse-slow"
+			<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px] opacity-30 mix-blend-screen"
 				style="animation-delay: 2s;"></div>
 		</div>
 
@@ -431,11 +364,7 @@ onMounted(() => {
 						<Icon name="ph:plus-bold" class="group-hover:rotate-90 transition-transform duration-300" />
 						Accorder l'accès
 					</button>
-					<button v-if="activeTab === 'promo'" @click="showPromoModal = true"
-						class="flex items-center gap-2 px-6 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl shadow-lg shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all group">
-						<Icon name="ph:plus-bold" class="group-hover:rotate-90 transition-transform duration-300" />
-						Créer un code promo
-					</button>
+
 					<button v-if="activeTab === 'subscriptions'"
 						class="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all">
 						<Icon name="ph:download-bold" size="16" />
@@ -481,14 +410,6 @@ onMounted(() => {
 							: 'bg-white/5 text-slate-600'
 					]">
 						{{ manualSubs.length }}
-					</span>
-					<span v-if="tab.id === 'promo' && promoCodes.length > 0" :class="[
-						'px-2 py-0.5 rounded-md text-[10px] font-bold',
-						activeTab === tab.id
-							? 'bg-white/10 text-slate-300'
-							: 'bg-white/5 text-slate-600'
-					]">
-						{{ promoCodes.length }}
 					</span>
 				</button>
 			</nav>
@@ -783,6 +704,8 @@ onMounted(() => {
 						</div>
 					</div>
 				</div>
+			</div>
+
 			<!-- ============================================ -->
 			<!-- TAB: ACCÈS MANUELS -->
 			<!-- ============================================ -->
@@ -791,15 +714,30 @@ onMounted(() => {
 					<Icon name="svg-spinners:ring-resize" size="40" class="text-white/50" />
 					<p class="text-sm font-bold text-slate-400">Chargement...</p>
 				</div>
-				<div v-else-if="manualSubs.length === 0"
-					class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl py-24 flex flex-col items-center justify-center text-center shadow-xl shadow-black/10 px-4">
-					<Icon name="ph:user-circle-gear-duotone" size="48" class="mx-auto mb-4 opacity-50 text-slate-500" />
-					<h3 class="text-xl font-bold text-white mb-2">Aucun accès manuel</h3>
-					<p class="text-slate-400 max-w-sm mx-auto mb-8">Accordez un accès à un business sans passer par Stripe.</p>
-					<button @click="openGrantModal"
-						class="px-8 py-3 bg-white text-slate-900 font-bold rounded-xl hover:scale-105 transition-all active:scale-95 shadow-lg shadow-white/10">
-						Accorder l'accès
-					</button>
+				<div v-else-if="manualSubs.length === 0" class="space-y-4">
+					<!-- Explainer card -->
+					<div class="bg-white/5 border border-white/10 rounded-2xl p-6 flex gap-4">
+						<div class="w-10 h-10 rounded-xl bg-brand-500/20 border border-brand-500/20 flex items-center justify-center shrink-0 mt-0.5">
+							<Icon name="ph:info-bold" size="18" class="text-brand-400" />
+						</div>
+						<div>
+							<p class="font-bold text-white mb-1">À quoi sert cet onglet ?</p>
+							<p class="text-sm text-slate-400 leading-relaxed">Accordez un accès abonné à n'importe quel business <span class="text-white font-medium">sans paiement Stripe</span> — utile pour les partenaires, les tests, ou les accès offerts. L'accès peut être limité dans le temps ou permanent.</p>
+						</div>
+					</div>
+					<!-- Empty state + CTA -->
+					<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl py-16 flex flex-col items-center justify-center text-center px-4">
+						<div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+							<Icon name="ph:user-circle-gear-duotone" size="32" class="text-slate-400" />
+						</div>
+						<p class="font-bold text-white mb-1">Aucun accès manuel accordé</p>
+						<p class="text-sm text-slate-500 mb-6 max-w-xs">Cliquez sur le bouton ci-dessous pour attribuer un accès à un business.</p>
+						<button @click="openGrantModal"
+							class="flex items-center gap-2 px-6 py-2.5 bg-white text-slate-900 font-bold rounded-xl hover:scale-105 transition-all active:scale-95 shadow-lg shadow-white/10">
+							<Icon name="ph:plus-bold" size="16" />
+							Accorder un accès
+						</button>
+					</div>
 				</div>
 				<div v-else class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl shadow-black/10">
 					<div class="overflow-x-auto">
@@ -858,72 +796,7 @@ onMounted(() => {
 				</div>
 			</div>
 
-			<!-- ============================================ -->
-			<!-- TAB: CODES PROMO -->
-			<!-- ============================================ -->
-			<div v-if="activeTab === 'promo'" class="space-y-6">
-				<div v-if="loadingPromos" class="py-24 flex flex-col items-center justify-center gap-4">
-					<Icon name="svg-spinners:ring-resize" size="40" class="text-white/50" />
-					<p class="text-sm font-bold text-slate-400">Chargement...</p>
-				</div>
-				<div v-else-if="promoCodes.length === 0"
-					class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl py-24 flex flex-col items-center justify-center text-center shadow-xl shadow-black/10 px-4">
-					<Icon name="ph:tag-duotone" size="48" class="mx-auto mb-4 opacity-50 text-slate-500" />
-					<h3 class="text-xl font-bold text-white mb-2">Aucun code promo actif</h3>
-					<p class="text-slate-400 max-w-sm mx-auto mb-8">Créez des codes promo Stripe pour offrir des réductions sur les abonnements.</p>
-					<button @click="showPromoModal = true"
-						class="px-8 py-3 bg-white text-slate-900 font-bold rounded-xl hover:scale-105 transition-all active:scale-95 shadow-lg shadow-white/10">
-						Créer un code promo
-					</button>
-				</div>
-				<div v-else class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl shadow-black/10">
-					<div class="overflow-x-auto">
-						<table class="w-full">
-							<thead class="bg-white/5 border-b border-white/10">
-								<tr>
-									<th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Code</th>
-									<th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Réduction</th>
-									<th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Utilisations</th>
-									<th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Max</th>
-									<th class="text-left px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Expiration</th>
-									<th class="text-right px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Actions</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-white/5">
-								<tr v-for="promo in promoCodes" :key="promo.id" class="hover:bg-white/5 transition-colors">
-									<td class="px-6 py-4">
-										<span class="font-mono font-bold text-white text-sm tracking-wider">{{ promo.code }}</span>
-									</td>
-									<td class="px-6 py-4">
-										<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-											-{{ promo.promotion?.coupon?.percent_off ?? '?' }}%
-										</span>
-									</td>
-									<td class="px-6 py-4 text-sm text-slate-300">{{ promo.times_redeemed ?? 0 }}</td>
-									<td class="px-6 py-4 text-sm text-slate-400">{{ promo.max_redemptions ?? '∞' }}</td>
-									<td class="px-6 py-4 text-sm text-slate-400">
-										<span v-if="promo.expires_at">{{ formatDate(new Date(promo.expires_at * 1000).toISOString()) }}</span>
-										<span v-else class="text-slate-600">Aucune</span>
-									</td>
-									<td class="px-6 py-4">
-										<div class="flex items-center justify-end">
-											<button @click="deactivatePromoCode(promo.id, promo.code)"
-												:disabled="deactivateLoadingId === promo.id"
-												class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/20 transition-all disabled:opacity-50">
-												<Icon v-if="deactivateLoadingId === promo.id" name="ph:spinner-gap-bold" class="animate-spin" size="12" />
-												<Icon v-else name="ph:trash-bold" size="12" />
-												Désactiver
-											</button>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
 
-		</div>
 		</div>
 
 		<!-- ============================================ -->
@@ -1219,64 +1092,5 @@ onMounted(() => {
 			</div>
 		</Teleport>
 
-		<!-- ============================================ -->
-		<!-- MODAL: CREATE PROMO CODE -->
-		<!-- ============================================ -->
-		<Teleport to="body">
-			<div v-if="showPromoModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-				<div class="fixed inset-0 bg-black/80 backdrop-blur-md" @click="showPromoModal = false"></div>
-				<div class="relative bg-[#0f172a] rounded-2xl shadow-2xl border border-white/10 w-full max-w-lg overflow-hidden flex flex-col">
-					<div class="px-8 py-6 border-b border-white/10 flex items-center justify-between">
-						<h2 class="text-xl font-bold text-white">Créer un code promo</h2>
-						<button @click="showPromoModal = false" class="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-white">
-							<Icon name="ph:x-bold" size="20" />
-						</button>
-					</div>
-					<div class="p-8 space-y-5">
-						<!-- Code -->
-						<div class="space-y-2">
-							<label class="block text-sm font-bold text-slate-300">Code promo</label>
-							<input v-model="promoForm.code" type="text" placeholder="ex: LAUNCH20" maxlength="20"
-								class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-mono font-bold uppercase tracking-wider focus:ring-2 focus:ring-white/20 outline-none transition-all placeholder:text-slate-600 placeholder:font-normal placeholder:tracking-normal" />
-							<p class="text-xs text-slate-500">Le code sera automatiquement mis en majuscules.</p>
-						</div>
-						<!-- Discount -->
-						<div class="space-y-2">
-							<label class="block text-sm font-bold text-slate-300">Réduction (%)</label>
-							<div class="relative">
-								<input v-model.number="promoForm.discountPercent" type="number" min="1" max="100"
-									class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-white/20 outline-none transition-all pr-10" />
-								<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
-							</div>
-						</div>
-						<!-- Max redemptions -->
-						<div class="space-y-2">
-							<label class="block text-sm font-bold text-slate-300">Utilisations max <span class="text-slate-500 font-normal">(optionnel)</span></label>
-							<input v-model="promoForm.maxRedemptions" type="number" min="1" placeholder="Illimité"
-								class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-white/20 outline-none transition-all placeholder:text-slate-600" />
-						</div>
-						<!-- Expires at -->
-						<div class="space-y-2">
-							<label class="block text-sm font-bold text-slate-300">Date d'expiration <span class="text-slate-500 font-normal">(optionnel)</span></label>
-							<input v-model="promoForm.expiresAt" type="date"
-								class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-white/20 outline-none transition-all" />
-						</div>
-						<div class="bg-white/5 border border-white/10 rounded-xl p-4">
-							<p class="text-xs text-slate-400"><span class="font-bold text-slate-300">Note :</span> Le code sera créé sur Stripe et sera disponible sur la page de paiement. La réduction s'applique une seule fois (valeur "once").</p>
-						</div>
-					</div>
-					<div class="px-8 py-6 border-t border-white/10 bg-white/5 flex justify-end gap-3">
-						<button @click="showPromoModal = false" class="px-6 py-2.5 text-slate-400 font-bold hover:text-white hover:bg-white/5 rounded-xl transition-colors">
-							Annuler
-						</button>
-						<button @click="submitPromo" :disabled="promoLoading || !promoForm.code || !promoForm.discountPercent"
-							class="px-8 py-2.5 bg-white text-slate-900 font-bold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-							<Icon v-if="promoLoading" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
-							Créer le code
-						</button>
-					</div>
-				</div>
-			</div>
-		</Teleport>
 	</div>
 </template>

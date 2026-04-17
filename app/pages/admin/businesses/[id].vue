@@ -111,8 +111,8 @@ onMounted(fetchBusiness)
 	<div class="relative min-h-screen">
 		<!-- Background -->
 		<div class="fixed inset-0 pointer-events-none z-0">
-			<div class="absolute top-0 right-0 w-[800px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] opacity-30 mix-blend-screen animate-pulse-slow"></div>
-			<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px] opacity-30 mix-blend-screen animate-pulse-slow" style="animation-delay: 2s;"></div>
+			<div class="absolute top-0 right-0 w-[800px] h-[600px] bg-brand-500/20 rounded-full blur-[120px] opacity-30 mix-blend-screen"></div>
+			<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[100px] opacity-30 mix-blend-screen" style="animation-delay: 2s;"></div>
 		</div>
 
 		<div class="relative z-10 space-y-8 pb-10">
