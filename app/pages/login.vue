@@ -79,15 +79,6 @@ const handleAdminLogin = async () => {
 			return
 		}
 
-		await new Promise(resolve => setTimeout(resolve, 100))
-
-		const statusCheck = await $api<{ authenticated: boolean; user: any }>('/auth/status')
-
-		if (!statusCheck.authenticated || statusCheck.user?.role !== 'SUPER_ADMIN') {
-			error.value = t('admin.login.session_error')
-			return
-		}
-
 		await router.push('/admin')
 	} catch (e: any) {
 		error.value = e?.data?.message || t('admin.login.incorrect_credentials')

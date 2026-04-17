@@ -16,23 +16,41 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 		throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
 	}
 
-	try {
+	const checkAuth = async () => {
 		const response = await $api<{ authenticated: boolean; user: any }>('/auth/status')
+		return response
+	}
 
+	let response: { authenticated: boolean; user: any } | null = null
 
-		// Not authenticated -> redirect to login
+	try {
+		response = await checkAuth()
+
+		// If not authenticated on first try, wait briefly and retry once
+		// (session may still be committing after login redirect)
 		if (!response.authenticated || !response.user) {
+			await new Promise(resolve => setTimeout(resolve, 400))
+			response = await checkAuth()
+		}
+	} catch {
+		// On network/server error, wait and retry once
+		await new Promise(resolve => setTimeout(resolve, 400))
+		try {
+			response = await checkAuth()
+		} catch (retryError) {
+			console.error('[Admin middleware] error:', retryError)
 			return navigateTo('/login')
 		}
+	}
 
-		// Authenticated but not SUPER_ADMIN
-		if (response.user.role !== 'SUPER_ADMIN') {
-			await $api('/auth/logout', { method: 'POST' })
-			return navigateTo('/login')
-		}
+	// Not authenticated after retry -> redirect to login
+	if (!response || !response.authenticated || !response.user) {
+		return navigateTo('/login')
+	}
 
-	} catch (error) {
-		console.error('[Admin middleware] error:', error)
+	// Authenticated but not SUPER_ADMIN
+	if (response.user.role !== 'SUPER_ADMIN') {
+		await $api('/auth/logout', { method: 'POST' })
 		return navigateTo('/login')
 	}
 })
