@@ -25,8 +25,8 @@ onMounted(async () => {
 })
 
 const signOut = async () => {
-	await $api('/auth/logout', { method: 'POST' })
-	router.push('/admin/login')
+	try { await $api('/auth/logout', { method: 'POST' }) } catch { /* session may already be gone */ }
+	window.location.href = '/login'
 }
 
 const navItems = computed(() => [
