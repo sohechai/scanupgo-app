@@ -89,6 +89,7 @@ const handleAdminLogin = async () => {
 </script>
 
 <template>
+<div>
 	<!-- Admin Login (admin subdomain) -->
 	<div v-if="isAdminSubdomain" class="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
 		<!-- Gradient Background -->
@@ -341,4 +342,5 @@ const handleAdminLogin = async () => {
 			</div>
 		</div>
 	</div>
+</div>
 </template>
