@@ -741,6 +741,17 @@
 			"delete_confirmation_message": "Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.",
 			"sending_in_progress": "Envoi en cours à {count} joueur(s)..."
 		},
+		"credits": {
+			"title": "Crédits email",
+			"recharge": "Recharger les crédits",
+			"credits": "crédits",
+			"buy": "Acheter",
+			"empty_title": "Crédits épuisés — Vous ne pouvez plus envoyer de campagnes",
+			"empty_desc": "Rechargez votre solde pour continuer à communiquer avec vos joueurs.",
+			"no_packs": "Aucun pack disponible. Contactez l'administrateur.",
+			"purchase_success": "Paiement réussi ! Vos crédits ont été ajoutés.",
+			"purchase_canceled": "Paiement annulé."
+		},
 		"automations": {
 			"title": "Automatisations",
 			"configure": "Configurez des emails envoyés automatiquement",
