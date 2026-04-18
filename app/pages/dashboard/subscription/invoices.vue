@@ -1,12 +1,12 @@
 <script setup lang="ts">
-const { t } = useI18n()
-const { $api } = useNuxtApp()
-const { formatDate } = useLocaleDate()
-
 definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth'
 })
+
+const { t } = useI18n()
+const { $api } = useNuxtApp()
+const { formatDate } = useLocaleDate()
 
 interface Invoice {
 	id: string
@@ -29,7 +29,7 @@ const error = ref<any>(null)
 
 onMounted(async () => {
 	try {
-		invoices.value = await $api<Invoice[]>('/subscriptions/invoices')
+		invoices.value = (await $api<Invoice[]>('/subscriptions/invoices')) || []
 	} catch (e) {
 		console.error('Error fetching invoices:', e)
 		error.value = e
