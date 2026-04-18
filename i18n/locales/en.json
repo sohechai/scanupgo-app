@@ -1558,7 +1558,8 @@
 			"annual": "Annual",
 			"lifetime": "Lifetime",
 			"top_businesses": "Top Businesses",
-			"no_businesses": "No businesses yet"
+			"no_businesses": "No businesses yet",
+			"view_all": "View all"
 		},
 		"login": {
 			"title": "Admin Login",

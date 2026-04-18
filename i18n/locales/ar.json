@@ -1518,7 +1518,8 @@
 			"annual": "سنوي",
 			"lifetime": "مدى الحياة",
 			"top_businesses": "أفضل المتاجر",
-			"no_businesses": "لا توجد متاجر حالياً"
+			"no_businesses": "لا توجد متاجر حالياً",
+			"view_all": "عرض الكل"
 		},
 		"login": {
 			"title": "تسجيل دخول المسؤول",
