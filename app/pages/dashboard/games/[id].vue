@@ -278,6 +278,10 @@ const copyLink = () => {
 
 // Background Image Upload
 const bgImageInputRef = ref<HTMLInputElement | null>(null)
+const removeBgImage = () => {
+	game.value.backgroundImage = null
+	if (bgImageInputRef.value) bgImageInputRef.value.value = ''
+}
 const handleBgImageUpload = async (event: Event) => {
 	const input = event.target as HTMLInputElement
 	if (input.files && input.files[0]) {
@@ -878,7 +882,7 @@ const downloadFlyerPDF = async () => {
 										<Icon v-else name="ph:image-duotone" class="text-slate-300" size="32" />
 										<!-- Remove button -->
 										<button v-if="game.backgroundImage" type="button"
-											@click="game.backgroundImage = null"
+											@click="removeBgImage()"
 											class="absolute top-1 right-1 p-1.5 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/bg:opacity-100 transform scale-90 hover:scale-100 border border-slate-100"
 											:title="$t('games.detail.delete_image')">
 											<Icon name="ph:trash-bold" size="14" />
@@ -895,7 +899,7 @@ const downloadFlyerPDF = async () => {
 												{{ game.backgroundImage ? $t('games.detail.change_image') : $t('games.detail.upload_image') }}
 											</button>
 											<button v-if="game.backgroundImage" type="button"
-												@click="game.backgroundImage = null"
+												@click="removeBgImage()"
 												class="px-4 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm">
 												<Icon name="ph:trash-bold" size="14" />
 												{{ $t('games.detail.delete_image') }}
