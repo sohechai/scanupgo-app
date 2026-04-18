@@ -568,16 +568,20 @@ const downloadFlyerPDF = async () => {
 				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 					<div>
 						<div class="flex items-center gap-3">
-							<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{
+							<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{
 								pageTitle }}
 							</h1>
-							<span :class="[
-								'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm',
-								game.active
-									? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-									: 'bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600'
-							]">
-								{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+							<span class="inline-flex items-center gap-1.5">
+								<span :class="[
+									'w-1.5 h-1.5 rounded-full shrink-0',
+									game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+								]"></span>
+								<span :class="[
+									'text-xs',
+									game.active ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-400 dark:text-slate-500'
+								]">
+									{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+								</span>
 							</span>
 						</div>
 						<p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">{{ $t('games.detail.subtitle') }}
@@ -591,7 +595,7 @@ const downloadFlyerPDF = async () => {
 						<div class="flex items-center gap-4">
 							<template v-for="(step, index) in wizardSteps" :key="step.key">
 								<div class="flex items-center gap-3">
-									<div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all"
+									<div class="w-8 h-8 rounded-md flex items-center justify-center font-semibold text-sm transition-all"
 										:class="index <= currentWizardStep
 											? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
 											: 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'">
@@ -615,29 +619,29 @@ const downloadFlyerPDF = async () => {
 
 				<!-- Tabs (Pills) for Existing Game -->
 				<div v-else
-					class="grid grid-cols-2 md:flex md:w-fit gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700 w-full">
+					class="grid grid-cols-2 md:flex md:w-fit gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200/60 dark:border-slate-700 w-full">
 					<button @click="activeTab = 'content'"
-						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'content' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
-						<Icon name="ph:pencil-simple-bold" size="16" />
+						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
+						:class="activeTab === 'content' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						<Icon name="ph:pencil-simple-bold" size="15" />
 						<span>{{ $t('games.detail.tab_content') }}</span>
 					</button>
 					<button @click="activeTab = 'appearance'"
-						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'appearance' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
-						<Icon name="ph:paint-brush-broad-bold" size="16" />
+						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
+						:class="activeTab === 'appearance' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						<Icon name="ph:paint-brush-broad-bold" size="15" />
 						<span>{{ $t('games.detail.tab_appearance') }}</span>
 					</button>
 					<button @click="activeTab = 'prizes'"
-						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'prizes' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
-						<Icon name="ph:gift-bold" size="16" />
+						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
+						:class="activeTab === 'prizes' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						<Icon name="ph:gift-bold" size="15" />
 						<span>{{ $t('games.detail.tab_prizes') }}</span>
 					</button>
 					<button @click="activeTab = 'flyers'"
-						class="px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'flyers' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
-						<Icon name="ph:qr-code-bold" size="16" />
+						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
+						:class="activeTab === 'flyers' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						<Icon name="ph:qr-code-bold" size="15" />
 						<span>{{ $t('games.detail.tab_flyers') }}</span>
 					</button>
 				</div>
@@ -647,16 +651,16 @@ const downloadFlyerPDF = async () => {
 				<div class="flex-1 w-full min-w-0">
 					<!-- Configuration Card -->
 					<div
-						class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-100 dark:border-slate-700">
+						class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-5 md:p-6">
 
 						<!-- TAB: CONTENT -->
 						<form v-show="activeTab === 'content'" @submit.prevent="saveGame" class="space-y-8">
 
 							<!-- Active Toggle -->
 							<div
-								class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-5 border border-slate-200 dark:border-slate-600 flex items-center justify-between">
+								class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600 flex items-center justify-between">
 								<div>
-									<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('games.detail.game_state') }}</h3>
+									<h3 class="font-medium text-slate-900 dark:text-white text-sm">{{ $t('games.detail.game_state') }}</h3>
 									<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $t('games.detail.make_visible') }}
 									</p>
 								</div>
@@ -671,29 +675,29 @@ const downloadFlyerPDF = async () => {
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div class="col-span-2">
 									<label
-										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.game_title') }}</label>
+										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.game_title') }}</label>
 									<input v-model="game.title" type="text" required
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 										:placeholder="$t('games.detail.game_title_placeholder')">
 								</div>
 
 								<div>
 									<label
-										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.slug') }}</label>
+										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.slug') }}</label>
 									<div class="relative group/input">
 										<span
 											class="absolute left-3.5 top-2.5 text-slate-400 dark:text-slate-500 font-mono text-sm">/</span>
 										<input v-model="game.slug" type="text" required
-											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg pl-7 pr-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
+											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md pl-7 pr-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
 											:placeholder="$t('games.detail.slug_placeholder')">
 									</div>
 								</div>
 
 								<div>
 									<label
-										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.language') }}</label>
+										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.language') }}</label>
 									<select v-model="game.gameLanguage"
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 outline-none appearance-none text-sm cursor-pointer">
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 outline-none appearance-none text-sm cursor-pointer">
 										<option value="fr">{{ $t('games.detail.language_french') }}</option>
 										<option value="en">{{ $t('games.detail.language_english') }}</option>
 										<option value="ar">{{ $t('games.detail.language_arabic') }}</option>
@@ -701,10 +705,10 @@ const downloadFlyerPDF = async () => {
 								</div>
 
 								<div
-									class="col-span-2 bg-slate-50 dark:bg-slate-700/50 rounded-xl p-5 border border-slate-200/60 dark:border-slate-600">
+									class="col-span-2 bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200/60 dark:border-slate-600">
 									<div class="flex justify-between items-center mb-3">
 										<label
-											class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{{ $t('games.detail.win_probability') }}</label>
+											class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.win_probability') }}</label>
 										<span
 											class="px-2 py-0.5 bg-white dark:bg-slate-700 rounded-md text-xs font-bold text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-600">
 											{{ game.winProbability }}%
@@ -715,7 +719,7 @@ const downloadFlyerPDF = async () => {
 										class="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-[#007AFF] hover:accent-[#007AFF] transition-all">
 
 									<div
-										class="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-2 uppercase tracking-wide">
+										class="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mt-2">
 										<span>{{ $t('games.detail.win_probability_minimum') }}</span>
 										<span>{{ $t('games.detail.win_probability_generous') }}</span>
 										<span>{{ $t('games.detail.win_probability_guaranteed') }}</span>
@@ -724,15 +728,15 @@ const downloadFlyerPDF = async () => {
 
 								<div class="col-span-2">
 									<label
-										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('games.detail.tagline') }}</label>
+										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.tagline') }}</label>
 									<textarea v-model="game.tagline" rows="2"
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 resize-none text-sm"
+										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 resize-none text-sm"
 										:placeholder="$t('games.detail.tagline_placeholder')"></textarea>
 								</div>
 
 								<div class="col-span-2">
 									<label
-										class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
 										<span class="flex items-center gap-2">
 											<Icon name="ph:google-logo-bold" size="14" />
 											{{ $t('games.detail.google_review_link') }}
@@ -741,7 +745,7 @@ const downloadFlyerPDF = async () => {
 									</label>
 									<div class="flex gap-2">
 										<input v-model="game.googleReviewUrl" type="url" required
-											class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+											class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 											:placeholder="$t('games.detail.google_review_placeholder')">
 										<button type="button" @click="showGoogleHelpModal = true"
 											class="px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center gap-2 shrink-0"
@@ -758,17 +762,17 @@ const downloadFlyerPDF = async () => {
 
 							<!-- Advanced Settings -->
 							<div class="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-6">
-								<h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-									<Icon name="ph:sliders-horizontal-bold" size="16" />
+								<h3 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+									<Icon name="ph:sliders-horizontal-bold" size="15" class="text-slate-400" />
 									{{ $t('games.detail.advanced_settings') }}
 								</h3>
 
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<!-- Frequency -->
 									<div
-										class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
+										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
 										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $t('games.detail.frequency_label') }}</span>
+											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.frequency_label') }}</span>
 											<label class="relative inline-flex items-center cursor-pointer">
 												<input v-model="game.participationFrequencyEnabled" type="checkbox"
 													class="sr-only peer">
@@ -787,9 +791,9 @@ const downloadFlyerPDF = async () => {
 
 									<!-- Redemption Delay -->
 									<div
-										class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
+										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
 										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $t('games.detail.redemption_delay') }}</span>
+											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.redemption_delay') }}</span>
 											<label class="relative inline-flex items-center cursor-pointer">
 												<input v-model="game.prizeRedemptionDelayEnabled" type="checkbox"
 													class="sr-only peer">
@@ -814,7 +818,7 @@ const downloadFlyerPDF = async () => {
 									<!-- Back button for wizard mode -->
 									<button v-if="isNew && currentWizardStep > 0" type="button"
 										@click="goToPreviousStep"
-										class="px-6 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-lg transition-all flex items-center gap-2 text-sm">
+										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
 										{{ $t('common.previous') }}
 									</button>
@@ -822,13 +826,13 @@ const downloadFlyerPDF = async () => {
 								<div class="flex gap-3">
 									<!-- Next button for wizard mode -->
 									<button v-if="isNew" type="button" @click="goToNextStep" :disabled="!canGoNext"
-										class="px-6 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
+										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
 										{{ $t('common.next') }}
 										<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
 									</button>
 									<!-- Save button for edit mode -->
 									<button v-else type="submit" :disabled="saving"
-										class="px-6 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
+										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
 										<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" />
 										{{ saving ? $t('common.loading') : $t('games.detail.save_button') }}
 									</button>
@@ -837,26 +841,18 @@ const downloadFlyerPDF = async () => {
 						</form>
 
 						<!-- TAB: APPEARANCE -->
-						<form v-show="activeTab === 'appearance'" @submit.prevent="saveGame" class="space-y-8">
-							<div
-								class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
-								<div
-									class="w-10 h-10 rounded-lg bg-pink-50 dark:bg-pink-900/10 text-pink-600 dark:text-pink-400 flex items-center justify-center">
-									<Icon name="ph:paint-brush-broad-duotone" size="20" />
-								</div>
-								<div>
-									<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.appearance_title') }}</h2>
-									<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.appearance_subtitle') }}
-									</p>
-								</div>
+						<form v-show="activeTab === 'appearance'" @submit.prevent="saveGame" class="space-y-6">
+							<div class="pb-4 border-b border-slate-100 dark:border-slate-700">
+								<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.appearance_title') }}</h2>
+								<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.appearance_subtitle') }}</p>
 							</div>
 
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 								<div>
 									<label
-										class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">{{ $t('games.detail.background_color') }}</label>
+										class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.background_color') }}</label>
 									<div
-										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-lg border border-slate-200 dark:border-slate-600">
+										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
 										<input v-model="game.primaryColor" type="color"
 											class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
 										<div class="flex-1">
@@ -872,11 +868,11 @@ const downloadFlyerPDF = async () => {
 							<!-- Background Image -->
 							<div>
 								<label
-									class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">{{ $t('games.detail.background_image') }}</label>
+									class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.background_image') }}</label>
 								<div class="flex items-start gap-6">
 									<!-- Preview -->
 									<div
-										class="w-24 h-24 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-700/50 flex items-center justify-center overflow-hidden relative group/bg">
+										class="w-20 h-20 rounded-md border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden relative group/bg">
 										<img v-if="game.backgroundImage" :src="game.backgroundImage"
 											class="w-full h-full object-cover" />
 										<Icon v-else name="ph:image-duotone" class="text-slate-300" size="32" />
@@ -917,19 +913,19 @@ const downloadFlyerPDF = async () => {
 								<div>
 									<button v-if="isNew && currentWizardStep > 0" type="button"
 										@click="goToPreviousStep"
-										class="px-6 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-lg transition-all flex items-center gap-2 text-sm">
+										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
 										{{ $t('common.previous') }}
 									</button>
 								</div>
 								<div class="flex gap-3">
 									<button v-if="isNew" type="button" @click="goToNextStep"
-										class="px-6 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 text-sm">
+										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										{{ $t('common.next') }}
 										<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
 									</button>
 									<button v-else type="submit" :disabled="saving"
-										class="px-6 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
+										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
 										<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" />
 										{{ saving ? $t('common.loading') : $t('games.detail.save_button') }}
 									</button>
@@ -940,24 +936,15 @@ const downloadFlyerPDF = async () => {
 						<!-- TAB: PRIZES -->
 						<div v-show="activeTab === 'prizes'">
 							<div v-if="isNew" class="space-y-8">
-								<div
-									class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
-									<div
-										class="w-10 h-10 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 text-yellow-600 dark:text-yellow-400 flex items-center justify-center">
-										<Icon name="ph:gift-duotone" size="20" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}
-										</h2>
-										<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.prizes_subtitle') }}
-										</p>
-									</div>
+								<div class="mb-5 pb-4 border-b border-slate-100 dark:border-slate-700">
+									<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}</h2>
+									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.prizes_subtitle') }}</p>
 								</div>
 
 								<div
-									class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
+									class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-5 text-center">
 									<div
-										class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mx-auto mb-3 text-amber-600 dark:text-amber-400">
+										class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-md flex items-center justify-center mx-auto mb-3 text-amber-600 dark:text-amber-400">
 										<Icon name="ph:info-bold" size="24" />
 									</div>
 									<h3 class="text-sm font-bold text-amber-900 dark:text-amber-200 mb-1">{{ $t('games.detail.prizes_info') }}</h3>
@@ -967,7 +954,7 @@ const downloadFlyerPDF = async () => {
 								<!-- Navigation buttons for wizard -->
 								<div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
 									<button type="button" @click="goToPreviousStep"
-										class="px-6 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-lg transition-all flex items-center gap-2 text-sm">
+										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
 										{{ $t('common.previous') }}
 									</button>
@@ -980,23 +967,14 @@ const downloadFlyerPDF = async () => {
 								</div>
 							</div>
 							<div v-else>
-								<div
-									class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-slate-700">
-									<div
-										class="w-10 h-10 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 text-yellow-600 dark:text-yellow-400 flex items-center justify-center">
-										<Icon name="ph:gift-duotone" size="20" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}
-										</h2>
-										<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.prizes_after_creation') }}
-										</p>
-									</div>
+								<div class="mb-5 pb-4 border-b border-slate-100 dark:border-slate-700">
+									<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}</h2>
+									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.prizes_after_creation') }}</p>
 								</div>
 								<GamePrizes :game-id="route.params.id as string" />
 								<div class="flex justify-end pt-6 mt-6 border-t border-slate-100 dark:border-slate-700">
 									<button type="button" @click="activeTab = 'flyers'"
-										class="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
+										class="px-5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium rounded-md text-sm flex items-center gap-2 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
 										{{ $t('games.detail.configure_flyer') }}
 										<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
 									</button>
@@ -1029,21 +1007,19 @@ const downloadFlyerPDF = async () => {
 								<!-- Preview Mode: Show flyer preview if saved and editor is not open -->
 								<div v-if="game.flyerDesignUrl && !showFlyerEditor" class="space-y-6">
 									<!-- Flyer Preview Card -->
-									<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+									<div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
 										<!-- Header -->
-										<div class="p-5 border-b border-slate-100 dark:border-slate-700 bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-between">
-											<div class="flex items-center gap-4">
-												<div class="w-12 h-12 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-													<Icon name="ph:check-circle-fill" class="text-[#34C759]" size="20" />
-												</div>
+										<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+											<div class="flex items-center gap-3">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
 												<div>
-													<h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_your_flyer') }}</h3>
-													<p class="text-sm text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_ready') }}</p>
+													<h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.flyers_your_flyer') }}</h3>
+													<p class="text-xs text-slate-400 dark:text-slate-500">{{ $t('games.detail.flyers_ready') }}</p>
 												</div>
 											</div>
 											<button @click="showFlyerEditor = true"
-												class="px-5 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-[#007AFF]/20">
-												<Icon name="ph:pencil-simple-bold" size="18" />
+												class="px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white font-medium rounded-md transition-colors flex items-center gap-2 text-sm">
+												<Icon name="ph:pencil-simple-bold" size="15" />
 												{{ $t('games.detail.flyers_edit') }}
 											</button>
 										</div>
@@ -1051,10 +1027,9 @@ const downloadFlyerPDF = async () => {
 										<!-- Preview Content -->
 										<div class="p-6 flex flex-col lg:flex-row items-start gap-8">
 											<!-- Flyer Image -->
-											<div class="relative group mx-auto lg:mx-0">
-												<div class="absolute inset-0 bg-gradient-to-br from-[#007AFF]/10 to-[#007AFF]/5 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+											<div class="mx-auto lg:mx-0">
 												<img :src="game.flyerDesignUrl"
-													class="relative w-64 h-auto rounded-2xl border-2 border-white dark:border-slate-700 shadow-2xl" />
+													class="w-52 h-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-md" />
 											</div>
 
 											<!-- Actions -->
@@ -1067,7 +1042,7 @@ const downloadFlyerPDF = async () => {
 												<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 													<!-- Download PNG -->
 													<a :href="game.flyerDesignUrl" download="flyer.png"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors group">
+														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group">
 														<div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
 															<Icon name="ph:file-png-bold" class="text-blue-600 dark:text-blue-400" size="20" />
 														</div>
@@ -1079,7 +1054,7 @@ const downloadFlyerPDF = async () => {
 
 													<!-- Download PDF -->
 													<button @click="downloadFlyerPDF" :disabled="downloadingPdf"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors group text-left disabled:opacity-50">
+														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group text-left disabled:opacity-50">
 														<div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
 															<Icon v-if="downloadingPdf" name="ph:spinner-gap-bold" class="text-red-600 dark:text-red-400 animate-spin" size="20" />
 															<Icon v-else name="ph:file-pdf-bold" class="text-red-600 dark:text-red-400" size="20" />
@@ -1092,8 +1067,8 @@ const downloadFlyerPDF = async () => {
 
 													<!-- Preview -->
 													<button @click="previewFlyer"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors group text-left">
-														<div class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center group-hover:scale-110 transition-transform">
+														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group text-left">
+														<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
 															<Icon name="ph:eye-bold" class="text-emerald-600 dark:text-emerald-400" size="20" />
 														</div>
 														<div>
@@ -1104,9 +1079,9 @@ const downloadFlyerPDF = async () => {
 												</div>
 
 												<!-- Order CTA -->
-												<div class="p-4 bg-gradient-to-r from-[#F2F2F7] to-[#F2F2F7] dark:from-[#2C2C2E] dark:to-[#2C2C2E] rounded-xl border border-purple-100 dark:border-purple-800/30">
+												<div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
 													<div class="flex items-center gap-4">
-														<div class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
+														<div class="w-10 h-10 rounded-md bg-white dark:bg-slate-700 flex items-center justify-center border border-slate-200 dark:border-slate-600">
 															<Icon name="ph:printer-bold" class="text-purple-600 dark:text-purple-400" size="20" />
 														</div>
 														<div class="flex-1">
@@ -1129,7 +1104,7 @@ const downloadFlyerPDF = async () => {
 									<!-- Back button if editing existing flyer -->
 									<div v-if="game.flyerDesignUrl && showFlyerEditor" class="flex items-center gap-4 mb-4">
 										<button @click="showFlyerEditor = false"
-											class="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
+											class="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors">
 											<Icon name="ph:arrow-left-bold" size="18" class="rtl:rotate-180" />
 											{{ $t('games.detail.flyers_back_to_preview') }}
 										</button>
@@ -1171,12 +1146,12 @@ const downloadFlyerPDF = async () => {
 				class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
 				@click.self="showGoogleHelpModal = false">
 				<div
-					class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+					class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
 					<!-- Header -->
 					<div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
 						<div class="flex items-center gap-3">
 							<div
-								class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+								class="w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
 								<Icon name="ph:google-logo-bold" size="20" />
 							</div>
 							<h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('games.detail.google_help_title') }}
@@ -1221,7 +1196,7 @@ const downloadFlyerPDF = async () => {
 						<div class="space-y-3">
 							<h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
 								<span
-									class="w-6 h-6 rounded-full bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs font-bold">2</span>
+									class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs font-bold">2</span>
 								{{ $t('games.detail.google_help_method2') }}
 							</h4>
 							<ol class="space-y-2 text-sm text-slate-600 dark:text-slate-300 ml-8">
@@ -1246,7 +1221,7 @@ const downloadFlyerPDF = async () => {
 
 						<!-- Tip -->
 						<div
-							class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+							class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4">
 							<div class="flex items-start gap-3">
 								<Icon name="ph:lightbulb-bold" size="20"
 									class="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
@@ -1263,7 +1238,7 @@ const downloadFlyerPDF = async () => {
 					<!-- Footer -->
 					<div class="p-6 border-t border-slate-100 dark:border-slate-700">
 						<button @click="showGoogleHelpModal = false"
-							class="w-full py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg transition-all text-sm">
+							class="w-full py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all text-sm">
 							{{ $t('games.detail.google_help_understood') }}
 						</button>
 					</div>

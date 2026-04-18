@@ -121,44 +121,44 @@ onMounted(async () => {
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
 			<div>
-				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('players.title') }}</h1>
-				<p class="text-slate-400 dark:text-slate-500 text-sm mt-0.5">{{ $t('players.subtitle') }}</p>
+				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('players.title') }}</h1>
+				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('players.subtitle') }}</p>
 			</div>
 			<div class="flex items-center gap-2">
 				<!-- Search -->
 				<div class="relative hidden md:block">
-					<Icon name="ph:magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="15" />
+					<Icon name="ph:magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14" />
 					<input v-model="searchQuery" type="text" :placeholder="$t('players.search_placeholder')"
-						class="pl-9 pr-4 py-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] border-0 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#007AFF]/40 w-56 transition-all" />
+						class="pl-8 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border-0 rounded-md text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#007AFF]/20 w-52 transition-all" />
 				</div>
 				<!-- Filters -->
 				<button @click="showFilters = !showFilters"
-					class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+					class="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all"
 					:class="activeFilterCount > 0 || showFilters
-						? 'bg-[#007AFF] text-white shadow-md shadow-[#007AFF]/25'
-						: 'bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-600 dark:text-slate-300'">
-					<Icon name="ph:funnel-bold" size="15" />
+						? 'bg-[#007AFF] text-white'
+						: 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'">
+					<Icon name="ph:funnel-bold" size="14" />
 					{{ $t('players.filters_button') }}
-					<span v-if="activeFilterCount > 0" class="w-4 h-4 rounded-full bg-white/30 text-[10px] font-bold flex items-center justify-center">{{ activeFilterCount }}</span>
+					<span v-if="activeFilterCount > 0" class="w-4 h-4 rounded-full bg-white/30 text-[10px] font-semibold flex items-center justify-center">{{ activeFilterCount }}</span>
 				</button>
 				<!-- Export -->
 				<div class="relative">
 					<button @click="showExportMenu = !showExportMenu" :disabled="players.length === 0 || !!exporting"
-						class="flex items-center gap-2 px-4 py-2.5 bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-sm transition-all disabled:opacity-40">
-						<Icon v-if="exporting" name="ph:spinner-gap-bold" size="15" class="animate-spin" />
-						<Icon v-else name="ph:export-bold" size="15" />
+						class="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-medium rounded-md text-sm transition-all disabled:opacity-40 hover:border-slate-300">
+						<Icon v-if="exporting" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+						<Icon v-else name="ph:export-bold" size="14" />
 						{{ exporting ? 'Export...' : $t('players.export_button') }}
 					</button>
 					<div v-if="showExportMenu"
-						class="absolute right-0 mt-2 w-44 bg-white dark:bg-[#2C2C2E] rounded-2xl shadow-xl border border-[#E5E5EA] dark:border-slate-700/40 py-1 z-50 overflow-hidden">
+						class="absolute right-0 mt-1.5 w-40 bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-slate-200 dark:border-slate-800 py-1 z-50 overflow-hidden">
 						<button @click="exportToCSV"
-							class="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-[#F2F2F7] dark:hover:bg-[#3A3A3C] flex items-center gap-3 transition-colors">
-							<Icon name="ph:file-csv-duotone" size="17" class="text-[#34C759]" />
+							class="w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors">
+							<Icon name="ph:file-csv-duotone" size="15" class="text-emerald-500" />
 							{{ $t('players.export_csv') }}
 						</button>
 						<button @click="exportToPDF"
-							class="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-[#F2F2F7] dark:hover:bg-[#3A3A3C] flex items-center gap-3 transition-colors">
-							<Icon name="ph:file-pdf-duotone" size="17" class="text-[#FF3B30]" />
+							class="w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors">
+							<Icon name="ph:file-pdf-duotone" size="15" class="text-red-500" />
 							{{ $t('players.export_pdf') }}
 						</button>
 					</div>
@@ -166,128 +166,128 @@ onMounted(async () => {
 			</div>
 		</div>
 
-		<!-- Stats — iOS widgets -->
+		<!-- Stats -->
 		<div class="grid grid-cols-3 gap-3">
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
-				<div class="w-8 h-8 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center mb-3">
-					<Icon name="ph:users-bold" class="text-slate-400 dark:text-slate-500" size="15" />
-				</div>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : stats.total }}</p>
-				<p class="text-[11px] text-slate-400 mt-1 font-medium">{{ $t('players.stats.total_players') }}</p>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
+				<p class="text-xs text-slate-400 dark:text-slate-500 mb-1">{{ $t('players.stats.total_players') }}</p>
+				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums leading-none">{{ loading ? '—' : stats.total }}</p>
 			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
-				<div class="w-8 h-8 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center mb-3">
-					<Icon name="ph:repeat-bold" class="text-slate-400 dark:text-slate-500" size="15" />
-				</div>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : `${stats.loyaltyRate}%` }}</p>
-				<p class="text-[11px] text-slate-400 mt-1 font-medium">{{ $t('players.stats.loyalty') }}</p>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
+				<p class="text-xs text-slate-400 dark:text-slate-500 mb-1">{{ $t('players.stats.loyalty') }}</p>
+				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums leading-none">{{ loading ? '—' : `${stats.loyaltyRate}%` }}</p>
 			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 p-4 shadow-sm">
-				<div class="w-8 h-8 rounded-xl bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center mb-3">
-					<Icon name="ph:game-controller-bold" class="text-slate-400 dark:text-slate-500" size="15" />
-				</div>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">{{ loading ? '—' : stats.totalSessions }}</p>
-				<p class="text-[11px] text-slate-400 mt-1 font-medium">{{ $t('players.stats.participations') }}</p>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
+				<p class="text-xs text-slate-400 dark:text-slate-500 mb-1">{{ $t('players.stats.participations') }}</p>
+				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums leading-none">{{ loading ? '—' : stats.totalSessions }}</p>
 			</div>
 		</div>
 
-		<!-- Filters panel — iOS grouped style -->
+		<!-- Filters panel -->
 		<Transition enter-active-class="transition-all duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
 			leave-active-class="transition-all duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
-			<div v-if="showFilters" class="bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-2xl p-1.5">
-				<div class="flex items-center justify-between px-3 pt-2 pb-1.5">
-					<p class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ $t('players.filters_button') }}</p>
+			<div v-if="showFilters" class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+					<p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('players.filters_button') }}</p>
 					<button v-if="activeFilterCount > 0" @click="clearFilters"
-						class="text-[11px] font-semibold text-[#007AFF]">{{ $t('players.clear_filters') }}</button>
+						class="text-xs font-medium text-[#007AFF]">{{ $t('players.clear_filters') }}</button>
 				</div>
-				<div class="bg-white dark:bg-[#2C2C2E] rounded-xl divide-y divide-[#E5E5EA] dark:divide-slate-700/40 overflow-hidden">
-					<!-- Filter rows -->
+				<div class="divide-y divide-slate-100 dark:divide-slate-800">
 					<div v-for="(filterDef, idx) in [
 						{ label: $t('players.filters.optin_email'), model: filterOptinEmail, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'yes', l: $t('players.filters.yes') }, { v:'no', l: $t('players.filters.no') }], key: 'email' },
 						{ label: $t('players.filters.optin_sms'), model: filterOptinSMS, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'yes', l: $t('players.filters.yes') }, { v:'no', l: $t('players.filters.no') }], key: 'sms' },
 						{ label: $t('players.filters.period'), model: filterPeriod, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'7d', l: $t('players.filters.7days') }, { v:'30d', l: $t('players.filters.30days') }, { v:'90d', l: $t('players.filters.90days') }, { v:'12m', l: $t('players.filters.12months') }], key: 'period' },
 						{ label: $t('players.filters.participations'), model: filterParticipations, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'1', l: $t('players.filters.1x') }, { v:'2+', l: $t('players.filters.2plus') }, { v:'5+', l: $t('players.filters.5plus') }], key: 'part' },
-					]" :key="filterDef.key" class="flex items-center gap-4 px-4 py-3">
-						<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 w-28 shrink-0">{{ filterDef.label }}</p>
+					]" :key="filterDef.key" class="flex items-center gap-4 px-4 py-2.5">
+						<p class="text-xs font-medium text-slate-500 dark:text-slate-400 w-28 shrink-0">{{ filterDef.label }}</p>
 						<div class="flex gap-1.5 flex-wrap">
 							<button v-for="opt in filterDef.opts" :key="opt.v"
 								@click="idx === 0 ? (filterOptinEmail = opt.v as any) : idx === 1 ? (filterOptinSMS = opt.v as any) : idx === 2 ? (filterPeriod = opt.v as any) : (filterParticipations = opt.v as any)"
-								class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+								class="px-2.5 py-1 rounded-md text-xs font-medium transition-all"
 								:class="filterDef.model === opt.v
-									? 'bg-[#007AFF] text-white shadow-sm'
-									: 'bg-[#F2F2F7] dark:bg-[#3A3A3C] text-slate-600 dark:text-slate-300'">
+									? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+									: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'">
 								{{ opt.l }}
 							</button>
 						</div>
 					</div>
 				</div>
-				<p v-if="activeFilterCount > 0" class="text-[11px] text-slate-400 px-3 py-2">
-					<span class="font-bold text-slate-700 dark:text-slate-200">{{ filteredPlayers.length }}</span> / {{ players.length }} joueurs
-				</p>
+				<div v-if="activeFilterCount > 0" class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+					<p class="text-xs text-slate-400">
+						<span class="font-semibold text-slate-700 dark:text-slate-200">{{ filteredPlayers.length }}</span> / {{ players.length }} joueurs
+					</p>
+				</div>
 			</div>
 		</Transition>
 
-		<!-- Players list — iOS grouped -->
-		<div class="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 overflow-hidden shadow-sm">
+		<!-- Players list -->
+		<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
 
 			<div v-if="loading" class="p-10 flex items-center justify-center">
 				<Icon name="ph:spinner-gap-bold" size="28" class="text-slate-300 animate-spin" />
 			</div>
 
 			<div v-else-if="players.length === 0" class="p-12 flex flex-col items-center text-center">
-				<div class="w-14 h-14 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center mb-3">
-					<Icon name="ph:users-three-duotone" size="28" class="text-slate-400" />
+				<div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mb-3">
+					<Icon name="ph:users-three-duotone" size="22" class="text-slate-400" />
 				</div>
-				<h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1">{{ $t('players.empty_state') }}</h3>
+				<h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">{{ $t('players.empty_state') }}</h3>
 				<p class="text-xs text-slate-400 max-w-xs mb-5">{{ $t('players.empty_state_message') }}</p>
 				<NuxtLink to="/dashboard/orders"
-					class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#007AFF] text-white font-semibold rounded-xl text-sm shadow-md shadow-[#007AFF]/25">
-					<Icon name="ph:printer-bold" size="15" />
+					class="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white font-medium rounded-md text-sm transition-all">
+					<Icon name="ph:printer-bold" size="14" />
 					{{ $t('players.print_flyers') }}
 				</NuxtLink>
 			</div>
 
 			<div v-else>
-				<div class="divide-y divide-[#E5E5EA] dark:divide-slate-700/40">
+				<!-- Table header -->
+				<div class="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-2.5 border-b border-slate-100 dark:border-slate-800">
+					<p class="text-xs font-medium text-slate-400">{{ $t('players.table.player') }}</p>
+					<p class="text-xs font-medium text-slate-400 text-center">{{ $t('players.table.optin') }}</p>
+					<p class="text-xs font-medium text-slate-400 text-right">{{ $t('players.table.sessions') }}</p>
+					<p class="text-xs font-medium text-slate-400 text-right">{{ $t('players.table.date') }}</p>
+				</div>
+
+				<div class="divide-y divide-slate-100 dark:divide-slate-800">
 					<div v-for="player in filteredPlayers" :key="player.id"
-						class="flex items-center gap-4 px-5 py-3 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors">
+						class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
 						<!-- Avatar -->
-						<div class="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-sm shadow-[#007AFF]/25">
+						<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-xs text-slate-600 dark:text-slate-400 shrink-0">
 							{{ (player.firstName?.[0] || '') + (player.lastName?.[0] || '') }}
 						</div>
 						<!-- Name + contact -->
 						<div class="flex-1 min-w-0">
-							<p class="font-semibold text-slate-900 dark:text-white text-sm">{{ player.firstName }} {{ player.lastName }}</p>
-							<div class="flex items-center gap-3 mt-0.5">
-								<span v-if="player.email" class="text-[11px] text-slate-400 truncate max-w-[160px]">{{ player.email }}</span>
-								<span v-if="player.phone" class="text-[11px] text-slate-400">{{ player.phone }}</span>
+							<p class="font-medium text-slate-900 dark:text-white text-sm">{{ player.firstName }} {{ player.lastName }}</p>
+							<div class="flex items-center gap-2 mt-0.5">
+								<span v-if="player.email" class="text-xs text-slate-400 truncate max-w-[160px]">{{ player.email }}</span>
+								<span v-if="player.phone" class="text-xs text-slate-400">{{ player.phone }}</span>
 							</div>
 						</div>
-						<!-- Opt-in badges -->
+						<!-- Opt-in -->
 						<div class="flex items-center gap-1 shrink-0">
-							<span v-if="player.emailOptIn" class="w-6 h-6 rounded-lg bg-[#34C759]/15 flex items-center justify-center" title="Email opt-in">
-								<Icon name="ph:envelope-simple-fill" class="text-[#34C759]" size="12" />
+							<span v-if="player.emailOptIn" class="w-5 h-5 rounded bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center" title="Email opt-in">
+								<Icon name="ph:envelope-simple-fill" class="text-emerald-500" size="11" />
 							</span>
-							<span v-if="player.smsOptIn" class="w-6 h-6 rounded-lg bg-[#007AFF]/15 flex items-center justify-center" title="SMS opt-in">
-								<Icon name="ph:chat-text-fill" class="text-[#007AFF]" size="12" />
+							<span v-if="player.smsOptIn" class="w-5 h-5 rounded bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center" title="SMS opt-in">
+								<Icon name="ph:chat-text-fill" class="text-blue-500" size="11" />
 							</span>
 						</div>
-						<!-- Participations -->
-						<div class="text-right shrink-0">
-							<p class="text-sm font-bold text-slate-900 dark:text-white">{{ player._count.sessions || 0 }}</p>
+						<!-- Sessions -->
+						<div class="text-right shrink-0 w-12">
+							<p class="text-sm font-semibold text-slate-900 dark:text-white tabular-nums">{{ player._count.sessions || 0 }}</p>
 							<p class="text-[10px] text-slate-400">sessions</p>
 						</div>
 						<!-- Date -->
-						<p class="text-[11px] text-slate-400 shrink-0 w-16 text-right hidden md:block">{{ formatDate(player.createdAt) }}</p>
+						<p class="text-xs text-slate-400 shrink-0 w-16 text-right hidden md:block">{{ formatDate(player.createdAt) }}</p>
 					</div>
 				</div>
 
 				<!-- No results -->
 				<div v-if="filteredPlayers.length === 0 && (searchQuery || activeFilterCount > 0)"
-					class="p-10 text-center border-t border-[#E5E5EA] dark:border-slate-700/40">
-					<p class="text-sm font-bold text-slate-900 dark:text-white">{{ $t('players.no_results') }}</p>
+					class="p-10 text-center border-t border-slate-100 dark:border-slate-800">
+					<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('players.no_results') }}</p>
 					<p class="text-xs text-slate-400 mt-1 mb-4">{{ $t('players.no_results_message') }}</p>
-					<button @click="searchQuery = ''; clearFilters()" class="text-[#007AFF] font-semibold text-xs">{{ $t('players.clear_search') }}</button>
+					<button @click="searchQuery = ''; clearFilters()" class="text-[#007AFF] font-medium text-xs">{{ $t('players.clear_search') }}</button>
 				</div>
 			</div>
 		</div>

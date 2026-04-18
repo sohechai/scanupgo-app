@@ -138,218 +138,178 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="space-y-8 relative">
+	<div class="space-y-5 relative">
 
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
-				<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{ $t('profile.title') }}</h1>
-				<p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">{{ $t('profile.subtitle') }}
-				</p>
+				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('profile.title') }}</h1>
+				<p class="text-slate-400 dark:text-slate-400 text-sm mt-0.5">{{ $t('profile.subtitle') }}</p>
 			</div>
 
 			<!-- Actions -->
-			<div v-if="!loading" class="flex items-center gap-3">
+			<div v-if="!loading" class="flex items-center gap-2">
 				<button v-if="isProfileComplete && !isEditing" @click="isEditing = true"
-					class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-slate-700/40 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-all shadow-sm">
-					<Icon name="ph:pencil-simple-bold" size="16" />
+					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-slate-700/40 text-slate-600 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
+					<Icon name="ph:pencil-simple-bold" size="14" />
 					<span>{{ $t('profile.edit_button') }}</span>
 				</button>
 
 				<button v-if="canEdit" @click="handleSave" :disabled="saving"
-					class="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 shadow-md shadow-slate-900/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-					<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
-					<Icon v-else name="ph:floppy-disk-bold" size="16" />
+					class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+					<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="14" />
+					<Icon v-else name="ph:floppy-disk-bold" size="14" />
 					<span>{{ saving ? $t('profile.saving') : $t('profile.save_button') }}</span>
 				</button>
 			</div>
 		</div>
 
 		<!-- Loading State -->
-		<div v-if="loading" class="flex justify-center py-20">
-			<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="32" />
+		<div v-if="loading" class="flex justify-center py-20 text-slate-300">
+			<Icon name="svg-spinners:ring-resize" size="28" />
 		</div>
 
 		<!-- Incomplete Profile Warning -->
 		<div v-else-if="!isProfileComplete"
-			class="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-4 flex items-start gap-3 mb-6">
-			<Icon name="ph:warning-circle-fill" class="text-amber-500 mt-0.5" size="20" />
+			class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg p-3.5 flex items-start gap-3">
+			<Icon name="ph:warning-circle-fill" class="text-amber-500 mt-0.5 shrink-0" size="16" />
 			<div>
-				<h3 class="text-sm font-bold text-amber-900 dark:text-amber-500">{{ $t('profile.incomplete_warning') }}</h3>
-				<p class="text-sm text-amber-700 dark:text-amber-400 mt-0.5">{{ $t('profile.incomplete_message') }}</p>
+				<p class="text-sm font-semibold text-amber-800 dark:text-amber-400">{{ $t('profile.incomplete_warning') }}</p>
+				<p class="text-xs text-amber-600 dark:text-amber-500 mt-0.5">{{ $t('profile.incomplete_message') }}</p>
 			</div>
 		</div>
 
 		<!-- Main Grid -->
-		<div v-if="!loading" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+		<div v-if="!loading" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
 			<!-- SECTION 1: Informations (Left Column) -->
-			<div
-				class="bg-white dark:bg-[#1C1C1E] p-6 md:p-8 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
-				<div class="flex items-center gap-4 mb-6 pb-6 border-b border-[#E5E5EA] dark:border-slate-700/40">
-					<div
-						class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400 flex items-center justify-center">
-						<Icon name="ph:info-duotone" size="20" />
-					</div>
-					<div>
-						<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('profile.information_section') }}</h2>
-						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('profile.information_subtitle') }}</p>
-					</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
+				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/40">
+					<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('profile.information_section') }}</h2>
+					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('profile.information_subtitle') }}</p>
 				</div>
+				<div class="p-5">
 
-				<div class="space-y-6">
+				<div class="space-y-4">
 					<!-- Name -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.business_name') }}</label>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.business_name') }}</label>
 						<input v-model="business.name" type="text" required :disabled="!canEdit"
-							class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-bold focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+							class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.business_name_placeholder')">
 					</div>
 
 					<!-- Phone -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.phone') }}</label>
-						<div class="relative group/input">
-							<span
-								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-[#007AFF]">
-								<Icon name="ph:phone-bold" size="18" />
-							</span>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.phone') }}</label>
+						<div class="relative">
+							<Icon name="ph:phone-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
 							<input v-model="business.phone" type="tel" :disabled="!canEdit"
-								class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.phone_placeholder')">
 						</div>
 					</div>
 
 					<!-- Website -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.website') }}</label>
-						<div class="relative group/input">
-							<span
-								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-[#007AFF]">
-								<Icon name="ph:globe-simple-bold" size="18" />
-							</span>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.website') }}</label>
+						<div class="relative">
+							<Icon name="ph:globe-simple-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
 							<input v-model="business.website" type="url" :disabled="!canEdit"
-								class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.website_placeholder')">
 						</div>
 					</div>
 
 					<!-- Address -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.address') }}</label>
-						<div class="relative group/input">
-							<span
-								class="absolute left-3.5 rtl:left-auto rtl:right-3.5 top-2.5 text-slate-400 dark:text-slate-500 transition-colors group-focus-within/input:text-[#007AFF]">
-								<Icon name="ph:map-pin-bold" size="18" />
-							</span>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.address') }}</label>
+						<div class="relative">
+							<Icon name="ph:map-pin-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
 							<input v-model="business.addressStreet" :disabled="!canEdit"
-								class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg pl-10 rtl:pl-4 pr-4 rtl:pr-10 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.address_placeholder')">
 						</div>
 					</div>
 
 					<!-- City + Zip -->
-					<div class="grid grid-cols-2 gap-4">
+					<div class="grid grid-cols-2 gap-3">
 						<div>
-							<label
-								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.city') }}</label>
+							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.city') }}</label>
 							<input v-model="business.addressCity" :disabled="!canEdit"
-								class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.city_placeholder')">
 						</div>
 						<div>
-							<label
-								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.postal_code') }}</label>
+							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.postal_code') }}</label>
 							<input v-model="business.addressZip" :disabled="!canEdit"
-								class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.postal_code_placeholder')">
 						</div>
 					</div>
 
 					<!-- Country -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{{ $t('profile.country') }}</label>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.country') }}</label>
 						<input v-model="business.addressCountry" :disabled="!canEdit"
-							class="w-full bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white font-medium focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 focus:placeholder-slate-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+							class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.country_placeholder')">
 					</div>
+				</div>
 				</div>
 			</div>
 
 			<!-- SECTION 2: Marque & Visuel (Right Column) -->
-			<div
-				class="bg-white dark:bg-[#1C1C1E] p-6 md:p-8 rounded-2xl border border-[#E5E5EA] dark:border-slate-700/40 shadow-sm">
-				<div class="flex items-center gap-4 mb-6 pb-6 border-b border-[#E5E5EA] dark:border-slate-700/40">
-					<div
-						class="w-10 h-10 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] text-slate-500 dark:text-slate-400 flex items-center justify-center">
-						<Icon name="ph:paint-brush-broad-duotone" size="20" />
-					</div>
-					<div>
-						<h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ $t('profile.visual_identity') }}</h2>
-						<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('profile.visual_identity_subtitle') }}</p>
-					</div>
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
+				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/40">
+					<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('profile.visual_identity') }}</h2>
+					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('profile.visual_identity_subtitle') }}</p>
 				</div>
 
-				<div class="space-y-8">
+				<div class="p-5 space-y-6">
 
 					<!-- Logo Section -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">{{ $t('profile.logo') }}</label>
-						<div class="flex items-start gap-6">
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{{ $t('profile.logo') }}</label>
+						<div class="flex items-start gap-4">
 							<!-- Logo Preview -->
-							<div
-								class="w-24 h-24 rounded-xl border border-[#E5E5EA] dark:border-slate-600/50 bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center p-3 relative group/logo overflow-hidden transition-all hover:bg-white dark:hover:bg-[#1C1C1E] hover:shadow-sm">
-								<img v-if="business.logo" :src="getAssetUrl(business.logo)"
-									class="w-full h-full object-contain" />
-								<Icon v-else name="ph:storefront-duotone" class="text-slate-300" size="32" />
-
-								<!-- Hover actions -->
+							<div class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-[#2C2C2E] flex items-center justify-center p-2 relative group/logo overflow-hidden transition-colors hover:bg-white">
+								<img v-if="business.logo" :src="getAssetUrl(business.logo)" class="w-full h-full object-contain" />
+								<Icon v-else name="ph:storefront-duotone" class="text-slate-300" size="28" />
 								<button v-if="business.logo && canEdit" @click="business.logo = null"
-									class="absolute top-1 right-1 p-1.5 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/logo:opacity-100 transform scale-90 hover:scale-100 border border-slate-100"
+									class="absolute top-1 right-1 p-1 bg-white text-red-500 rounded-md shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/logo:opacity-100 border border-slate-100"
 									:title="$t('profile.delete_logo')">
-									<Icon name="ph:trash-bold" size="14" />
+									<Icon name="ph:trash-bold" size="12" />
 								</button>
 							</div>
 
 							<!-- Upload Actions -->
 							<div v-if="canEdit" class="flex-1 space-y-2 pt-1">
-								<input ref="fileInputRef" type="file" @change="handleLogoUpload" accept="image/*"
-									class="hidden" />
+								<input ref="fileInputRef" type="file" @change="handleLogoUpload" accept="image/*" class="hidden" />
 								<button type="button" @click="triggerFileInput"
-									class="px-4 py-2 bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-slate-600/50 hover:bg-[#F2F2F7] dark:hover:bg-[#3A3A3C] text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm">
-									<Icon name="ph:upload-simple-bold" size="14" />
+									class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 hover:bg-slate-50 dark:hover:bg-[#3A3A3C] text-slate-600 dark:text-slate-200 text-xs font-medium rounded-md transition-colors">
+									<Icon name="ph:upload-simple-bold" size="13" />
 									{{ $t('profile.upload_logo') }}
 								</button>
-								<p class="text-[11px] text-slate-400 font-medium leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
+								<p class="text-[11px] text-slate-400 leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
 							</div>
 						</div>
 					</div>
 
-					<div class="h-px bg-[#E5E5EA] dark:bg-slate-700/40 w-full"></div>
+					<div class="h-px bg-slate-100 dark:bg-slate-700/40"></div>
 
 					<!-- Colors Section -->
 					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">{{ $t('profile.brand_color') }}</label>
-
-						<div class="group/color">
-							<div
-								class="flex items-center gap-2 bg-[#F2F2F7] dark:bg-[#2C2C2E] p-2 rounded-lg border border-[#E5E5EA] dark:border-slate-600/50 hover:bg-white dark:hover:bg-[#1C1C1E] transition-all">
-								<div class="relative w-8 h-8 rounded-md overflow-hidden shadow-sm ring-1 ring-black/5 cursor-pointer hover:scale-105 transition-transform"
-									:class="{ 'opacity-50 cursor-not-allowed hover:scale-100': !canEdit }">
-									<input v-model="business.primaryColor" type="color" :disabled="!canEdit"
-										class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 border-0 cursor-pointer disabled:cursor-not-allowed" />
-								</div>
-								<input v-model="business.primaryColor" type="text" :disabled="!canEdit"
-									class="bg-transparent font-mono font-bold text-slate-700 dark:text-slate-200 outline-none w-full text-xs uppercase disabled:opacity-50"
-									maxlength="7">
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{{ $t('profile.brand_color') }}</label>
+						<div class="flex items-center gap-2 bg-slate-50 dark:bg-[#2C2C2E] px-3 py-2 rounded-md border border-slate-200 dark:border-slate-600/50">
+							<div class="relative w-7 h-7 rounded overflow-hidden border border-slate-200 cursor-pointer"
+								:class="{ 'opacity-50 cursor-not-allowed': !canEdit }">
+								<input v-model="business.primaryColor" type="color" :disabled="!canEdit"
+									class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 border-0 cursor-pointer disabled:cursor-not-allowed" />
 							</div>
+							<input v-model="business.primaryColor" type="text" :disabled="!canEdit"
+								class="bg-transparent font-mono text-slate-700 dark:text-slate-200 outline-none w-full text-xs uppercase disabled:opacity-50"
+								maxlength="7">
 						</div>
 					</div>
 
