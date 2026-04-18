@@ -21,7 +21,6 @@ const loading = ref(true)
 const sending = ref(false)
 const saving = ref(false)
 
-// Email usage this month
 const emailUsage = ref<{ used: number; limit: number | null } | null>(null)
 
 const fetchEmailUsage = async () => {
@@ -42,19 +41,15 @@ const emailUsagePercent = computed(() => {
 
 const emailUsageColor = computed(() => {
 	if (emailUsagePercent.value >= 90) return 'bg-red-500'
-	if (emailUsagePercent.value >= 70) return 'bg-amber-500'
-	return 'bg-[#007AFF]/50'
+	if (emailUsagePercent.value >= 70) return 'bg-amber-400'
+	return 'bg-[#007AFF]'
 })
 
 const editing = ref(false)
 const showSendConfirm = ref(false)
 const showDeleteConfirm = ref(false)
 
-const form = ref({
-	name: '',
-	subject: '',
-	htmlContent: '',
-})
+const form = ref({ name: '', subject: '', htmlContent: '' })
 
 const fetchCampaign = async () => {
 	loading.value = true
@@ -77,37 +72,25 @@ const fetchCampaign = async () => {
 const saveCampaign = async () => {
 	saving.value = true
 	try {
-		campaign.value = await $api(`/marketing/campaigns/${campaignId}`, {
-			method: 'PATCH',
-			body: form.value,
-		})
+		campaign.value = await $api(`/marketing/campaigns/${campaignId}`, { method: 'PATCH', body: form.value })
 		editing.value = false
 		showToast(t('marketing.campaign_detail.saved'), 'success')
 	} catch (e: any) {
 		showToast(e?.data?.message || t('common.error'), 'error')
 	} finally {
-		saving.value = false
-	}
+		saving.value = false }
 }
 
-const sendCampaign = async () => {
-	showSendConfirm.value = true
-}
+const sendCampaign = () => { showSendConfirm.value = true }
 
 const confirmSend = async () => {
 	showSendConfirm.value = false
-
 	sending.value = true
 	try {
-		const result = await $api(`/marketing/campaigns/${campaignId}/send`, {
-			method: 'POST',
-		})
+		const result = await $api(`/marketing/campaigns/${campaignId}/send`, { method: 'POST' })
 		showToast(result.message || t('marketing.campaign_detail.sending_in_progress', { count: result.recipientCount }), 'success')
-		// Poll for status update since sending is now async
 		await fetchCampaign()
-		if (campaign.value?.status === 'sending') {
-			pollSendStatus()
-		}
+		if (campaign.value?.status === 'sending') pollSendStatus()
 	} catch (e: any) {
 		showToast(e?.data?.message || t('common.error'), 'error')
 	} finally {
@@ -116,7 +99,6 @@ const confirmSend = async () => {
 }
 
 let pollInterval: ReturnType<typeof setInterval> | null = null
-
 const pollSendStatus = () => {
 	if (pollInterval) clearInterval(pollInterval)
 	pollInterval = setInterval(async () => {
@@ -124,24 +106,17 @@ const pollSendStatus = () => {
 		if (campaign.value?.status !== 'sending') {
 			if (pollInterval) clearInterval(pollInterval)
 			pollInterval = null
-			if (campaign.value?.status === 'sent') {
-				showToast(t('common.success'), 'success')
-			}
+			if (campaign.value?.status === 'sent') showToast(t('common.success'), 'success')
 		}
 	}, 3000)
 }
 
-onUnmounted(() => {
-	if (pollInterval) clearInterval(pollInterval)
-})
+onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 
-const deleteCampaign = async () => {
-	showDeleteConfirm.value = true
-}
+const deleteCampaign = () => { showDeleteConfirm.value = true }
 
 const confirmDelete = async () => {
 	showDeleteConfirm.value = false
-
 	try {
 		await $api(`/marketing/campaigns/${campaignId}`, { method: 'DELETE' })
 		showToast(t('marketing.campaigns.delete'), 'success')
@@ -151,52 +126,46 @@ const confirmDelete = async () => {
 	}
 }
 
-const getStatusBadge = (status: string) => {
-	const badges: Record<string, { label: string; class: string; icon: string }> = {
-		draft: { label: t('marketing.campaigns.status_draft'), class: 'bg-slate-100 text-slate-600', icon: 'ph:pencil-simple' },
-		scheduled: { label: t('marketing.campaigns.status_scheduled'), class: 'bg-blue-100 text-blue-700', icon: 'ph:clock' },
-		sending: { label: t('marketing.campaigns.status_sending'), class: 'bg-yellow-100 text-yellow-700', icon: 'ph:spinner-gap' },
-		sent: { label: t('marketing.campaigns.status_sent'), class: 'bg-emerald-100 text-emerald-700', icon: 'ph:check-circle' },
-		cancelled: { label: t('marketing.campaigns.status_cancelled'), class: 'bg-red-100 text-red-700', icon: 'ph:x-circle' },
-	}
-	return badges[status] || { label: status, class: 'bg-slate-100 text-slate-600', icon: 'ph:question' }
+const statusConfig: Record<string, { label: string; dot: string; text: string }> = {
+	draft:     { label: t('marketing.campaigns.status_draft'),     dot: 'bg-slate-400',   text: 'text-slate-500' },
+	scheduled: { label: t('marketing.campaigns.status_scheduled'), dot: 'bg-blue-500',    text: 'text-blue-600' },
+	sending:   { label: t('marketing.campaigns.status_sending'),   dot: 'bg-amber-400',   text: 'text-amber-600' },
+	sent:      { label: t('marketing.campaigns.status_sent'),      dot: 'bg-emerald-500', text: 'text-emerald-600' },
+	cancelled: { label: t('marketing.campaigns.status_cancelled'), dot: 'bg-red-500',     text: 'text-red-600' },
 }
+const getStatus = (s: string) => statusConfig[s] || statusConfig.draft
 
 onMounted(async () => {
 	await fetchCampaign()
 	await fetchEmailUsage()
-	if (campaign.value?.status === 'sending') {
-		pollSendStatus()
-	}
+	if (campaign.value?.status === 'sending') pollSendStatus()
 })
 </script>
 
 <template>
 	<!-- Loading -->
 	<div v-if="loading" class="flex items-center justify-center py-20">
-		<Icon name="ph:spinner-gap-bold" size="40" class="animate-spin text-slate-300" />
+		<Icon name="ph:spinner-gap-bold" size="28" class="animate-spin text-slate-300" />
 	</div>
 
-	<div v-else-if="campaign" class="space-y-6">
+	<div v-else-if="campaign" class="space-y-5">
+
 		<!-- Header -->
 		<div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
 			<div class="flex items-start gap-3">
 				<NuxtLink to="/dashboard/marketing/campaigns"
-					class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex-shrink-0 mt-1">
-					<Icon name="ph:arrow-left-bold" size="20" class="rtl:rotate-180" />
+					class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors shrink-0 mt-0.5">
+					<Icon name="ph:arrow-left-bold" size="15" class="rtl:rotate-180" />
 				</NuxtLink>
 				<div>
-					<div class="flex items-center gap-3 mb-1">
-						<h1 class="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-							{{ campaign.name }}
-						</h1>
-						<span
-							:class="[getStatusBadge(campaign.status).class, 'inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full']">
-							<Icon :name="getStatusBadge(campaign.status).icon" size="12" />
-							{{ getStatusBadge(campaign.status).label }}
+					<div class="flex items-center gap-2.5 mb-0.5 flex-wrap">
+						<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ campaign.name }}</h1>
+						<span class="inline-flex items-center gap-1.5 text-xs" :class="getStatus(campaign.status).text">
+							<span :class="[getStatus(campaign.status).dot, 'w-1.5 h-1.5 rounded-full shrink-0']"></span>
+							{{ getStatus(campaign.status).label }}
 						</span>
 					</div>
-					<p class="text-slate-500 dark:text-slate-400 text-sm">
+					<p class="text-sm text-slate-400 dark:text-slate-500">
 						{{ $t('marketing.campaign_detail.created') }} {{ formatDate(campaign.createdAt) }}
 					</p>
 				</div>
@@ -205,114 +174,101 @@ onMounted(async () => {
 			<div class="flex items-center gap-2">
 				<template v-if="campaign.status === 'draft'">
 					<button @click="editing = !editing"
-						class="px-4 py-2 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-2">
-						<Icon :name="editing ? 'ph:x-bold' : 'ph:pencil-simple-bold'" size="18" />
+						class="px-3.5 py-2 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors flex items-center gap-1.5 text-sm">
+						<Icon :name="editing ? 'ph:x-bold' : 'ph:pencil-simple-bold'" size="14" />
 						{{ editing ? $t('marketing.campaign_detail.cancel_edit') : $t('marketing.campaign_detail.edit') }}
 					</button>
-					<!-- Email usage counter -->
-					<div v-if="emailUsage?.limit" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg">
-						<Icon name="ph:envelope-simple-bold" size="14" class="text-slate-400" />
-						<div class="text-xs">
-							<span :class="emailUsagePercent >= 90 ? 'text-red-600 font-bold' : emailUsagePercent >= 70 ? 'text-amber-600 font-semibold' : 'text-slate-600 dark:text-slate-300'">
-								{{ emailUsage.used }}/{{ emailUsage.limit }}
-							</span>
-							<span class="text-slate-400 ml-1">ce mois</span>
-						</div>
-						<div class="w-16 h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+
+					<!-- Email usage -->
+					<div v-if="emailUsage?.limit" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
+						<Icon name="ph:envelope-simple-bold" size="13" class="text-slate-400" />
+						<span :class="['text-xs', emailUsagePercent >= 90 ? 'text-red-600 font-medium' : emailUsagePercent >= 70 ? 'text-amber-600 font-medium' : 'text-slate-500 dark:text-slate-400']">
+							{{ emailUsage.used }}/{{ emailUsage.limit }}
+						</span>
+						<div class="w-14 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
 							<div class="h-full rounded-full transition-all" :class="emailUsageColor" :style="{ width: emailUsagePercent + '%' }" />
 						</div>
 					</div>
 
 					<button @click="sendCampaign" :disabled="sending || (emailUsage?.limit !== null && emailUsage?.used >= (emailUsage?.limit ?? Infinity))"
-						class="px-4 py-2.5 bg-[#007AFF] text-white font-semibold rounded-xl hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2">
-						<Icon v-if="sending" name="ph:spinner-gap-bold" size="18" class="animate-spin" />
-						<Icon v-else name="ph:paper-plane-tilt-bold" size="18" />
+						class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-md hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-1.5 text-sm">
+						<Icon v-if="sending" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+						<Icon v-else name="ph:paper-plane-tilt-bold" size="14" />
 						{{ $t('marketing.campaign_detail.send') }}
 					</button>
 				</template>
+
 				<button v-if="campaign.status === 'draft'" @click="deleteCampaign"
-					class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-					<Icon name="ph:trash-bold" size="20" />
+					class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-md transition-colors">
+					<Icon name="ph:trash-bold" size="15" />
 				</button>
 			</div>
 		</div>
 
 		<!-- Sending Progress -->
 		<div v-if="campaign.status === 'sending'"
-			class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-			<div class="flex items-center gap-3 mb-3">
-				<Icon name="ph:spinner-gap-bold" size="20" class="animate-spin text-amber-500" />
-				<p class="font-bold text-slate-900 dark:text-white">{{ $t('marketing.campaign_detail.sending') }}</p>
+			class="bg-white dark:bg-slate-900 rounded-lg border border-amber-100 dark:border-amber-900/30 p-5">
+			<div class="flex items-center gap-2.5 mb-3">
+				<Icon name="ph:spinner-gap-bold" size="16" class="animate-spin text-amber-500" />
+				<p class="font-medium text-slate-900 dark:text-white text-sm">{{ $t('marketing.campaign_detail.sending') }}</p>
 			</div>
-			<div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
-				<div class="bg-amber-500 h-2.5 rounded-full animate-pulse" style="width: 60%"></div>
+			<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
+				<div class="bg-amber-400 h-1.5 rounded-full animate-pulse" style="width: 60%"></div>
 			</div>
-			<p class="text-sm text-slate-500 mt-2">
-				{{ campaign.recipientCount }} {{ $t('marketing.campaign_detail.recipients').toLowerCase() }}
-			</p>
+			<p class="text-xs text-slate-400 mt-2">{{ campaign.recipientCount }} {{ $t('marketing.campaign_detail.recipients').toLowerCase() }}</p>
 		</div>
 
 		<!-- Stats (if sent) -->
-		<div v-if="campaign.status === 'sent'" class="grid grid-cols-2 md:grid-cols-5 gap-4">
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
-				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.recipients') }}</p>
-				<p class="text-2xl font-bold text-slate-900 dark:text-white">{{ campaign.recipientCount }}</p>
-			</div>
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
-				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.sent_count') }}</p>
-				<p class="text-2xl font-bold text-emerald-600">{{ campaign.sentCount }}</p>
-			</div>
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
-				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.open_count') }}</p>
-				<p class="text-2xl font-bold text-[#007AFF]">{{ campaign.openCount || 0 }}</p>
-			</div>
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
-				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.open_rate') }}</p>
-				<p class="text-2xl font-bold text-purple-600">
-					{{ campaign.sentCount > 0 ? Math.round(((campaign.openCount || 0) / campaign.sentCount) * 100) : 0
-					}}%
-				</p>
-			</div>
-			<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4">
-				<p class="text-xs font-bold text-slate-400 uppercase mb-1">{{ $t('marketing.campaign_detail.bounce_count') }}</p>
-				<p class="text-2xl font-bold text-red-600">{{ campaign.bounceCount }}</p>
+		<div v-if="campaign.status === 'sent'" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+			<div v-for="(val, key) in {
+				[$t('marketing.campaign_detail.recipients')]: { value: campaign.recipientCount, color: 'text-slate-900 dark:text-white' },
+				[$t('marketing.campaign_detail.sent_count')]: { value: campaign.sentCount, color: 'text-emerald-600' },
+				[$t('marketing.campaign_detail.open_count')]: { value: campaign.openCount || 0, color: 'text-[#007AFF]' },
+				[$t('marketing.campaign_detail.open_rate')]: { value: (campaign.sentCount > 0 ? Math.round(((campaign.openCount || 0) / campaign.sentCount) * 100) : 0) + '%', color: 'text-violet-600' },
+				[$t('marketing.campaign_detail.bounce_count')]: { value: campaign.bounceCount, color: 'text-red-500' },
+			}" :key="key"
+				class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
+				<p class="text-xs font-medium text-slate-400 dark:text-slate-500 mb-1">{{ key }}</p>
+				<p class="text-2xl font-semibold tabular-nums" :class="val.color">{{ val.value }}</p>
 			</div>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<!-- Main grid -->
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
 			<!-- Content -->
-			<div class="lg:col-span-2 space-y-6">
+			<div class="lg:col-span-2 space-y-4">
+
 				<!-- Edit Mode -->
 				<template v-if="editing">
-					<div
-						class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-						<h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('marketing.campaign_detail.edit_title') }}</h3>
-						<div class="space-y-4">
+					<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+						<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+							<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.campaign_detail.edit_title') }}</p>
+						</div>
+						<div class="p-5 space-y-4">
 							<div>
-								<label
-									class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.name') }}</label>
+								<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('marketing.campaign_detail.name') }}</label>
 								<input v-model="form.name" type="text"
-									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all" />
+									class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 outline-none transition-all" />
 							</div>
 							<div>
-								<label
-									class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.subject') }}</label>
+								<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('marketing.campaign_detail.subject') }}</label>
 								<input v-model="form.subject" type="text"
-									class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all" />
+									class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 outline-none transition-all" />
 							</div>
 							<div>
-								<label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{{ $t('marketing.campaign_detail.html_content') }}</label>
+								<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('marketing.campaign_detail.html_content') }}</label>
 								<RichTextEditor v-model="form.htmlContent" />
 							</div>
 						</div>
-						<div class="flex justify-end gap-3 mt-6">
+						<div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
 							<button @click="editing = false"
-								class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg transition-colors">
+								class="px-4 py-2 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors text-sm">
 								{{ $t('marketing.campaign_detail.cancel_edit') }}
 							</button>
 							<button @click="saveCampaign" :disabled="saving"
-								class="px-4 py-2 bg-[#007AFF] text-white font-bold rounded-lg hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2">
-								<Icon v-if="saving" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
+								class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-md hover:bg-[#0066DD] disabled:opacity-50 transition-colors flex items-center gap-2 text-sm">
+								<Icon v-if="saving" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
 								{{ $t('marketing.campaign_detail.save') }}
 							</button>
 						</div>
@@ -322,86 +278,73 @@ onMounted(async () => {
 				<!-- View Mode -->
 				<template v-else>
 					<!-- Subject -->
-					<div
-						class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-						<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ $t('marketing.campaign_detail.subject_label') }}</h3>
-						<p class="text-lg font-bold text-slate-900 dark:text-white">{{ campaign.subject }}</p>
+					<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-5 py-4">
+						<p class="text-xs font-medium text-slate-400 dark:text-slate-500 mb-1">{{ $t('marketing.campaign_detail.subject_label') }}</p>
+						<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ campaign.subject }}</p>
 					</div>
 
 					<!-- Preview -->
-					<div
-						class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-						<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-							<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('marketing.campaign_detail.preview') }}</h3>
+					<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+						<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+							<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.campaign_detail.preview') }}</p>
 						</div>
-						<div class="p-6 bg-slate-50 dark:bg-slate-700/50">
-							<div class="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm max-w-lg mx-auto"
-								v-html="campaign.htmlContent.replace(/\{\{prenom\}\}/g, 'Jean').replace(/\{\{firstName\}\}/g, 'Jean').replace(/\{\{nom\}\}/g, 'Dupont').replace(/\{\{lastName\}\}/g, 'Dupont').replace(/\{\{email\}\}/g, 'jean@exemple.fr').replace(/\{\{commerce\}\}/g, 'Mon Commerce').replace(/\{\{businessName\}\}/g, 'Mon Commerce')">
-							</div>
+						<div class="p-5"
+							v-html="campaign.htmlContent.replace(/\{\{prenom\}\}/g, 'Jean').replace(/\{\{firstName\}\}/g, 'Jean').replace(/\{\{nom\}\}/g, 'Dupont').replace(/\{\{lastName\}\}/g, 'Dupont').replace(/\{\{email\}\}/g, 'jean@exemple.fr').replace(/\{\{commerce\}\}/g, 'Mon Commerce').replace(/\{\{businessName\}\}/g, 'Mon Commerce')">
 						</div>
 					</div>
 				</template>
 			</div>
 
 			<!-- Sidebar -->
-			<div class="space-y-6">
-				<!-- Info -->
-				<div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-6">
-					<h3 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('marketing.campaign_detail.information') }}</h3>
-					<dl class="space-y-3 text-sm">
-						<div class="flex justify-between">
-							<dt class="text-slate-500">{{ $t('marketing.campaign_detail.created') }}</dt>
-							<dd class="font-bold text-slate-900 dark:text-white">{{ formatDate(campaign.createdAt) }}
-							</dd>
-						</div>
-						<div v-if="campaign.sentAt" class="flex justify-between">
-							<dt class="text-slate-500">{{ $t('marketing.campaign_detail.sent_date') }}</dt>
-							<dd class="font-bold text-slate-900 dark:text-white">{{ formatDate(campaign.sentAt) }}</dd>
-						</div>
-						<div class="flex justify-between">
-							<dt class="text-slate-500">{{ $t('marketing.campaign_detail.current_status') }}</dt>
-							<dd>
-								<span
-									:class="[getStatusBadge(campaign.status).class, 'text-xs font-bold px-2 py-0.5 rounded-full']">
-									{{ getStatusBadge(campaign.status).label }}
-								</span>
-							</dd>
-						</div>
-					</dl>
-				</div>
+			<div class="space-y-4">
 
-				<!-- Recent Sends (if sent) -->
-				<div v-if="campaign.sends?.length > 0"
-					class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-					<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-						<h3 class="font-bold text-slate-900 dark:text-white">{{ $t('marketing.campaign_detail.recent_sends') }}</h3>
+				<!-- Info -->
+				<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+					<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+						<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.campaign_detail.information') }}</p>
 					</div>
-					<div class="divide-y divide-slate-100 dark:divide-slate-700 max-h-64 overflow-y-auto">
-						<div v-for="send in campaign.sends.slice(0, 10)" :key="send.id"
-							class="px-6 py-3 flex items-center justify-between">
-							<div>
-								<p class="font-medium text-slate-900 dark:text-white text-sm">
-									{{ send.player?.firstName || 'Inconnu' }}
-								</p>
-								<p class="text-xs text-slate-400">{{ send.email }}</p>
-							</div>
-							<span :class="[
-								send.status === 'sent' ? 'text-emerald-600' :
-									send.status === 'opened' ? 'text-[#007AFF]' :
-										send.status === 'failed' ? 'text-red-600' : 'text-slate-400'
-							]">
-								<Icon :name="send.status === 'sent' ? 'ph:check-bold' :
-									send.status === 'opened' ? 'ph:eye-bold' :
-										send.status === 'failed' ? 'ph:x-bold' : 'ph:clock-bold'
-									" size="16" />
+					<div class="divide-y divide-slate-100 dark:divide-slate-800">
+						<div class="flex items-center justify-between px-5 py-3">
+							<span class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('marketing.campaign_detail.created') }}</span>
+							<span class="text-xs font-medium text-slate-900 dark:text-white">{{ formatDate(campaign.createdAt) }}</span>
+						</div>
+						<div v-if="campaign.sentAt" class="flex items-center justify-between px-5 py-3">
+							<span class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('marketing.campaign_detail.sent_date') }}</span>
+							<span class="text-xs font-medium text-slate-900 dark:text-white">{{ formatDate(campaign.sentAt) }}</span>
+						</div>
+						<div class="flex items-center justify-between px-5 py-3">
+							<span class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('marketing.campaign_detail.current_status') }}</span>
+							<span class="inline-flex items-center gap-1.5 text-xs" :class="getStatus(campaign.status).text">
+								<span :class="[getStatus(campaign.status).dot, 'w-1.5 h-1.5 rounded-full shrink-0']"></span>
+								{{ getStatus(campaign.status).label }}
 							</span>
 						</div>
 					</div>
 				</div>
+
+				<!-- Recent Sends -->
+				<div v-if="campaign.sends?.length > 0"
+					class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+					<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+						<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.campaign_detail.recent_sends') }}</p>
+					</div>
+					<div class="divide-y divide-slate-100 dark:divide-slate-800 max-h-64 overflow-y-auto">
+						<div v-for="send in campaign.sends.slice(0, 10)" :key="send.id"
+							class="px-5 py-3 flex items-center justify-between">
+							<div class="min-w-0">
+								<p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ send.player?.firstName || 'Inconnu' }}</p>
+								<p class="text-xs text-slate-400 truncate">{{ send.email }}</p>
+							</div>
+							<Icon :name="send.status === 'sent' ? 'ph:check-bold' : send.status === 'opened' ? 'ph:eye-bold' : send.status === 'failed' ? 'ph:x-bold' : 'ph:clock-bold'"
+								size="14"
+								:class="send.status === 'sent' ? 'text-emerald-500' : send.status === 'opened' ? 'text-[#007AFF]' : send.status === 'failed' ? 'text-red-500' : 'text-slate-300'" />
+						</div>
+					</div>
+				</div>
+
 			</div>
 		</div>
 	</div>
-
 
 	<!-- Modals -->
 	<ConfirmModal v-model="showSendConfirm" :title="$t('marketing.campaign_detail.send_confirmation_title')"
