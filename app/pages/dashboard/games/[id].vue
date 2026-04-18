@@ -64,6 +64,7 @@ const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.
 
 // Google Review Help Modal
 const showGoogleHelpModal = ref(false)
+const showPreviewModal = ref(false)
 
 const pageTitle = computed(() => isNew ? t('games.detail.title') : t('games.detail.edit_title'))
 
@@ -1143,6 +1144,37 @@ const downloadFlyerPDF = async () => {
 				</div>
 			</div>
 		</div>
+
+		<!-- Preview floating button (mobile/tablet only) -->
+		<Teleport to="body">
+			<button
+				v-if="['content', 'appearance'].includes(activeTab)"
+				@click="showPreviewModal = true"
+				class="xl:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-full shadow-xl hover:scale-105 active:scale-95 transition-transform">
+				<Icon name="ph:device-mobile-bold" size="18" />
+				{{ $t('games.detail.mobile_preview') }}
+			</button>
+		</Teleport>
+
+		<!-- Preview Modal (mobile/tablet) -->
+		<Teleport to="body">
+			<div v-if="showPreviewModal"
+				class="xl:hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+				@click.self="showPreviewModal = false">
+				<div class="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl w-full sm:w-auto p-6 pb-8 flex flex-col items-center gap-4 max-h-[95dvh] overflow-y-auto">
+					<div class="flex items-center justify-between w-full">
+						<span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ $t('games.detail.mobile_preview') }}</span>
+						<button @click="showPreviewModal = false" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+							<Icon name="ph:x-bold" size="16" />
+						</button>
+					</div>
+					<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor"
+						:background-image="game.backgroundImage" :logo="businessLogo"
+						:prizes="(game as any).prizes"
+						:google-review-url="game.googleReviewUrl" />
+				</div>
+			</div>
+		</Teleport>
 
 		<!-- Google Review Help Modal -->
 		<Teleport to="body">
