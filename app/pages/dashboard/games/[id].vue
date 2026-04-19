@@ -1124,66 +1124,65 @@ const downloadFlyerPDF = async () => {
 											</div>
 
 											<!-- Actions -->
-											<div class="flex-1 space-y-5">
-												<div>
-													<h4 class="text-base font-bold text-slate-900 dark:text-white mb-1">{{ $t('games.detail.flyers_quick_actions') }}</h4>
-													<p class="text-sm text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_download_instructions') }}</p>
-												</div>
+											<div class="flex-1 space-y-3">
+												<p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{{ $t('games.detail.flyers_quick_actions') }}</p>
 
-												<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-													<!-- Download PNG -->
+												<!-- Action rows -->
+												<div class="divide-y divide-slate-100 dark:divide-slate-700/60 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+													<!-- PNG -->
 													<a :href="game.flyerDesignUrl" download="flyer.png"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group">
-														<div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-															<Icon name="ph:file-png-bold" class="text-blue-600 dark:text-blue-400" size="20" />
+														class="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+														<div class="flex items-center gap-3">
+															<Icon name="ph:file-png" class="text-slate-400" size="16" />
+															<div>
+																<p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ $t('games.detail.flyers_download_png') }}</p>
+																<p class="text-xs text-slate-400">{{ $t('games.detail.flyers_download_png_desc') }}</p>
+															</div>
 														</div>
-														<div>
-															<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('games.detail.flyers_download_png') }}</p>
-															<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_download_png_desc') }}</p>
-														</div>
+														<Icon name="ph:download-simple" class="text-slate-300 group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors" size="16" />
 													</a>
 
-													<!-- Download PDF -->
+													<!-- PDF -->
 													<button @click="downloadFlyerPDF" :disabled="downloadingPdf"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group text-left disabled:opacity-50">
-														<div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-															<Icon v-if="downloadingPdf" name="ph:spinner-gap-bold" class="text-red-600 dark:text-red-400 animate-spin" size="20" />
-															<Icon v-else name="ph:file-pdf-bold" class="text-red-600 dark:text-red-400" size="20" />
+														class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group disabled:opacity-40 text-left">
+														<div class="flex items-center gap-3">
+															<Icon name="ph:file-pdf" class="text-slate-400" size="16" />
+															<div>
+																<p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ $t('games.detail.flyers_download_pdf') }}</p>
+																<p class="text-xs text-slate-400">{{ $t('games.detail.flyers_download_pdf_desc') }}</p>
+															</div>
 														</div>
-														<div>
-															<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('games.detail.flyers_download_pdf') }}</p>
-															<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_download_pdf_desc') }}</p>
-														</div>
+														<Icon v-if="downloadingPdf" name="ph:spinner-gap-bold" class="text-slate-300 animate-spin" size="16" />
+														<Icon v-else name="ph:download-simple" class="text-slate-300 group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors" size="16" />
 													</button>
 
 													<!-- Preview -->
 													<button @click="previewFlyer"
-														class="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors group text-left">
-														<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-															<Icon name="ph:eye-bold" class="text-emerald-600 dark:text-emerald-400" size="20" />
+														class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group text-left">
+														<div class="flex items-center gap-3">
+															<Icon name="ph:eye" class="text-slate-400" size="16" />
+															<div>
+																<p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ $t('games.detail.flyers_preview') }}</p>
+																<p class="text-xs text-slate-400">{{ $t('games.detail.flyers_preview_fullscreen') }}</p>
+															</div>
 														</div>
-														<div>
-															<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('games.detail.flyers_preview') }}</p>
-															<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_preview_fullscreen') }}</p>
-														</div>
+														<Icon name="ph:arrow-square-out" class="text-slate-300 group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors" size="16" />
 													</button>
 												</div>
 
 												<!-- Order CTA -->
-												<div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
-													<div class="flex items-center gap-4">
-														<div class="w-10 h-10 rounded-md bg-white dark:bg-slate-700 flex items-center justify-center border border-slate-200 dark:border-slate-600">
-															<Icon name="ph:printer-bold" class="text-purple-600 dark:text-purple-400" size="20" />
+												<div class="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+													<div class="flex items-center gap-3">
+														<Icon name="ph:printer" class="text-slate-400" size="16" />
+														<div>
+															<p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ $t('games.detail.flyers_need_printing') }}</p>
+															<p class="text-xs text-slate-400">{{ $t('games.detail.flyers_print_description') }}</p>
 														</div>
-														<div class="flex-1">
-															<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('games.detail.flyers_need_printing') }}</p>
-															<p class="text-xs text-slate-600 dark:text-slate-400">{{ $t('games.detail.flyers_print_description') }}</p>
-														</div>
-														<button @click="openOrderModal"
-															class="px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white text-sm font-semibold rounded-lg transition-colors">
-															{{ $t('games.detail.flyers_order') }}
-														</button>
 													</div>
+													<button @click="openOrderModal"
+														class="px-3 py-1.5 bg-[#007AFF] hover:bg-[#0066DD] text-white text-xs font-semibold rounded-md transition-colors shrink-0">
+														{{ $t('games.detail.flyers_order') }}
+													</button>
 												</div>
 											</div>
 										</div>
