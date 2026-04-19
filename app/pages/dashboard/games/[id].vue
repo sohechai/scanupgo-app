@@ -202,7 +202,8 @@ const qrCodeUrl = ref<string>('')
 
 const getGameUrl = () => {
 	if (!game.value.slug) return ''
-	const baseUrl = config.public.siteUrl || window.location.origin
+	const configured = config.public.siteUrl as string | undefined
+	const baseUrl = (configured && !configured.includes('localhost')) ? configured : window.location.origin
 	return `${baseUrl}/play/${game.value.slug}`
 }
 
@@ -275,6 +276,35 @@ const copyLink = () => {
 		navigator.clipboard.writeText(url)
 		showToast('Lien copié !', 'success')
 	}
+}
+
+const downloadQRCode = () => {
+	if (!qrCodeUrl.value) return
+	const link = document.createElement('a')
+	link.download = `qrcode-${game.value.slug || 'jeu'}.png`
+	link.href = qrCodeUrl.value
+	link.click()
+}
+
+const downloadQRCodeSVG = async () => {
+	if (!game.value.slug) return
+	const QRCode = (await import('qrcode')).default
+	const svgString = await QRCode.toString(getGameUrl(), {
+		type: 'svg',
+		margin: 2,
+		errorCorrectionLevel: 'H',
+		color: {
+			dark: game.value.qrCodeColor || '#000000',
+			light: game.value.qrCodeBgColor || '#ffffff',
+		}
+	})
+	const blob = new Blob([svgString], { type: 'image/svg+xml' })
+	const url = URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.download = `qrcode-${game.value.slug || 'jeu'}.svg`
+	link.href = url
+	link.click()
+	URL.revokeObjectURL(url)
 }
 
 // Background Image Upload
@@ -993,6 +1023,62 @@ const downloadFlyerPDF = async () => {
 								<p class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_no_flyer') }}</p>
 							</div>
 							<div v-else class="space-y-4">
+								<!-- QR Code Card -->
+								<div class="bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+									<div class="flex flex-col sm:flex-row items-start gap-6">
+										<!-- QR Preview -->
+										<div class="shrink-0 flex flex-col items-center gap-3">
+											<div class="w-36 h-36 bg-white rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm flex items-center justify-center overflow-hidden">
+												<img v-if="qrCodeUrl" :src="qrCodeUrl" class="w-full h-full object-contain p-1" />
+												<Icon v-else name="ph:qr-code-bold" size="48" class="text-slate-200" />
+											</div>
+											<div class="flex gap-2">
+												<button @click="downloadQRCode" type="button" :disabled="!qrCodeUrl"
+													class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all shadow-sm disabled:opacity-40">
+													<Icon name="ph:file-png-bold" size="14" class="text-blue-500" />
+													PNG
+												</button>
+												<button @click="downloadQRCodeSVG" type="button" :disabled="!game.slug"
+													class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all shadow-sm disabled:opacity-40">
+													<Icon name="ph:file-svg-bold" size="14" class="text-orange-500" />
+													SVG
+												</button>
+											</div>
+										</div>
+
+										<!-- QR Customization -->
+										<div class="flex-1 space-y-4">
+											<div>
+												<h3 class="text-sm font-bold text-slate-900 dark:text-white">QR Code</h3>
+												<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-mono truncate">{{ getGameUrl() }}</p>
+											</div>
+
+											<div class="grid grid-cols-2 gap-4">
+												<div>
+													<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">Couleur QR</label>
+													<div class="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5">
+														<input v-model="game.qrCodeColor" type="color" class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
+														<span class="text-xs font-mono text-slate-600 dark:text-slate-300">{{ game.qrCodeColor }}</span>
+													</div>
+												</div>
+												<div>
+													<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">Fond</label>
+													<div class="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5">
+														<input v-model="game.qrCodeBgColor" type="color" class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
+														<span class="text-xs font-mono text-slate-600 dark:text-slate-300">{{ game.qrCodeBgColor }}</span>
+													</div>
+												</div>
+											</div>
+
+											<button @click="copyLink" type="button"
+												class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600">
+												<Icon name="ph:copy-bold" size="13" />
+												Copier le lien du jeu
+											</button>
+										</div>
+									</div>
+								</div>
+
 								<!-- Compact header with link -->
 								<div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700">
 									<div class="flex items-center gap-2">
