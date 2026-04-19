@@ -117,6 +117,42 @@ const openBillingPortal = async () => {
 	} finally { billingPortalLoading.value = false }
 }
 
+// Notification preferences
+const notifPrefs = ref({
+	notifLoginAlert: true,
+	notifWeeklySummary: true,
+	notifOrderUpdates: true,
+})
+const notifLoading = ref(false)
+
+const initNotifPrefs = () => {
+	if (user.value) {
+		notifPrefs.value = {
+			notifLoginAlert: user.value.notifLoginAlert ?? true,
+			notifWeeklySummary: user.value.notifWeeklySummary ?? true,
+			notifOrderUpdates: user.value.notifOrderUpdates ?? true,
+		}
+	}
+}
+
+const saveNotifPrefs = async (key: keyof typeof notifPrefs.value, val: boolean) => {
+	notifPrefs.value[key] = val
+	notifLoading.value = true
+	try {
+		await $api('/auth/update-profile', {
+			method: 'POST',
+			body: { [key]: val }
+		})
+		await fetchUser()
+	} catch (e: any) {
+		showToast(e?.data?.message || t('common.error'), 'error')
+		notifPrefs.value[key] = !val // rollback
+	} finally { notifLoading.value = false }
+}
+
+onMounted(() => initNotifPrefs())
+watch(user, () => initNotifPrefs())
+
 const logoutAllLoading = ref(false)
 const showLogoutAllModal = ref(false)
 const logoutAllDevices = async () => {
@@ -379,6 +415,65 @@ watch(user, (newUser) => {
 					</div>
 					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</a>
+			</div>
+		</div>
+
+		<!-- Notifications -->
+		<div>
+			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">{{ $t('account.notifications_section') }}</p>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+
+				<!-- Login alert -->
+				<div class="flex items-center gap-3.5 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+						<Icon name="ph:shield-check-bold" class="text-slate-400 dark:text-slate-500" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.notif_login_alert') }}</p>
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.notif_login_alert_desc') }}</p>
+					</div>
+					<button @click="saveNotifPrefs('notifLoginAlert', !notifPrefs.notifLoginAlert)"
+						class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none"
+						:class="notifPrefs.notifLoginAlert ? 'bg-[#007AFF]' : 'bg-slate-200 dark:bg-slate-700'">
+						<span class="inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform duration-200"
+							:class="notifPrefs.notifLoginAlert ? 'translate-x-4' : 'translate-x-0.5'" />
+					</button>
+				</div>
+
+				<!-- Weekly summary -->
+				<div class="flex items-center gap-3.5 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+						<Icon name="ph:chart-bar-bold" class="text-slate-400 dark:text-slate-500" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.notif_weekly_summary') }}</p>
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.notif_weekly_summary_desc') }}</p>
+					</div>
+					<button @click="saveNotifPrefs('notifWeeklySummary', !notifPrefs.notifWeeklySummary)"
+						class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none"
+						:class="notifPrefs.notifWeeklySummary ? 'bg-[#007AFF]' : 'bg-slate-200 dark:bg-slate-700'">
+						<span class="inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform duration-200"
+							:class="notifPrefs.notifWeeklySummary ? 'translate-x-4' : 'translate-x-0.5'" />
+					</button>
+				</div>
+
+				<!-- Order updates -->
+				<div class="flex items-center gap-3.5 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+						<Icon name="ph:package-bold" class="text-slate-400 dark:text-slate-500" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.notif_order_updates') }}</p>
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.notif_order_updates_desc') }}</p>
+					</div>
+					<button @click="saveNotifPrefs('notifOrderUpdates', !notifPrefs.notifOrderUpdates)"
+						class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none"
+						:class="notifPrefs.notifOrderUpdates ? 'bg-[#007AFF]' : 'bg-slate-200 dark:bg-slate-700'">
+						<span class="inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform duration-200"
+							:class="notifPrefs.notifOrderUpdates ? 'translate-x-4' : 'translate-x-0.5'" />
+					</button>
+				</div>
+
 			</div>
 		</div>
 
