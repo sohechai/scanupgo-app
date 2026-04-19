@@ -42,6 +42,7 @@ onUnmounted(() => {
 	if (import.meta.client) {
 		window.removeEventListener('resize', checkMobile)
 	}
+	if (timerInterval) clearInterval(timerInterval)
 })
 
 const slug = route.params.slug as string
@@ -49,9 +50,31 @@ const error = ref<string | null>(null)
 const game = ref<any>(null)
 const business = ref<any>(null)
 
-// Game State - Nouveau flux: intro -> steps -> form -> playing -> result
-type GameStep = 'intro' | 'steps' | 'form' | 'playing' | 'result'
+// Game State - Nouveau flux: intro -> steps -> review_timer -> form -> playing -> result
+type GameStep = 'intro' | 'steps' | 'review_timer' | 'form' | 'playing' | 'result'
 const step = ref<GameStep>('intro')
+
+// Timer Google Review
+const REVIEW_TIMER_SECONDS = 45
+const timerSeconds = ref(REVIEW_TIMER_SECONDS)
+let timerInterval: ReturnType<typeof setInterval> | null = null
+
+const startReviewTimer = () => {
+	timerSeconds.value = REVIEW_TIMER_SECONDS
+	timerInterval = setInterval(() => {
+		timerSeconds.value--
+		if (timerSeconds.value <= 0) {
+			clearInterval(timerInterval!)
+			timerInterval = null
+			step.value = 'form'
+		}
+	}, 1000)
+}
+
+const skipTimer = () => {
+	if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
+	step.value = 'form'
+}
 const isWin = ref(false)
 const wonPrize = ref<any>(null)
 const rateLimitError = ref(false)
@@ -141,9 +164,11 @@ const openGoogleReview = () => {
 			url = 'https://' + url
 		}
 		window.open(url, '_blank')
+		step.value = 'review_timer'
+		startReviewTimer()
+	} else {
+		step.value = 'form'
 	}
-	// Passer à l'étape suivante après avoir cliqué
-	step.value = 'form'
 }
 
 const submitForm = async () => {
@@ -434,6 +459,64 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 
 				<button @click="step = 'intro'" class="text-sm opacity-60 hover:opacity-100 transition underline">
 					{{ $t('play.steps.back') }}
+				</button>
+			</div>
+
+			<!-- ÉTAPE 2b: TIMER AVIS GOOGLE -->
+			<div v-else-if="step === 'review_timer'" class="w-full flex flex-col items-center gap-8 animate-fade-in-up py-6">
+
+				<!-- Icône Google animée -->
+				<div class="relative">
+					<div class="absolute inset-0 bg-white/20 blur-2xl rounded-full animate-pulse"></div>
+					<div class="relative w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25 shadow-xl">
+						<Icon name="ph:google-logo-fill" size="44" class="text-white" />
+					</div>
+				</div>
+
+				<!-- Texte -->
+				<div class="text-center space-y-2">
+					<h2 class="text-2xl font-black">Laissez votre avis ⭐</h2>
+					<p class="text-sm opacity-80 leading-relaxed px-4">Google s'est ouvert.<br>Prenez le temps de laisser un avis pour valider votre participation.</p>
+				</div>
+
+				<!-- Cercle de progression -->
+				<div class="relative w-32 h-32">
+					<svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+						<!-- Track -->
+						<circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" />
+						<!-- Progress -->
+						<circle cx="60" cy="60" r="50" fill="none" stroke="white" stroke-width="8"
+							stroke-linecap="round"
+							:stroke-dasharray="`${2 * Math.PI * 50}`"
+							:stroke-dashoffset="`${2 * Math.PI * 50 * (1 - timerSeconds / REVIEW_TIMER_SECONDS)}`"
+							style="transition: stroke-dashoffset 1s linear" />
+					</svg>
+					<div class="absolute inset-0 flex flex-col items-center justify-center">
+						<span class="text-3xl font-black tabular-nums">{{ timerSeconds }}</span>
+						<span class="text-xs opacity-70 uppercase tracking-wide">sec</span>
+					</div>
+				</div>
+
+				<!-- Étapes mini -->
+				<div class="w-full space-y-2 px-2">
+					<div class="flex items-center gap-3 bg-white/15 rounded-xl px-4 py-3">
+						<Icon name="ph:check-circle-fill" size="20" class="text-green-300 shrink-0" />
+						<span class="text-sm font-medium">Google ouvert dans un nouvel onglet</span>
+					</div>
+					<div class="flex items-center gap-3 bg-white/25 rounded-xl px-4 py-3 border border-white/30">
+						<Icon name="ph:pencil-line-bold" size="20" class="opacity-80 shrink-0" />
+						<span class="text-sm font-medium">Laissez votre avis ⭐⭐⭐⭐⭐</span>
+					</div>
+					<div class="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 opacity-50">
+						<Icon name="ph:arrow-u-up-left-bold" size="20" class="shrink-0" />
+						<span class="text-sm font-medium">Revenez ici pour jouer</span>
+					</div>
+				</div>
+
+				<!-- Lien passer (visible après 15s) -->
+				<button v-if="timerSeconds <= 30" @click="skipTimer"
+					class="text-xs opacity-50 hover:opacity-80 transition underline">
+					J'ai déjà laissé mon avis →
 				</button>
 			</div>
 
