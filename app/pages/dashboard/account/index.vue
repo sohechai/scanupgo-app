@@ -131,23 +131,6 @@ const logoutAllDevices = async () => {
 	} finally { logoutAllLoading.value = false }
 }
 
-const exportLoading = ref(false)
-const exportData = async () => {
-	exportLoading.value = true
-	try {
-		const data = await $api('/auth/export-data')
-		const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-		const url = URL.createObjectURL(blob)
-		const link = document.createElement('a')
-		link.download = `scanupgo-export-${new Date().toISOString().split('T')[0]}.json`
-		link.href = url
-		link.click()
-		URL.revokeObjectURL(url)
-		showToast(t('account.export_success'), 'success')
-	} catch (e: any) {
-		showToast(e?.data?.message || t('account.export_error'), 'error')
-	} finally { exportLoading.value = false }
-}
 
 const deleteLoading = ref(false)
 const deleteConfirmText = ref('')
@@ -396,27 +379,6 @@ watch(user, (newUser) => {
 					</div>
 					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</a>
-			</div>
-		</div>
-
-		<!-- Data & Privacy -->
-		<div>
-			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">{{ $t('account.data_privacy_section') }}</p>
-			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-				<div class="flex items-center gap-3.5 px-5 py-3.5">
-					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-						<Icon name="ph:download-simple-bold" class="text-slate-400 dark:text-slate-500" size="14" />
-					</div>
-					<div class="flex-1 min-w-0">
-						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.export_data') }}</p>
-						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.export_data_description') }}</p>
-					</div>
-					<button @click="exportData" :disabled="exportLoading"
-						class="text-[#007AFF] text-xs font-medium hover:opacity-70 transition-opacity disabled:opacity-30 shrink-0 flex items-center gap-1">
-						<Icon v-if="exportLoading" name="ph:spinner-gap-bold" size="12" class="animate-spin" />
-						<span>{{ exportLoading ? 'Export...' : $t('account.export_button') }}</span>
-					</button>
-				</div>
 			</div>
 		</div>
 
