@@ -418,13 +418,58 @@ const loadTemplate = async (templateId: string) => {
 	}
 }
 
+// Convert smart template to editable canvas (load smart flyer as background image)
+const convertSmartToCanvas = async (): Promise<boolean> => {
+	if (mode.value !== 'smart') return true
+
+	const imageUrl = await smartFlyerRef.value?.exportImage()
+	if (!imageUrl) {
+		showToast('Erreur lors de la conversion du template', 'error')
+		return false
+	}
+
+	const canvasToDispose = canvas.value
+	canvas.value = null
+	mode.value = 'canvas'
+	selectedBaseTemplate.value = 'blank'
+
+	await nextTick()
+	await new Promise(resolve => setTimeout(resolve, 100))
+
+	if (canvasToDispose) {
+		try { await canvasToDispose.dispose() } catch {}
+	}
+
+	await initCanvas()
+	if (!canvas.value) return false
+
+	const { FabricImage } = await import('fabric')
+	const img = await FabricImage.fromURL(imageUrl, { crossOrigin: 'anonymous' })
+	const scaleX = CANVAS_WIDTH / (img.width || 1)
+	const scaleY = CANVAS_HEIGHT / (img.height || 1)
+	img.set({
+		left: CANVAS_WIDTH / 2,
+		top: CANVAS_HEIGHT / 2,
+		scaleX: Math.max(scaleX, scaleY),
+		scaleY: Math.max(scaleX, scaleY),
+		originX: 'center',
+		originY: 'center',
+		selectable: false,
+		evented: false,
+	})
+	canvas.value.add(img)
+	if (typeof canvas.value.sendToBack === 'function') canvas.value.sendToBack(img)
+	else canvas.value.moveObjectTo(img, 0)
+	canvas.value.renderAll()
+
+	showToast('Template converti en canvas éditable', 'success')
+	return true
+}
+
 // Add text to canvas
 const addText = async () => {
-	if (mode.value === 'smart') {
-		showToast('Veuillez passer en mode "Canvas Vierge" pour ajouter des éléments manuellement.', 'info')
-		return
-	}
-	if (!canvas.value) return
+	const ready = await convertSmartToCanvas()
+	if (!ready || !canvas.value) return
 
 	const { Textbox } = await import('fabric')
 
@@ -450,10 +495,8 @@ const addText = async () => {
 
 // Add business logo to canvas
 const addLogo = async () => {
-	if (mode.value === 'smart') {
-		showToast('Veuillez passer en mode "Canvas Vierge" pour ajouter des éléments manuellement.', 'info')
-		return
-	}
+	const ready = await convertSmartToCanvas()
+	if (!ready) return
 	if (!canvas.value || !props.businessLogo) {
 		showToast('Aucun logo disponible', 'error')
 		return
@@ -500,11 +543,9 @@ const getGameUrl = () => {
 	return `${baseUrl}/play/${props.game.slug}`
 }
 
-const openQRCodeModal = () => {
-	if (mode.value === 'smart') {
-		showToast('Veuillez passer en mode "Canvas Vierge" pour ajouter des éléments manuellement.', 'info')
-		return
-	}
+const openQRCodeModal = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready) return
 	showQRCodeModal.value = true
 }
 
@@ -554,17 +595,13 @@ const addQRCode = () => {
 // Upload and add custom image
 const fileInputRef = ref<HTMLInputElement>()
 
-const triggerImageUpload = () => {
-	if (mode.value === 'smart') {
-		showToast('Veuillez passer en mode "Canvas Vierge" pour ajouter des éléments manuellement.', 'info')
-		return
-	}
+const triggerImageUpload = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready) return
 	fileInputRef.value?.click()
 }
 
 const handleImageUpload = async (event: Event) => {
-	if (mode.value === 'smart') return // Should be prevented by triggerImageUpload, but for safety
-
 	const input = event.target as HTMLInputElement
 	const file = input.files?.[0]
 
@@ -621,12 +658,9 @@ const handleImageUpload = async (event: Event) => {
 }
 
 // Delete selected object
-const deleteSelected = () => {
-	if (mode.value === 'smart') {
-		showToast('Cette action n\'est pas disponible en mode "Template Intelligent".', 'info')
-		return
-	}
-	if (!canvas.value) return
+const deleteSelected = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready || !canvas.value) return
 
 	const activeObject = canvas.value.getActiveObject()
 	if (activeObject) {
@@ -638,12 +672,9 @@ const deleteSelected = () => {
 }
 
 // Center selected object
-const centerSelected = () => {
-	if (mode.value === 'smart') {
-		showToast('Cette action n\'est pas disponible en mode "Template Intelligent".', 'info')
-		return
-	}
-	if (!canvas.value) return
+const centerSelected = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready || !canvas.value) return
 
 	const activeObject = canvas.value.getActiveObject()
 	if (activeObject) {
@@ -662,9 +693,9 @@ const centerSelected = () => {
 }
 
 // Center horizontally
-const centerHorizontally = () => {
-	if (mode.value === 'smart') return
-	if (!canvas.value) return
+const centerHorizontally = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready || !canvas.value) return
 
 	const activeObject = canvas.value.getActiveObject()
 	if (activeObject) {
@@ -680,9 +711,9 @@ const centerHorizontally = () => {
 }
 
 // Center vertically
-const centerVertically = () => {
-	if (mode.value === 'smart') return
-	if (!canvas.value) return
+const centerVertically = async () => {
+	const ready = await convertSmartToCanvas()
+	if (!ready || !canvas.value) return
 
 	const activeObject = canvas.value.getActiveObject()
 	if (activeObject) {
@@ -698,11 +729,7 @@ const centerVertically = () => {
 }
 
 // Clear canvas
-const clearCanvas = () => {
-	if (mode.value === 'smart') {
-		showToast('Cette action n\'est pas disponible en mode "Template Intelligent".', 'info')
-		return
-	}
+const clearCanvas = async () => {
 	if (!canvas.value) return
 
 	const confirmed = confirm('Êtes-vous sûr de vouloir tout effacer ?')
@@ -1065,8 +1092,7 @@ const previewFlyer = async () => {
 		<div class="w-full xl:w-72 flex flex-col gap-6 shrink-0">
 
 			<!-- Tools Panel -->
-			<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden"
-				:class="{ 'opacity-50 pointer-events-none': mode === 'smart' }">
+			<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
 				<div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
 					<h3
 						class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
