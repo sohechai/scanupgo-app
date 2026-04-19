@@ -82,13 +82,13 @@ onBeforeUnmount(() => {
 
 			<!-- History -->
 			<div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-600 pr-2">
-				<button @click="editor.chain().focus().undo().run()"
+				<button @mousedown.prevent="editor.chain().focus().undo().run()"
 					:disabled="!editor.can().chain().focus().undo().run()"
 					class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-30 transition-colors"
 					title="Annuler">
 					<Icon name="ph:arrow-u-up-left-bold" size="16" />
 				</button>
-				<button @click="editor.chain().focus().redo().run()"
+				<button @mousedown.prevent="editor.chain().focus().redo().run()"
 					:disabled="!editor.can().chain().focus().redo().run()"
 					class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-30 transition-colors"
 					title="Rétablir">
@@ -97,21 +97,21 @@ onBeforeUnmount(() => {
 			</div>
 
 			<!-- Formatting -->
-			<button @click="editor.chain().focus().toggleBold().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleBold().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('bold') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Gras">
 				<Icon name="ph:text-b-bold" size="16" />
 			</button>
 
-			<button @click="editor.chain().focus().toggleItalic().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleItalic().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('italic') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Italique">
 				<Icon name="ph:text-italic-bold" size="16" />
 			</button>
 
-			<button @click="editor.chain().focus().toggleStrike().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleStrike().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('strike') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Barré">
@@ -121,14 +121,14 @@ onBeforeUnmount(() => {
 			<!-- Headings -->
 			<div class="w-px h-6 bg-slate-200 dark:bg-slate-600 mx-1"></div>
 
-			<button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleHeading({ level: 2 }).run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('heading', { level: 2 }) }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-bold text-xs"
 				title="Titre 2">
 				H2
 			</button>
 
-			<button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleHeading({ level: 3 }).run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('heading', { level: 3 }) }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors font-bold text-xs"
 				title="Titre 3">
@@ -138,14 +138,14 @@ onBeforeUnmount(() => {
 			<!-- Lists -->
 			<div class="w-px h-6 bg-slate-200 dark:bg-slate-600 mx-1"></div>
 
-			<button @click="editor.chain().focus().toggleBulletList().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleBulletList().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('bulletList') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Liste à puces">
 				<Icon name="ph:list-bullets-bold" size="16" />
 			</button>
 
-			<button @click="editor.chain().focus().toggleOrderedList().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleOrderedList().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('orderedList') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Liste numérotée">
@@ -155,21 +155,21 @@ onBeforeUnmount(() => {
 			<!-- Extras -->
 			<div class="w-px h-6 bg-slate-200 dark:bg-slate-600 mx-1"></div>
 
-			<button @click="editor.chain().focus().toggleBlockquote().run()"
+			<button @mousedown.prevent="editor.chain().focus().toggleBlockquote().run()"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('blockquote') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Citation">
 				<Icon name="ph:quotes-bold" size="16" />
 			</button>
 
-			<button @click="setLink"
+			<button @mousedown.prevent="setLink"
 				:class="{ 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white': editor.isActive('link') }"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors"
 				title="Lien">
 				<Icon name="ph:link-bold" size="16" />
 			</button>
 
-			<button @click="editor.chain().focus().unsetLink().run()" :disabled="!editor.isActive('link')"
+			<button @mousedown.prevent="editor.chain().focus().unsetLink().run()" :disabled="!editor.isActive('link')"
 				class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 disabled:opacity-30 transition-colors"
 				title="Supprimer le lien">
 				<Icon name="ph:link-break-bold" size="16" />
