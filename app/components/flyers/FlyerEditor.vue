@@ -158,6 +158,7 @@ const updateSelectedColor = (event: Event) => {
 }
 const selectedBaseTemplate = ref<string>('blank')
 const loadingTemplate = ref(false)
+const converting = ref(false)
 const mode = ref<'canvas' | 'smart'>('canvas') // New: Mode for editor
 const smartFlyerRef = ref<any>(null) // New: Ref for SmartFlyer component
 
@@ -422,8 +423,11 @@ const loadTemplate = async (templateId: string) => {
 const convertSmartToCanvas = async (): Promise<boolean> => {
 	if (mode.value !== 'smart') return true
 
-	const imageUrl = await smartFlyerRef.value?.exportImage()
+	converting.value = true
+	// Capture the smart flyer DOM directly (client-side, no server/Puppeteer needed)
+	const imageUrl = await smartFlyerRef.value?.captureAsDataUrl()
 	if (!imageUrl) {
+		converting.value = false
 		showToast('Erreur lors de la conversion du template', 'error')
 		return false
 	}
@@ -462,6 +466,7 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	else canvas.value.moveObjectTo(img, 0)
 	canvas.value.renderAll()
 
+	converting.value = false
 	showToast('Template converti en canvas éditable', 'success')
 	return true
 }
@@ -1086,7 +1091,7 @@ const previewFlyer = async () => {
 </script>
 
 <template>
-	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-6">
+	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-6 relative">
 
 		<!-- LEFT SIDEBAR: TOOLS & TEMPLATES -->
 		<div class="w-full xl:w-72 flex flex-col gap-6 shrink-0">
@@ -1431,6 +1436,16 @@ const previewFlyer = async () => {
 				</p>
 			</div>
 		</div>
+
+		<!-- Conversion Loading Overlay -->
+		<Transition name="modal">
+			<div v-if="converting" class="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/60 backdrop-blur-sm rounded-3xl">
+				<div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center">
+					<Icon name="ph:spinner-gap-bold" size="32" class="text-white animate-spin" />
+				</div>
+				<p class="text-white text-sm font-bold tracking-wide">Conversion en cours…</p>
+			</div>
+		</Transition>
 
 		<!-- QR Code Customizer Modal -->
 		<Teleport to="body">

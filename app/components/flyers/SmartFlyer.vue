@@ -156,6 +156,23 @@ defineExpose({
 	exportImage: async (): Promise<string | null> => {
 		// Use server-side generation for pixel-perfect rendering
 		return await generateFlyerOnServer()
+	},
+	captureAsDataUrl: async (): Promise<string | null> => {
+		if (!flyerRef.value) return null
+		try {
+			const html2canvas = (await import('html2canvas')).default
+			const canvasEl = await html2canvas(flyerRef.value, {
+				scale: 2,
+				useCORS: true,
+				allowTaint: false,
+				backgroundColor: null,
+				logging: false,
+			})
+			return canvasEl.toDataURL('image/png')
+		} catch (e) {
+			console.error('html2canvas capture failed', e)
+			return null
+		}
 	}
 })
 </script>
