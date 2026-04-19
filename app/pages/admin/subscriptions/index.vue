@@ -143,13 +143,21 @@ const deletePlan = async (plan: SubscriptionPlan) => {
 const manualSubs = computed(() => subscriptions.value.filter(s => !s.stripeSubscriptionId))
 const showGrantModal = ref(false)
 const grantLoading = ref(false)
+const businessesLoading = ref(false)
 const allBusinesses = ref<any[]>([])
 const grantForm = ref({ businessId: '', planId: '', billingPeriod: 'lifetime', expiresAt: '' })
 
 const fetchBusinesses = async () => {
-	if (allBusinesses.value.length > 0) return
-	try { const res = await $api<any>('/admin/businesses?limit=200'); allBusinesses.value = res.businesses || res }
-	catch { /* noop */ }
+	businessesLoading.value = true
+	try {
+		const res = await $api<any>('/admin/businesses?limit=500')
+		allBusinesses.value = Array.isArray(res) ? res : (res.businesses ?? [])
+	} catch (e) {
+		console.error('fetchBusinesses error:', e)
+		toast.show('Erreur lors du chargement des businesses', 'error')
+	} finally {
+		businessesLoading.value = false
+	}
 }
 
 const openGrantModal = () => { grantForm.value = { businessId: '', planId: '', billingPeriod: 'lifetime', expiresAt: '' }; fetchBusinesses(); showGrantModal.value = true }
@@ -646,8 +654,8 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 					<div class="p-5 space-y-4">
 						<div>
 							<label class="block text-xs font-medium text-slate-400 mb-1.5">Business</label>
-							<select v-model="grantForm.businessId" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors">
-								<option value="" disabled class="bg-[#111318]">Sélectionner un business...</option>
+							<select v-model="grantForm.businessId" :disabled="businessesLoading" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors disabled:opacity-50">
+								<option value="" disabled class="bg-[#111318]">{{ businessesLoading ? 'Chargement...' : allBusinesses.length === 0 ? 'Aucun business trouvé' : 'Sélectionner un business...' }}</option>
 								<option v-for="b in allBusinesses" :key="b.id" :value="b.id" class="bg-[#111318]">{{ b.name }}</option>
 							</select>
 						</div>

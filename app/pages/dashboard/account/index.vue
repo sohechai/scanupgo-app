@@ -118,8 +118,9 @@ const openBillingPortal = async () => {
 }
 
 const logoutAllLoading = ref(false)
+const showLogoutAllModal = ref(false)
 const logoutAllDevices = async () => {
-	if (!confirm(t('account.logout_all') + ' ?')) return
+	showLogoutAllModal.value = false
 	logoutAllLoading.value = true
 	try {
 		await $api('/auth/logout-all', { method: 'POST' })
@@ -314,7 +315,7 @@ watch(user, (newUser) => {
 						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.logout_all') }}</p>
 						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.logout_all_description') }}</p>
 					</div>
-					<button @click="logoutAllDevices" :disabled="logoutAllLoading"
+					<button @click="showLogoutAllModal = true" :disabled="logoutAllLoading"
 						class="text-red-500 text-xs font-medium hover:opacity-70 transition-opacity disabled:opacity-30 shrink-0 flex items-center gap-1">
 						<Icon v-if="logoutAllLoading" name="ph:spinner-gap-bold" size="12" class="animate-spin" />
 						<span>{{ $t('account.logout_button') }}</span>
@@ -438,6 +439,40 @@ watch(user, (newUser) => {
 				</div>
 			</div>
 		</div>
+
+		<!-- Logout All Devices Modal -->
+		<Teleport to="body">
+			<Transition name="modal">
+				<div v-if="showLogoutAllModal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showLogoutAllModal = false" />
+					<div class="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-sm overflow-hidden">
+						<div class="h-0.5 w-full bg-red-500" />
+						<div class="p-6">
+							<div class="flex items-start gap-3 mb-5">
+								<div class="w-9 h-9 rounded-md bg-red-50 dark:bg-red-900/20 flex items-center justify-center shrink-0">
+									<Icon name="ph:devices-bold" size="16" class="text-red-500" />
+								</div>
+								<div>
+									<h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('account.logout_all') }}</h3>
+									<p class="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">{{ $t('account.logout_all_description') }}</p>
+								</div>
+							</div>
+							<div class="flex flex-col gap-2">
+								<button @click="logoutAllDevices" :disabled="logoutAllLoading"
+									class="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-md text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+									<Icon v-if="logoutAllLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+									<span>{{ $t('account.logout_button') }}</span>
+								</button>
+								<button type="button" @click="showLogoutAllModal = false"
+									class="w-full py-2.5 text-slate-500 dark:text-slate-400 font-medium text-sm hover:opacity-70 transition-opacity">
+									{{ $t('account.cancel') }}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</Transition>
+		</Teleport>
 
 		<!-- Password Change Modal -->
 		<Teleport to="body">
