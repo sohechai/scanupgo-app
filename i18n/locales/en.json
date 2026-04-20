@@ -2331,6 +2331,15 @@
 			"skip": "Skip this step",
 			"back": "Back"
 		},
+		"review_timer": {
+			"title": "Leave your review ⭐",
+			"subtitle": "Google has opened.\nTake a moment to leave a review to validate your entry.",
+			"seconds": "sec",
+			"step_opened": "Google opened in a new tab",
+			"step_review": "Leave your review ⭐⭐⭐⭐⭐",
+			"step_return": "Come back here to play",
+			"already_reviewed": "I already left my review →"
+		},
 		"form": {
 			"heading": "Claim your prize",
 			"subtitle": "Fill in this form to spin the wheel",

@@ -475,8 +475,8 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 
 				<!-- Texte -->
 				<div class="text-center space-y-2">
-					<h2 class="text-2xl font-black">Laissez votre avis ⭐</h2>
-					<p class="text-sm opacity-80 leading-relaxed px-4">Google s'est ouvert.<br>Prenez le temps de laisser un avis pour valider votre participation.</p>
+					<h2 class="text-2xl font-black">{{ $t('play.review_timer.title') }}</h2>
+					<p class="text-sm opacity-80 leading-relaxed px-4" style="white-space: pre-line">{{ $t('play.review_timer.subtitle') }}</p>
 				</div>
 
 				<!-- Cercle de progression -->
@@ -493,7 +493,7 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 					</svg>
 					<div class="absolute inset-0 flex flex-col items-center justify-center">
 						<span class="text-3xl font-black tabular-nums">{{ timerSeconds }}</span>
-						<span class="text-xs opacity-70 uppercase tracking-wide">sec</span>
+						<span class="text-xs opacity-70 uppercase tracking-wide">{{ $t('play.review_timer.seconds') }}</span>
 					</div>
 				</div>
 
@@ -501,22 +501,22 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 				<div class="w-full space-y-2 px-2">
 					<div class="flex items-center gap-3 bg-white/15 rounded-xl px-4 py-3">
 						<Icon name="ph:check-circle-fill" size="20" class="text-green-300 shrink-0" />
-						<span class="text-sm font-medium">Google ouvert dans un nouvel onglet</span>
+						<span class="text-sm font-medium">{{ $t('play.review_timer.step_opened') }}</span>
 					</div>
 					<div class="flex items-center gap-3 bg-white/25 rounded-xl px-4 py-3 border border-white/30">
 						<Icon name="ph:pencil-line-bold" size="20" class="opacity-80 shrink-0" />
-						<span class="text-sm font-medium">Laissez votre avis ⭐⭐⭐⭐⭐</span>
+						<span class="text-sm font-medium">{{ $t('play.review_timer.step_review') }}</span>
 					</div>
 					<div class="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 opacity-50">
 						<Icon name="ph:arrow-u-up-left-bold" size="20" class="shrink-0" />
-						<span class="text-sm font-medium">Revenez ici pour jouer</span>
+						<span class="text-sm font-medium">{{ $t('play.review_timer.step_return') }}</span>
 					</div>
 				</div>
 
 				<!-- Lien passer (visible après 15s) -->
 				<button v-if="timerSeconds <= 30" @click="skipTimer"
 					class="text-xs opacity-50 hover:opacity-80 transition underline">
-					J'ai déjà laissé mon avis →
+					{{ $t('play.review_timer.already_reviewed') }}
 				</button>
 			</div>
 

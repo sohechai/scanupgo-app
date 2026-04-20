@@ -2331,6 +2331,15 @@
 			"skip": "Passer cette étape",
 			"back": "Retour"
 		},
+		"review_timer": {
+			"title": "Laissez votre avis ⭐",
+			"subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
+			"seconds": "sec",
+			"step_opened": "Google ouvert dans un nouvel onglet",
+			"step_review": "Laissez votre avis ⭐⭐⭐⭐⭐",
+			"step_return": "Revenez ici pour jouer",
+			"already_reviewed": "J'ai déjà laissé mon avis →"
+		},
 		"form": {
 			"heading": "Récupérez votre lot",
 			"subtitle": "Remplissez ce formulaire pour faire tourner la roue",
