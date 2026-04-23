@@ -119,43 +119,51 @@ onMounted(async () => {
 		</div>
 
 		<!-- Credits exhausted banner -->
-		<div v-if="creditsExhausted"
-			class="rounded-xl border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-5">
-			<div class="flex items-start gap-4 mb-4">
-				<div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center shrink-0">
-					<Icon name="ph:warning-circle-fill" class="text-red-500" size="22" />
-				</div>
-				<div>
-					<h3 class="font-bold text-red-700 dark:text-red-400 text-base">{{ $t('marketing.credits.empty_title') }}</h3>
-					<p class="text-sm text-red-600 dark:text-red-500 mt-0.5">{{ $t('marketing.credits.empty_desc') }}</p>
-				</div>
-			</div>
+		<div v-if="creditsExhausted" class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+			<!-- Top accent line -->
+			<div class="h-0.5 w-full bg-amber-400" />
 
-			<!-- Packs grid -->
-			<div v-if="creditPacks.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-4">
-				<button
-					v-for="pack in creditPacks"
-					:key="pack.id"
-					@click="buyCreditPack(pack.id)"
-					:disabled="buyingPackId !== null"
-					class="group relative flex flex-col items-start bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 rounded-lg px-4 py-3 text-left transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-					<div class="flex items-center justify-between w-full mb-2">
-						<span class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">{{ pack.name }}</span>
-						<Icon v-if="buyingPackId === pack.id" name="ph:spinner-gap-bold" class="animate-spin text-slate-400" size="14" />
+			<div class="p-5">
+				<!-- Header -->
+				<div class="flex items-start gap-3 mb-5">
+					<div class="w-9 h-9 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
+						<Icon name="ph:coins-fill" class="text-amber-500" size="16" />
 					</div>
-					<div class="flex items-baseline gap-1.5 mb-1">
-						<span class="text-2xl font-bold text-slate-900 dark:text-white">{{ pack.creditAmount }}</span>
-						<span class="text-xs text-slate-500">{{ $t('marketing.credits.credits') }}</span>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('marketing.credits.empty_title') }}</p>
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 leading-relaxed">{{ $t('marketing.credits.empty_desc') }}</p>
 					</div>
-					<div class="flex items-center justify-between w-full mt-2">
-						<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ pack.price }} {{ pack.currency }}</span>
-						<span class="text-xs font-bold text-white bg-red-500 group-hover:bg-red-600 px-2 py-0.5 rounded-md transition-colors">
-							{{ $t('marketing.credits.buy') }}
-						</span>
-					</div>
-				</button>
+				</div>
+
+				<!-- Packs list -->
+				<div v-if="creditPacks.length > 0" class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-100 dark:border-slate-800 rounded-md overflow-hidden">
+					<button
+						v-for="pack in creditPacks"
+						:key="pack.id"
+						@click="buyCreditPack(pack.id)"
+						:disabled="buyingPackId !== null"
+						class="w-full flex items-center gap-3.5 px-4 py-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed">
+						<div class="w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+							<Icon name="ph:envelope-simple-bold" class="text-slate-400 dark:text-slate-500" size="13" />
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ pack.creditAmount }} {{ $t('marketing.credits.credits') }}</p>
+							<p class="text-xs text-slate-400 dark:text-slate-500">{{ pack.name }}</p>
+						</div>
+						<div class="shrink-0 flex items-center gap-2.5">
+							<span class="text-sm font-semibold text-slate-900 dark:text-white">{{ pack.price }} {{ pack.currency }}</span>
+							<Icon v-if="buyingPackId === pack.id" name="ph:spinner-gap-bold" class="animate-spin text-slate-400" size="13" />
+							<span v-else class="text-xs font-medium text-[#007AFF] bg-[#007AFF]/8 dark:bg-[#007AFF]/15 px-2 py-0.5 rounded">{{ $t('marketing.credits.buy') }}</span>
+						</div>
+					</button>
+				</div>
+
+				<!-- No packs empty state -->
+				<div v-else class="flex items-center gap-3 px-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-100 dark:border-slate-800">
+					<Icon name="ph:info-bold" class="text-slate-400 shrink-0" size="15" />
+					<p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('marketing.credits.no_packs') }}</p>
+				</div>
 			</div>
-			<div v-else class="text-sm text-red-500 mt-3">{{ $t('marketing.credits.no_packs') }}</div>
 		</div>
 
 		<!-- Stats -->
