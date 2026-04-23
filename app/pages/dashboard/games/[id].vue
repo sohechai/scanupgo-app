@@ -536,6 +536,7 @@ const downloadFlyerPDF = async () => {
 </script>
 
 <template>
+	<div>
 	<!-- Subscription Required -->
 	<SubscriptionRequired
 		v-if="!subscriptionLoading && !hasActiveSubscription"
@@ -1374,5 +1375,6 @@ const downloadFlyerPDF = async () => {
 			:game-id="(route.params.id as string)"
 			@created="showToast(t('games.order_created'), 'success')"
 		/>
+	</div>
 	</div>
 </template>

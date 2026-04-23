@@ -131,7 +131,7 @@ if (fetchError.value) {
 // Analytics tracking helper
 const trackEvent = (eventType: string) => {
 	if (!game.value?.business?.id) return
-	$api('/analytics/track', {
+	$api('/stats/collect', {
 		method: 'POST',
 		body: {
 			businessId: game.value.business.id,

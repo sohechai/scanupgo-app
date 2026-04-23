@@ -370,7 +370,7 @@ const fetchDashboardStats = async () => {
 const fetchAnalyticsEvents = async () => {
 	try {
 		const { startDate, endDate } = getDateRange()
-		analyticsEvents.value = await $api(`/analytics/events?startDate=${startDate}&endDate=${endDate}`)
+		analyticsEvents.value = await $api(`/stats/activity?startDate=${startDate}&endDate=${endDate}`)
 	} catch (error) {
 		console.error('Failed to fetch analytics events:', error)
 	}
@@ -760,7 +760,7 @@ onMounted(() => {
 				</table>
 			</div>
 			<div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700/40 text-center">
-				<NuxtLink to="/dashboard/prizes" class="text-xs font-medium text-[#007AFF] hover:opacity-70 transition-opacity">
+				<NuxtLink to="/dashboard/players" class="text-xs font-medium text-[#007AFF] hover:opacity-70 transition-opacity">
 					{{ $t('dashboard.sessions_table.view_history') }}
 				</NuxtLink>
 			</div>

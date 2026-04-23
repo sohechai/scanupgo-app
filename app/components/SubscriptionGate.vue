@@ -19,6 +19,7 @@ const features = [
 </script>
 
 <template>
+	<div class="contents">
 	<div v-show="hasAccess">
 		<slot />
 	</div>
@@ -71,5 +72,6 @@ const features = [
 				</p>
 			</div>
 		</div>
+	</div>
 	</div>
 </template>

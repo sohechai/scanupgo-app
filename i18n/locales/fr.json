@@ -609,6 +609,7 @@
 			"contact": "Contact",
 			"optin": "Optin",
 			"participations": "Participations",
+			"sessions": "Participations",
 			"date": "Date"
 		},
 		"optin_email": "Email",

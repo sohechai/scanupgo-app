@@ -609,6 +609,7 @@
 			"contact": "Contact",
 			"optin": "Opt-in",
 			"participations": "Participations",
+			"sessions": "Participations",
 			"date": "Date"
 		},
 		"optin_email": "Email",
@@ -2374,7 +2375,7 @@
 		},
 		"powered_by": "Powered by ScanUpGo",
 		"wheel": {
-			"lost": "LOST",
+			"lost": "LOSE",
 			"gift": "Gift"
 		}
 	}

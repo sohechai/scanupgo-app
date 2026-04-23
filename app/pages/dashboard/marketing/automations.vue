@@ -165,6 +165,7 @@ onMounted(() => { fetchAutomations() })
 </script>
 
 <template>
+	<div>
 	<div class="space-y-5">
 		<!-- Header -->
 		<div class="flex items-center gap-3">
@@ -396,4 +397,5 @@ onMounted(() => { fetchAutomations() })
 	<ConfirmModal v-model="showDeleteConfirm" :title="$t('marketing.automations.delete_confirmation_title')"
 		:description="$t('marketing.automations.delete_confirmation_message')"
 		:confirm-text="$t('marketing.automations.delete_button')" type="danger" @confirm="confirmDelete" />
+	</div>
 </template>

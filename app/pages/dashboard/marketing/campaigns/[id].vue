@@ -143,6 +143,7 @@ onMounted(async () => {
 </script>
 
 <template>
+	<div>
 	<!-- Loading -->
 	<div v-if="loading" class="flex items-center justify-center py-20">
 		<Icon name="ph:spinner-gap-bold" size="28" class="animate-spin text-slate-300" />
@@ -354,4 +355,5 @@ onMounted(async () => {
 	<ConfirmModal v-model="showDeleteConfirm" :title="$t('marketing.campaign_detail.delete_confirmation_title')"
 		:description="$t('marketing.campaign_detail.delete_confirmation_message')"
 		:confirm-text="$t('marketing.campaigns.delete')" type="danger" @confirm="confirmDelete" />
+	</div>
 </template>
