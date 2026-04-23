@@ -57,6 +57,7 @@ watch(() => route.path, () => {
 </script>
 
 <template>
+	<div class="min-h-screen">
 	<div v-if="!loading" class="min-h-screen bg-[#0d0e12] text-slate-200 flex">
 
 		<!-- Mobile Sidebar Backdrop -->
@@ -163,4 +164,5 @@ watch(() => route.path, () => {
 
 	<!-- Toast Notifications -->
 	<Toast />
+	</div>
 </template>
