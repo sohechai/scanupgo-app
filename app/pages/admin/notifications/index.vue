@@ -46,6 +46,7 @@ const iconOptions = computed(() => [
 
 onMounted(async () => {
 	await Promise.all([fetchMerchants(), fetchHistory()])
+	form.value.targetUserIds = merchants.value.map(m => m.id)
 	loading.value = false
 })
 
@@ -89,8 +90,7 @@ const handleSend = async () => {
 			body: payload,
 		})
 		toast.show(result.message, 'success')
-		form.value = { title: '', message: '', color: 'blue', icon: 'ph:megaphone-bold', targetUserIds: [], sendEmail: false }
-		selectAll.value = false
+		form.value = { title: '', message: '', color: 'blue', icon: 'ph:megaphone-bold', targetUserIds: merchants.value.map(m => m.id), sendEmail: false }
 		await fetchHistory()
 	} catch (error: any) {
 		toast.show(error?.data?.message || t('admin.notifications.send_error'), 'error')
@@ -197,7 +197,7 @@ const handleSend = async () => {
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input type="checkbox" v-model="selectAll"
 								class="w-4 h-4 rounded bg-white/[0.05] border border-white/10 accent-brand-500" />
-							<span class="text-xs text-slate-400">{{ $t('admin.notifications.select_all') }}</span>
+							<span class="text-xs text-slate-400">{{ selectAll ? $t('admin.notifications.deselect_all') : $t('admin.notifications.select_all') }}</span>
 						</label>
 					</div>
 
@@ -219,14 +219,14 @@ const handleSend = async () => {
 						</label>
 					</div>
 
-					<div class="px-4 py-2.5 border-t border-white/[0.04]">
+					<div class="px-4 py-2.5 border-t border-white/[0.04] flex items-center gap-2">
 						<p class="text-xs text-slate-500">
-							<span v-if="form.targetUserIds.length === 0" class="text-amber-400 flex items-center gap-1">
-								<Icon name="ph:info-bold" size="12" />
-								{{ $t('admin.notifications.recipients_all') }}
-							</span>
-							<span v-else>{{ $t('admin.notifications.recipients_count', { count: form.targetUserIds.length }) }}</span>
+							{{ $t('admin.notifications.recipients_count', { count: form.targetUserIds.length }) }}
 						</p>
+						<span v-if="selectAll" class="flex items-center gap-1 text-xs text-blue-400">
+							<Icon name="ph:users-three-bold" size="12" />
+							{{ $t('admin.notifications.recipients_all') }}
+						</span>
 					</div>
 				</div>
 
