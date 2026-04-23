@@ -10,74 +10,52 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { $api } = useNuxtApp()
-const toast = useToast()
-const { loading: paymentLoading, error: paymentError, createCheckoutSession } = usePayment()
+const { loading: paymentLoading, createCheckoutSession } = usePayment()
 const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
 
-// Order data
 const order = ref<Order | null>(null)
 const loading = ref(true)
 const fetchError = ref<string | null>(null)
 
-// Check if user cancelled payment
 const wasCancelled = computed(() => route.query.cancelled === 'true')
 
-// Fetch order
 const fetchOrder = async () => {
 	loading.value = true
 	fetchError.value = null
-
 	try {
 		const data = await $api<Order>(`/orders/${route.params.id}`)
 		order.value = data
-
-		// Check if already paid
 		if (data.paymentStatus === 'paid') {
 			router.push(`/dashboard/orders/${route.params.id}/success`)
 			return
 		}
 	} catch (e: any) {
-		console.error('Failed to fetch order:', e)
 		fetchError.value = e.data?.message || t('orders.payment_page.error_not_found')
 	} finally {
 		loading.value = false
 	}
 }
 
-// Redirect to Stripe Checkout
 const handlePayment = async () => {
 	if (!order.value) return
-
 	try {
 		await createCheckoutSession(order.value.id)
-		// Redirect happens automatically in createCheckoutSession
-	} catch (e) {
-		// Error already handled in usePayment
-	}
+	} catch {}
 }
 
-// Format price
 const formatPrice = (price: number | string | null | undefined, currency = 'MAD') => {
 	if (price === null || price === undefined) return '-'
 	const numPrice = typeof price === 'string' ? parseFloat(price) : price
 	return `${numPrice.toFixed(2)} ${currency}`
 }
 
-// Cancel and go back
-const handleCancel = () => {
-	router.push('/dashboard/games')
-}
-
 onMounted(async () => {
 	await fetchSubscription()
-	if (hasActiveSubscription.value) {
-		fetchOrder()
-	}
+	if (hasActiveSubscription.value) fetchOrder()
 })
 </script>
 
 <template>
-	<!-- Subscription Required -->
 	<SubscriptionRequired
 		v-if="!subscriptionLoading && !hasActiveSubscription"
 		:title="$t('orders.payment_page.access_required')"
@@ -85,135 +63,125 @@ onMounted(async () => {
 		icon="ph:credit-card-fill"
 	/>
 
-	<div v-else class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
-		<div class="max-w-xl mx-auto">
-			<!-- Loading State -->
-			<div v-if="loading" class="flex flex-col items-center justify-center py-24">
-				<Icon name="svg-spinners:ring-resize" size="48" class="text-slate-900 dark:text-white mb-4" />
-				<p class="text-slate-600 dark:text-slate-400">{{ $t('orders.payment_page.loading') }}</p>
+	<div v-else class="max-w-lg mx-auto py-2">
+
+		<!-- Loading -->
+		<div v-if="loading" class="flex flex-col items-center justify-center py-24 gap-3">
+			<Icon name="svg-spinners:ring-resize" size="32" class="text-slate-400" />
+			<p class="text-sm text-slate-400">{{ $t('orders.payment_page.loading') }}</p>
+		</div>
+
+		<!-- Error -->
+		<div v-else-if="fetchError" class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-8 text-center">
+			<div class="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-md flex items-center justify-center mx-auto mb-4">
+				<Icon name="ph:warning-circle-bold" size="20" class="text-red-500" />
+			</div>
+			<p class="text-sm font-medium text-slate-900 dark:text-white mb-1">{{ $t('orders.payment_page.error') }}</p>
+			<p class="text-xs text-slate-400 mb-5">{{ fetchError }}</p>
+			<button @click="router.push('/dashboard/games')"
+				class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium rounded-md">
+				{{ $t('orders.payment_page.back_dashboard') }}
+			</button>
+		</div>
+
+		<!-- Payment Content -->
+		<div v-else-if="order" class="space-y-3">
+
+			<!-- Cancelled banner -->
+			<div v-if="wasCancelled" class="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+				<Icon name="ph:warning-bold" size="15" class="text-amber-600 dark:text-amber-400 shrink-0" />
+				<p class="text-sm text-amber-700 dark:text-amber-300">{{ $t('orders.payment_page.cancelled') }}</p>
 			</div>
 
-			<!-- Error State -->
-			<div v-else-if="fetchError" class="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-xl">
-				<div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-					<Icon name="ph:warning-circle-duotone" size="32" class="text-red-600" />
-				</div>
-				<h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">{{ $t('orders.payment_page.error') }}</h2>
-				<p class="text-slate-600 dark:text-slate-400 mb-6">{{ fetchError }}</p>
-				<button @click="router.push('/dashboard/games')"
-					class="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl">
-					{{ $t('orders.payment_page.back_dashboard') }}
-				</button>
+			<!-- Page title -->
+			<div class="mb-1">
+				<h1 class="text-base font-semibold text-slate-900 dark:text-white">{{ $t('orders.payment_page.title') }}</h1>
+				<p class="text-xs text-slate-400 mt-0.5">{{ $t('orders.success_page.order_number') }} <span class="font-medium text-slate-600 dark:text-slate-300">#{{ order.orderNumber }}</span></p>
 			</div>
 
-			<!-- Payment Content -->
-			<div v-else-if="order" class="space-y-6">
-				<!-- Cancelled Warning -->
-				<div v-if="wasCancelled" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
-					<div class="flex items-center gap-3">
-						<Icon name="ph:warning-circle-fill" size="24" class="text-yellow-600" />
-						<p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-							{{ $t('orders.payment_page.cancelled') }}
-						</p>
-					</div>
+			<!-- Order Summary -->
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+					<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ $t('orders.payment_page.summary') }}</p>
 				</div>
-
-				<!-- Header -->
-				<div class="text-center mb-8">
-					<div class="w-16 h-16 bg-slate-900 dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-4">
-						<Icon name="ph:credit-card-bold" size="32" class="text-white dark:text-slate-900" />
+				<div class="divide-y divide-slate-100 dark:divide-slate-800">
+					<div class="flex items-center justify-between px-5 py-3">
+						<span class="text-sm text-slate-500 dark:text-slate-400">{{ $t('orders.payment_page.product') }}</span>
+						<span class="text-sm font-medium text-slate-900 dark:text-white">{{ order.productType }}</span>
 					</div>
-					<h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ $t('orders.payment_page.title') }}</h1>
-					<p class="text-slate-600 dark:text-slate-400 mt-1">{{ $t('orders.success_page.order_number') }} #{{ order.orderNumber }}</p>
-				</div>
-
-				<!-- Order Summary Card -->
-				<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
-					<div class="p-6 border-b border-slate-100 dark:border-slate-700">
-						<h2 class="font-bold text-slate-900 dark:text-white mb-4">{{ $t('orders.payment_page.summary') }}</h2>
-
-						<div class="space-y-3">
-							<div class="flex justify-between items-center">
-								<span class="text-slate-600 dark:text-slate-400">{{ $t('orders.payment_page.product') }}</span>
-								<span class="font-medium text-slate-900 dark:text-white">{{ order.productType }}</span>
-							</div>
-							<div class="flex justify-between items-center">
-								<span class="text-slate-600 dark:text-slate-400">{{ $t('orders.payment_page.quantity') }}</span>
-								<span class="font-medium text-slate-900 dark:text-white">{{ order.quantity }} {{ $t('orders.payment_page.units') }}</span>
-							</div>
-							<div class="flex justify-between items-center">
-								<span class="text-slate-600 dark:text-slate-400">{{ $t('orders.payment_page.format') }}</span>
-								<span class="font-medium text-slate-900 dark:text-white">A6 - 14.8 × 10.5 cm</span>
-							</div>
-							<div class="flex justify-between items-center">
-								<span class="text-slate-600 dark:text-slate-400">{{ $t('orders.payment_page.paper') }}</span>
-								<span class="font-medium text-slate-900 dark:text-white">135g couché</span>
-							</div>
-
-							<div class="pt-3 border-t border-slate-100 dark:border-slate-700">
-								<div class="flex justify-between items-center">
-									<span class="font-bold text-slate-900 dark:text-white">{{ $t('orders.payment_page.total') }}</span>
-									<span class="text-2xl font-bold text-slate-900 dark:text-white">
-										{{ formatPrice(order.totalPrice, order.currency) }}
-									</span>
-								</div>
-							</div>
-						</div>
+					<div class="flex items-center justify-between px-5 py-3">
+						<span class="text-sm text-slate-500 dark:text-slate-400">{{ $t('orders.payment_page.quantity') }}</span>
+						<span class="text-sm font-medium text-slate-900 dark:text-white">{{ order.quantity }} {{ $t('orders.payment_page.units') }}</span>
 					</div>
-
-					<!-- Payment Section -->
-					<div class="p-6">
-						<!-- Stripe Info -->
-						<div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 mb-6">
-							<div class="flex items-center gap-3">
-								<div class="w-10 h-10 bg-[#635BFF] rounded-lg flex items-center justify-center">
-									<Icon name="ph:stripe-logo-fill" size="24" class="text-white" />
-								</div>
-								<div>
-									<p class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('orders.payment_page.stripe_info') }}</p>
-									<p class="text-xs text-slate-500">{{ $t('orders.payment_page.stripe_redirect') }}</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Security Note -->
-						<div class="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-6">
-							<Icon name="ph:lock-simple-bold" size="20" />
-							<p class="text-xs">{{ $t('orders.payment_page.security') }}</p>
-						</div>
-
-						<!-- Action Buttons -->
-						<div class="flex gap-3">
-							<button @click="handleCancel"
-								class="flex-1 px-6 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-								{{ $t('orders.payment_page.cancel_button') }}
-							</button>
-							<button @click="handlePayment"
-								:disabled="paymentLoading"
-								class="flex-1 px-6 py-3 bg-[#635BFF] hover:bg-[#5851e5] text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-								<Icon v-if="paymentLoading" name="svg-spinners:ring-resize" size="20" />
-								<Icon v-else name="ph:lock-simple-bold" size="20" />
-								<span v-if="paymentLoading">{{ $t('orders.payment_page.redirecting') }}</span>
-								<span v-else>{{ $t('orders.payment_page.pay_button') }} {{ formatPrice(order.totalPrice, order.currency) }}</span>
-							</button>
-						</div>
+					<div class="flex items-center justify-between px-5 py-3">
+						<span class="text-sm text-slate-500 dark:text-slate-400">{{ $t('orders.payment_page.format') }}</span>
+						<span class="text-sm font-medium text-slate-900 dark:text-white">A6 — 14.8 × 10.5 cm</span>
 					</div>
-				</div>
-
-				<!-- Delivery Info -->
-				<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6">
-					<h3 class="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-						<Icon name="ph:truck-bold" size="20" />
-						{{ $t('orders.payment_page.delivery') }}
-					</h3>
-					<div class="text-sm text-slate-600 dark:text-slate-400 space-y-1">
-						<p class="font-medium text-slate-900 dark:text-white">{{ order.contactName }}</p>
-						<p>{{ order.deliveryAddress }}</p>
-						<p>{{ order.deliveryZip }} {{ order.deliveryCity }}</p>
-						<p>{{ order.deliveryCountry }}</p>
+					<div class="flex items-center justify-between px-5 py-3">
+						<span class="text-sm text-slate-500 dark:text-slate-400">{{ $t('orders.payment_page.paper') }}</span>
+						<span class="text-sm font-medium text-slate-900 dark:text-white">135g couché</span>
+					</div>
+					<div class="flex items-center justify-between px-5 py-3.5 bg-slate-50 dark:bg-slate-800/50">
+						<span class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('orders.payment_page.total') }}</span>
+						<span class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">
+							{{ formatPrice(order.totalPrice, order.currency) }}
+						</span>
 					</div>
 				</div>
 			</div>
+
+			<!-- Delivery -->
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="flex items-center gap-2.5 px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+					<Icon name="ph:truck-bold" size="14" class="text-slate-400" />
+					<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ $t('orders.payment_page.delivery') }}</p>
+				</div>
+				<div class="px-5 py-3.5">
+					<p class="text-sm font-medium text-slate-900 dark:text-white">{{ order.contactName }}</p>
+					<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ order.deliveryAddress }}, {{ order.deliveryZip }} {{ order.deliveryCity }}, {{ order.deliveryCountry }}</p>
+				</div>
+			</div>
+
+			<!-- Payment -->
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+					<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Paiement</p>
+				</div>
+				<div class="p-5 space-y-4">
+					<!-- Stripe block -->
+					<div class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-100 dark:border-slate-800">
+						<div class="w-8 h-8 bg-[#635BFF] rounded-md flex items-center justify-center shrink-0">
+							<Icon name="ph:stripe-logo-fill" size="16" class="text-white" />
+						</div>
+						<div class="min-w-0">
+							<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('orders.payment_page.stripe_info') }}</p>
+							<p class="text-xs text-slate-400 mt-0.5">{{ $t('orders.payment_page.stripe_redirect') }}</p>
+						</div>
+					</div>
+
+					<!-- Security note -->
+					<div class="flex items-center gap-2 text-slate-400">
+						<Icon name="ph:lock-simple-bold" size="13" class="shrink-0" />
+						<p class="text-xs">{{ $t('orders.payment_page.security') }}</p>
+					</div>
+
+					<!-- Actions -->
+					<div class="flex gap-2.5 pt-1">
+						<button @click="router.push('/dashboard/games')"
+							class="px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+							{{ $t('orders.payment_page.cancel_button') }}
+						</button>
+						<button @click="handlePayment" :disabled="paymentLoading"
+							class="flex-1 py-2.5 bg-[#635BFF] hover:bg-[#5248e0] text-white text-sm font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+							<Icon v-if="paymentLoading" name="svg-spinners:ring-resize" size="15" />
+							<Icon v-else name="ph:lock-simple-bold" size="14" />
+							<span v-if="paymentLoading">{{ $t('orders.payment_page.redirecting') }}</span>
+							<span v-else>{{ $t('orders.payment_page.pay_button') }} {{ formatPrice(order.totalPrice, order.currency) }}</span>
+						</button>
+					</div>
+				</div>
+			</div>
+
 		</div>
 	</div>
 </template>
