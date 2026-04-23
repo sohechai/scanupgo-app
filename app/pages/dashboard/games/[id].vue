@@ -38,8 +38,7 @@ const currentWizardStep = ref(0)
 
 const canGoNext = computed(() => {
 	if (currentWizardStep.value === 0) {
-		// Content step validation
-		return game.value.title && game.value.slug && game.value.googleReviewUrl
+		return !!(game.value.title && game.value.googleReviewUrl)
 	}
 	return true
 })
@@ -143,6 +142,55 @@ watch(activeTab, () => {
 	window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
+// ── Slug auto-generation ──────────────────────────────────────────────────
+const slugTouched = ref(false)
+const autoSlugSuffix = ref('')
+
+const clientSlugify = (text: string) =>
+	text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+		.replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 40)
+
+const randomSuffix = () => Math.random().toString(36).slice(2, 6)
+
+watch(() => game.value.title, (title) => {
+	if (!isNew || slugTouched.value) return
+	if (!autoSlugSuffix.value) autoSlugSuffix.value = randomSuffix()
+	const base = clientSlugify(title)
+	if (base) game.value.slug = `${base}-${autoSlugSuffix.value}`
+})
+
+const regenerateSlug = () => {
+	autoSlugSuffix.value = randomSuffix()
+	const base = clientSlugify(game.value.title) || 'jeu'
+	game.value.slug = `${base}-${autoSlugSuffix.value}`
+	slugTouched.value = false
+	checkSlugAvailability()
+}
+
+// ── Slug availability check ───────────────────────────────────────────────
+const slugAvailable = ref<boolean | null>(null)
+const slugChecking = ref(false)
+let slugCheckTimer: ReturnType<typeof setTimeout> | null = null
+
+const checkSlugAvailability = async () => {
+	const slug = game.value.slug
+	if (!slug || !/^[a-z0-9-]+$/.test(slug)) { slugAvailable.value = null; return }
+	slugChecking.value = true
+	try {
+		const excludeId = isNew ? undefined : (route.params.id as string)
+		const params = excludeId ? `?excludeId=${excludeId}` : ''
+		const res = await $api<{ available: boolean }>(`/games/check-slug/${slug}${params}`)
+		slugAvailable.value = res.available
+	} catch { slugAvailable.value = null }
+	finally { slugChecking.value = false }
+}
+
+watch(() => game.value.slug, () => {
+	slugAvailable.value = null
+	if (slugCheckTimer) clearTimeout(slugCheckTimer)
+	slugCheckTimer = setTimeout(checkSlugAvailability, 500)
+})
+
 
 const saveGame = async () => {
 	saving.value = true
@@ -155,11 +203,10 @@ const saveGame = async () => {
 
 		// Validate slug format
 		const slugRegex = /^[a-z0-9-]+$/
-		if (!slugRegex.test(game.value.slug)) {
+		if (!game.value.slug || !slugRegex.test(game.value.slug)) {
 			showToast(t('games.detail.slug_format'), 'error')
 			return
 		}
-
 		// Validate Google Review URL is required
 		if (!game.value.googleReviewUrl) {
 			showToast(t('games.detail.google_review_required'), 'error')
@@ -718,15 +765,31 @@ const downloadFlyerPDF = async () => {
 								</div>
 
 								<div>
-									<label
-										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.slug') }}</label>
-									<div class="relative group/input">
-										<span
-											class="absolute left-3.5 top-2.5 text-slate-400 dark:text-slate-500 font-mono text-sm">/</span>
-										<input v-model="game.slug" type="text" required
-											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md pl-7 pr-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
-											:placeholder="$t('games.detail.slug_placeholder')">
+									<div class="flex items-center justify-between mb-1.5">
+										<label class="block text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.slug') }}</label>
+										<button type="button" @click="regenerateSlug"
+											class="flex items-center gap-1 text-xs text-[#007AFF] hover:opacity-70 transition-opacity">
+											<Icon name="ph:arrows-clockwise-bold" size="11" />
+											{{ $t('games.detail.slug_regenerate') }}
+										</button>
 									</div>
+									<div class="relative">
+										<span class="absolute left-3.5 top-2.5 text-slate-400 dark:text-slate-500 font-mono text-sm">/</span>
+										<input v-model="game.slug" type="text" @input="slugTouched = true"
+											class="w-full bg-slate-50 dark:bg-slate-700 border rounded-md pl-7 pr-8 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 font-mono text-sm"
+											:class="slugAvailable === false ? 'border-red-400 focus:border-red-400' : slugAvailable === true ? 'border-emerald-400 focus:border-emerald-400' : 'border-slate-200 dark:border-slate-600 focus:border-[#007AFF]/40'"
+											:placeholder="$t('games.detail.slug_placeholder')">
+										<span class="absolute right-3 top-2.5">
+											<Icon v-if="slugChecking" name="ph:spinner-gap-bold" size="15" class="animate-spin text-slate-400" />
+											<Icon v-else-if="slugAvailable === true" name="ph:check-circle-bold" size="15" class="text-emerald-500" />
+											<Icon v-else-if="slugAvailable === false" name="ph:x-circle-bold" size="15" class="text-red-500" />
+										</span>
+									</div>
+									<p v-if="slugAvailable === false" class="text-xs text-red-500 mt-1 flex items-center gap-1.5">
+										{{ $t('games.detail.slug_taken') }}
+										<button type="button" @click="regenerateSlug" class="underline hover:no-underline font-medium">{{ $t('games.detail.slug_regenerate') }}</button>
+									</p>
+									<p v-else-if="slugAvailable === true" class="text-xs text-emerald-500 mt-1">{{ $t('games.detail.slug_available') }}</p>
 								</div>
 
 								<div>
