@@ -149,11 +149,6 @@ const toggleTheme = () => {
 							</button>
 						</ClientOnly>
 						<NotificationDropdown />
-						<a href="/" target="_blank"
-							class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-white transition-colors">
-							<Icon name="ph:arrow-square-out-bold" size="14" />
-							{{ $t('dashboard.view_site') }}
-						</a>
 					</div>
 				</header>
 

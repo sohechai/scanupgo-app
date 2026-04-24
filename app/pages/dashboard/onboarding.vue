@@ -338,7 +338,6 @@ onMounted(() => fetchBusiness())
 											<p class="text-sm font-mono font-bold text-slate-900 uppercase">{{ business.primary_color }}</p>
 											<p class="text-xs text-slate-400">Couleur personnalisée</p>
 										</div>
-										<Icon name="ph:eyedropper-duotone" size="18" class="text-slate-400" />
 									</div>
 								</div>
 							</div>
