@@ -38,6 +38,16 @@ const emailForm = ref({ newEmail: '', password: '' })
 
 const profileLoading = ref(false)
 const profileForm = ref({ firstName: '', lastName: '' })
+const profileOriginal = ref({ firstName: '', lastName: '' })
+
+const profileHasChanges = computed(() =>
+	profileForm.value.firstName !== profileOriginal.value.firstName ||
+	profileForm.value.lastName !== profileOriginal.value.lastName
+)
+
+const cancelProfileEdit = () => {
+	profileForm.value = { ...profileOriginal.value }
+}
 
 const displayName = computed(() => {
 	if (user.value?.firstName || user.value?.lastName) {
@@ -171,6 +181,7 @@ onMounted(() => {
 		form.value.email = user.value.email || ''
 		profileForm.value.firstName = user.value.firstName || ''
 		profileForm.value.lastName = user.value.lastName || ''
+		profileOriginal.value = { firstName: user.value.firstName || '', lastName: user.value.lastName || '' }
 	}
 })
 
@@ -178,6 +189,7 @@ watch(user, (newUser) => {
 	if (newUser) {
 		profileForm.value.firstName = newUser.firstName || ''
 		profileForm.value.lastName = newUser.lastName || ''
+		profileOriginal.value = { firstName: newUser.firstName || '', lastName: newUser.lastName || '' }
 	}
 }, { immediate: true })
 </script>
@@ -215,8 +227,12 @@ watch(user, (newUser) => {
 						<input v-model="profileForm.lastName" type="text" :placeholder="$t('account.lastname_placeholder')"
 							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
 					</div>
-					<div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex justify-end border-t border-slate-100 dark:border-slate-800">
-						<button type="submit" :disabled="profileLoading"
+					<div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+						<button v-if="profileHasChanges" type="button" @click="cancelProfileEdit" :disabled="profileLoading"
+							class="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+							{{ $t('common.cancel') }}
+						</button>
+						<button type="submit" :disabled="profileLoading || !profileHasChanges"
 							class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white font-medium rounded-md text-sm transition-all disabled:opacity-50">
 							<Icon v-if="profileLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
 							<span>{{ profileLoading ? $t('profile.saving') : $t('account.save_button') }}</span>

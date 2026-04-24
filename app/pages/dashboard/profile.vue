@@ -25,6 +25,17 @@ const business = ref({
 const loading = ref(true)
 const saving = ref(false)
 const isEditing = ref(false)
+const originalBusiness = ref<typeof business.value | null>(null)
+
+const startEditing = () => {
+	originalBusiness.value = { ...business.value }
+	isEditing.value = true
+}
+
+const cancelEdit = () => {
+	if (originalBusiness.value) business.value = { ...originalBusiness.value }
+	isEditing.value = false
+}
 
 const isProfileComplete = computed(() => {
 	// Profile is complete if name and logo are present
@@ -104,29 +115,46 @@ const handleSave = async () => {
 }
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const logoUploadError = ref<string | null>(null)
+const logoUploading = ref(false)
+
 const triggerFileInput = () => {
 	fileInputRef.value?.click()
 }
 const handleLogoUpload = async (event: Event) => {
 	const input = event.target as HTMLInputElement
-	if (input.files && input.files[0]) {
-		const file = input.files[0]
-		const formData = new FormData()
-		formData.append('file', file)
+	if (!input.files?.[0]) return
+	const file = input.files[0]
 
-		try {
-			const response = await $api<{ url: string }>('/uploads/logo', {
-				method: 'POST',
-				body: formData
-			})
-			if (response?.url) {
-				business.value.logo = response.url
-				useToast().show(t('profile.upload_success'), 'success')
-			}
-		} catch (e) {
-			console.error(e)
-			useToast().show(t('profile.upload_error'), 'error')
+	logoUploadError.value = null
+
+	const MAX_MB = 5
+	if (file.size > MAX_MB * 1024 * 1024) {
+		logoUploadError.value = t('components.file_upload.error_too_large', { size: MAX_MB })
+		return
+	}
+	if (!file.type.startsWith('image/')) {
+		logoUploadError.value = t('components.file_upload.error_wrong_type')
+		return
+	}
+
+	logoUploading.value = true
+	const formData = new FormData()
+	formData.append('file', file)
+	try {
+		const response = await $api<{ url: string }>('/uploads/logo', {
+			method: 'POST',
+			body: formData
+		})
+		if (response?.url) {
+			business.value.logo = response.url
+			useToast().show(t('profile.upload_success'), 'success')
 		}
+	} catch (e: any) {
+		console.error(e)
+		logoUploadError.value = e?.data?.message || t('profile.upload_error')
+	} finally {
+		logoUploading.value = false
 	}
 }
 
@@ -149,7 +177,12 @@ onMounted(() => {
 
 			<!-- Actions -->
 			<div v-if="!loading" class="flex items-center gap-2">
-				<button v-if="isProfileComplete && !isEditing" @click="isEditing = true"
+				<button v-if="isEditing" @click="cancelEdit"
+					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
+					{{ $t('common.cancel') }}
+				</button>
+
+				<button v-if="isProfileComplete && !isEditing" @click="startEditing"
 					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-slate-700/40 text-slate-600 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
 					<Icon name="ph:pencil-simple-bold" size="14" />
 					<span>{{ $t('profile.edit_button') }}</span>
@@ -286,12 +319,16 @@ onMounted(() => {
 							<!-- Upload Actions -->
 							<div v-if="canEdit" class="flex-1 space-y-2 pt-1">
 								<input ref="fileInputRef" type="file" @change="handleLogoUpload" accept="image/*" class="hidden" />
-								<button type="button" @click="triggerFileInput"
-									class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 hover:bg-slate-50 dark:hover:bg-[#3A3A3C] text-slate-600 dark:text-slate-200 text-xs font-medium rounded-md transition-colors">
-									<Icon name="ph:upload-simple-bold" size="13" />
-									{{ $t('profile.upload_logo') }}
+								<button type="button" @click="triggerFileInput" :disabled="logoUploading"
+									class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 hover:bg-slate-50 dark:hover:bg-[#3A3A3C] text-slate-600 dark:text-slate-200 text-xs font-medium rounded-md transition-colors disabled:opacity-50">
+									<Icon v-if="logoUploading" name="ph:spinner-gap-bold" class="animate-spin" size="13" />
+									<Icon v-else name="ph:upload-simple-bold" size="13" />
+									{{ logoUploading ? $t('components.file_upload.uploading') : $t('profile.upload_logo') }}
 								</button>
-								<p class="text-[11px] text-slate-400 leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
+								<p v-if="logoUploadError" class="text-[11px] text-red-500 font-medium flex items-center gap-1">
+									<Icon name="ph:warning-circle-fill" size="12" />{{ logoUploadError }}
+								</p>
+								<p v-else class="text-[11px] text-slate-400 leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
 							</div>
 						</div>
 					</div>
