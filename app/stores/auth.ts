@@ -22,6 +22,10 @@ interface User {
 	preferredLanguage?: string
 	cgvAccepted?: boolean
 	emailVerified?: boolean
+	twoFactorEnabled?: boolean
+	notifLoginAlert?: boolean
+	notifWeeklySummary?: boolean
+	notifOrderUpdates?: boolean
 	business?: Business
 }
 
@@ -96,7 +100,7 @@ export const useAuthStore = defineStore('auth', {
 				this.loading = true
 
 				// Call NestJS /auth/login endpoint
-				const response = await $api<{ message: string; user: User }>('/auth/login', {
+				const response = await $api<{ message: string; user: User; requiresTwoFactor?: boolean }>('/auth/login', {
 					method: 'POST',
 					body: {
 						email,
@@ -104,6 +108,10 @@ export const useAuthStore = defineStore('auth', {
 						rememberMe: rememberMe ?? false
 					}
 				})
+
+				if (response.requiresTwoFactor) {
+					return { requiresTwoFactor: true, email }
+				}
 
 				this.user = response.user
 				this._saveState()
