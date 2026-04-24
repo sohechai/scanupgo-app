@@ -9,6 +9,7 @@ const props = defineProps<{
 	qrCodeUrl?: string | null
 	game?: any
 	businessName?: string
+	saving?: boolean
 }>()
 
 const config = useRuntimeConfig()
@@ -807,13 +808,16 @@ const changeTextAlign = (align: 'left' | 'center' | 'right') => {
 // Export canvas as image
 const exportFlyer = async () => {
 	if (mode.value === 'smart') {
-		// SmartFlyer handles its own export
-		const imageUrl = await smartFlyerRef.value?.exportImage()
-		if (imageUrl) {
-			emit('save', imageUrl)
-			showToast('Flyer intelligent exporté avec succès', 'success')
-		} else {
-			showToast('Erreur lors de l\'export du flyer intelligent', 'error')
+		exporting.value = true
+		try {
+			const imageUrl = await smartFlyerRef.value?.exportImage()
+			if (imageUrl) {
+				emit('save', imageUrl)
+			} else {
+				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
+			}
+		} finally {
+			exporting.value = false
 		}
 		return
 	}
@@ -1306,11 +1310,11 @@ const previewFlyer = async () => {
 					</button>
 
 					<!-- Export / Save -->
-					<button @click="exportFlyer" type="button" :disabled="exporting"
-						class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20">
-						<Icon v-if="exporting" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
+					<button @click="exportFlyer" type="button" :disabled="exporting || saving"
+						class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20 disabled:opacity-70">
+						<Icon v-if="exporting || saving" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 						<Icon v-else name="ph:floppy-disk-bold" size="16" />
-						{{ exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}
+						{{ saving ? $t('flyers.editor.btn_saving') : exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}
 					</button>
 				</div>
 

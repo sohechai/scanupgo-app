@@ -1266,6 +1266,7 @@ const downloadFlyerPDF = async () => {
 
 									<FlyerEditor :game="game" :business-name="businessObject?.name"
 										:business-logo="businessLogo" :qr-code-url="qrCodeUrl"
+										:saving="savingFlyer"
 										@save="handleFlyerSave" />
 								</div>
 							</div>
