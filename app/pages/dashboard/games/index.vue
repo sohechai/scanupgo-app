@@ -12,6 +12,24 @@ const { hasActiveSubscription, fetchSubscription } = useSubscription()
 
 const games = ref<any[]>([])
 const loading = ref(true)
+const togglingId = ref<string | null>(null)
+
+const toggleActive = async (game: any) => {
+	if (togglingId.value === game.id) return
+	togglingId.value = game.id
+	try {
+		const updated = await $api<any>(`/games/${game.id}`, {
+			method: 'PATCH',
+			body: { active: !game.active },
+		})
+		const idx = games.value.findIndex(g => g.id === game.id)
+		if (idx !== -1) games.value[idx] = { ...games.value[idx], active: updated.active }
+	} catch (e: any) {
+		showToast(e?.data?.message || t('games.update_error'), 'error')
+	} finally {
+		togglingId.value = null
+	}
+}
 
 const showOrderModal = ref(false)
 const selectedGameForOrder = ref<any>(null)
@@ -99,23 +117,29 @@ onMounted(async () => {
 						<Icon name="ph:game-controller-bold" class="text-slate-400 dark:text-slate-500" size="18" />
 					</div>
 					<div class="flex-1 min-w-0 pt-0.5">
-						<div class="flex items-center gap-2">
-							<h3 class="font-semibold text-slate-900 dark:text-white text-sm truncate flex-1">{{ game.title }}</h3>
-							<span class="inline-flex items-center gap-1 shrink-0">
-								<span :class="[
-									'w-1.5 h-1.5 rounded-full shrink-0',
-									game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
-								]"></span>
-								<span :class="[
-									'text-xs',
-									game.active ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-400 dark:text-slate-500'
-								]">
-									{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
-								</span>
-							</span>
-						</div>
+						<h3 class="font-semibold text-slate-900 dark:text-white text-sm truncate">{{ game.title }}</h3>
 						<p class="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate">/{{ game.slug }}</p>
 					</div>
+					<!-- Toggle actif/inactif -->
+					<button
+						@click.prevent.stop="toggleActive(game)"
+						:disabled="togglingId === game.id"
+						:title="game.active ? $t('games.deactivate') : $t('games.activate')"
+						class="shrink-0 flex items-center gap-1.5 mt-0.5"
+					>
+						<Icon v-if="togglingId === game.id" name="svg-spinners:ring-resize" class="text-slate-400" size="14" />
+						<template v-else>
+							<div class="relative w-7 h-3.5 rounded-full transition-colors"
+								:class="game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
+								<div class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-all"
+									:class="game.active ? 'left-[14px]' : 'left-0.5'"></div>
+							</div>
+							<span class="text-[11px] font-medium"
+								:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
+								{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+							</span>
+						</template>
+					</button>
 				</div>
 
 				<!-- Flyer status -->
@@ -136,7 +160,7 @@ onMounted(async () => {
 				</div>
 
 				<!-- Actions -->
-				<div class="px-4 pb-4 mt-auto flex gap-2">
+				<div class="px-4 pb-4 mt-auto flex gap-2 items-center">
 					<NuxtLink :to="`/dashboard/games/${game.id}`"
 						class="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-md text-xs transition-colors flex items-center justify-center gap-1.5">
 						<Icon name="ph:gear-six-bold" size="13" />
