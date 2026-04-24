@@ -98,4 +98,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			return navigateTo('/dashboard/onboarding')
 		}
 	}
+
+	// Pre-fetch subscription so SubscriptionGate has data before first render
+	if (to.path.startsWith('/dashboard') && user.role !== 'SUPER_ADMIN') {
+		const subscriptionStore = useSubscriptionStore()
+		await subscriptionStore.fetch()
+	}
 })

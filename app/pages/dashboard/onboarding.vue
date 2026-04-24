@@ -70,6 +70,12 @@ const handleSubmit = async () => {
 				logo: business.value.logo
 			}
 		})
+
+		// Invalidate auth cache so the middleware re-fetches the updated business name
+		// (without this, the middleware sees the stale name and redirects back to onboarding)
+		const authCache = useState<{ user: any; checkedAt: number }>('_auth_cache')
+		if (authCache.value) authCache.value.checkedAt = 0
+
 		router.push('/dashboard')
 	} catch (e) {
 		console.error('Error saving business:', e)

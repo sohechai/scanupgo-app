@@ -201,6 +201,7 @@ export const useAuthStore = defineStore('auth', {
 			} finally {
 				this.user = null
 				this._saveState()
+				useSubscriptionStore().clear()
 				// Clear the auth middleware cache so the next login isn't served stale data
 				const authCache = useState<{ user: any; checkedAt: number }>('_auth_cache')
 				if (authCache.value) authCache.value = { user: null, checkedAt: 0 }

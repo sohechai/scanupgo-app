@@ -18,7 +18,7 @@ const plans = ref<any[]>([])
 const planLoading = ref(true)
 const planError = ref<any>(null)
 const currentSubscription = ref<any>(sharedSubscription.value ?? null)
-const subscriptionLoading = ref(sharedSubscription.value === null)
+const subscriptionLoading = ref(sharedSubscription.value == null) // == catches both null and undefined
 const showPlanSelector = ref(false)
 const showCancelModal = ref(false)
 const showUpgradeModal = ref(false)
@@ -247,6 +247,11 @@ const resetSubscriptionForTesting = async () => {
 			:loading="loading" @cancel="showCancelModal = true" @reactivate="reactivateSubscription"
 			@change-plan="openPlanSelector" />
 
+		<!-- Plans loading (subscriber clicked "Change plan" before plans finished loading) -->
+		<div v-else-if="planLoading && showPlanSelector" class="flex items-center justify-center py-20">
+			<Icon name="ph:spinner-gap-bold" size="28" class="text-slate-300 animate-spin" />
+		</div>
+
 		<!-- Plan Selection -->
 		<div v-else-if="plans.length && (showPlanSelector || !currentSubscription || wasImmediatelyCancelled)"
 			class="max-w-6xl mx-auto space-y-5">
@@ -293,7 +298,7 @@ const resetSubscriptionForTesting = async () => {
 		</div>
 
 		<!-- Empty State -->
-		<div v-else-if="!plans.length && !currentSubscription"
+		<div v-else-if="!planLoading && !plans.length && !currentSubscription"
 			class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-12 text-center max-w-2xl mx-auto">
 			<Icon name="ph:warning-circle" size="40" class="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
 			<p class="text-slate-600 dark:text-slate-300 font-medium text-sm">{{ $t('subscription.no_plans') }}</p>

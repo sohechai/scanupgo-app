@@ -3,10 +3,7 @@ const { subscription, loading, isAdmin } = useSubscription()
 
 const hasAccess = computed(() => {
 	if (isAdmin.value) return true
-	// Optimistic: show content while loading.
-	// For returning users, the localStorage cache (subscription-cache.client plugin)
-	// sets loading=false before the first render, so this branch is rarely hit.
-	if (loading.value) return true
+	if (loading.value) return false
 	if (!subscription.value) return false
 	return ['active', 'trialing'].includes(subscription.value.status)
 })
@@ -20,6 +17,18 @@ const features = [
 
 <template>
 	<div class="contents">
+
+	<!-- Skeleton while subscription status is unknown -->
+	<div v-if="loading && !isAdmin" class="p-6 space-y-4 animate-pulse">
+		<div class="h-7 bg-slate-200 dark:bg-slate-700 rounded-lg w-1/3" />
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+			<div v-for="i in 3" :key="i" class="h-28 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+		</div>
+		<div class="h-48 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+		<div class="h-48 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+	</div>
+
+	<template v-else>
 	<div v-show="hasAccess">
 		<slot />
 	</div>
@@ -73,5 +82,7 @@ const features = [
 			</div>
 		</div>
 	</div>
+	</template>
+
 	</div>
 </template>
