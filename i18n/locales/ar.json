@@ -404,6 +404,8 @@
 			"frequency_label": "تكرار المشاركة",
 			"frequency_hours": "ساعات",
 			"redemption_delay": "مهلة الاسترجاع",
+			"prize_expiry": "انتهاء صلاحية الجائزة",
+			"prize_expiry_hint": "تُسحب الجائزة تلقائيًا بعد هذه المهلة",
 			"save_button": "حفظ",
 			"creating": "جاري الإنشاء...",
 			"create_game": "إنشاء اللعبة",
@@ -2344,7 +2346,8 @@
 				"default_message": "أبرز رمز QR هذا عند الصندوق لاستلام جائزتك.",
 				"qr_instruction": "امسح رمز QR عند الصندوق",
 				"code_instruction": "أو أبرز هذا الرمز",
-				"save_hint": "احفظ هذه الصفحة أو خذ لقطة شاشة."
+				"save_hint": "احفظ هذه الصفحة أو خذ لقطة شاشة.",
+				"expiry_title": "تنتهي صلاحية هذه الجائزة خلال"
 			},
 			"lose": {
 				"title": "خسرت...",

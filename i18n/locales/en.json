@@ -404,6 +404,8 @@
 			"frequency_label": "Participation frequency",
 			"frequency_hours": "hours",
 			"redemption_delay": "Redemption delay",
+			"prize_expiry": "Prize expiry",
+			"prize_expiry_hint": "The prize is automatically withdrawn after this delay",
 			"save_button": "Save",
 			"creating": "Creating...",
 			"create_game": "Create game",
@@ -2392,7 +2394,8 @@
 				"default_message": "Show this QR code at the counter to collect your prize.",
 				"qr_instruction": "Scan this QR Code at the counter",
 				"code_instruction": "Or show this code",
-				"save_hint": "Save this page or take a screenshot."
+				"save_hint": "Save this page or take a screenshot.",
+				"expiry_title": "This prize expires in"
 			},
 			"lose": {
 				"title": "Lost...",

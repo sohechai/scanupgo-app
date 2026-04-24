@@ -399,11 +399,14 @@
 			"google_review_description": "Ajoutez le lien vers votre page Google pour inciter vos clients à laisser un avis avant de jouer.",
 			"google_review_placeholder": "https://g.page/r/XXXXXXXX/review",
 			"google_review_required": "Le lien Google Avis est obligatoire.",
+			"save_success": "Modifications enregistrées.",
 			"google_review_error": "Impossible de créer un jeu sans établissement associé.",
 			"advanced_settings": "Paramètres Avancés",
 			"frequency_label": "Fréquence de participation",
 			"frequency_hours": "heures",
 			"redemption_delay": "Délai de retrait",
+			"prize_expiry": "Expiration du cadeau",
+			"prize_expiry_hint": "Le cadeau est retiré automatiquement après ce délai",
 			"save_button": "Enregistrer",
 			"creating": "Création...",
 			"create_game": "Créer le jeu",
@@ -2392,7 +2395,8 @@
 				"default_message": "Présentez ce QR code en caisse pour récupérer votre cadeau.",
 				"qr_instruction": "Scannez ce QR Code en caisse",
 				"code_instruction": "Ou présentez ce code",
-				"save_hint": "Conservez cette page ou faites une capture d'écran."
+				"save_hint": "Conservez cette page ou faites une capture d'écran.",
+				"expiry_title": "Ce cadeau expire dans"
 			},
 			"lose": {
 				"title": "Perdu...",
