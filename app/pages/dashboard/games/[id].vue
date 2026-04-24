@@ -356,34 +356,6 @@ const downloadQRCodeSVG = async () => {
 	URL.revokeObjectURL(url)
 }
 
-// Background Image Upload
-const bgImageInputRef = ref<HTMLInputElement | null>(null)
-const removeBgImage = () => {
-	game.value.backgroundImage = null
-	if (bgImageInputRef.value) bgImageInputRef.value.value = ''
-}
-const handleBgImageUpload = async (event: Event) => {
-	const input = event.target as HTMLInputElement
-	if (input.files && input.files[0]) {
-		const file = input.files[0]
-		const formData = new FormData()
-		formData.append('file', file)
-
-		try {
-			const response = await $api<{ url: string }>('/uploads', {
-				method: 'POST',
-				body: formData
-			})
-			if (response?.url) {
-				game.value.backgroundImage = response.url
-				showToast('Image de fond importée', 'success')
-			}
-		} catch (e) {
-			console.error(e)
-			showToast("Erreur lors de l'upload", 'error')
-		}
-	}
-}
 
 watch(() => game.value.slug, generateQRCode)
 watch(() => game.value.primaryColor, generateQRCode)
@@ -962,49 +934,6 @@ const downloadFlyerPDF = async () => {
 											}}
 											</p>
 										</div>
-									</div>
-								</div>
-							</div>
-
-							<!-- Background Image -->
-							<div>
-								<label
-									class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.background_image') }}</label>
-								<div class="flex items-start gap-6">
-									<!-- Preview -->
-									<div
-										class="w-20 h-20 rounded-md border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 flex items-center justify-center overflow-hidden relative group/bg">
-										<img v-if="game.backgroundImage" :src="game.backgroundImage"
-											class="w-full h-full object-cover" />
-										<Icon v-else name="ph:image-duotone" class="text-slate-300" size="32" />
-										<!-- Remove button -->
-										<button v-if="game.backgroundImage" type="button"
-											@click="removeBgImage()"
-											class="absolute top-1 right-1 p-1.5 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/bg:opacity-100 transform scale-90 hover:scale-100 border border-slate-100"
-											:title="$t('games.detail.delete_image')">
-											<Icon name="ph:trash-bold" size="14" />
-										</button>
-									</div>
-									<!-- Upload -->
-									<div class="flex-1 space-y-2 pt-1">
-										<input ref="bgImageInputRef" type="file" @change="handleBgImageUpload"
-											accept="image/*" class="hidden" />
-										<div class="flex items-center gap-2">
-											<button type="button" @click="bgImageInputRef?.click()"
-												class="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm">
-												<Icon name="ph:upload-simple-bold" size="14" />
-												{{ game.backgroundImage ? $t('games.detail.change_image') : $t('games.detail.upload_image') }}
-											</button>
-											<button v-if="game.backgroundImage" type="button"
-												@click="removeBgImage()"
-												class="px-4 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm">
-												<Icon name="ph:trash-bold" size="14" />
-												{{ $t('games.detail.delete_image') }}
-											</button>
-										</div>
-										<p class="text-[11px] text-slate-400 font-medium leading-relaxed">
-											{{ $t('games.detail.recommended_format') }}
-										</p>
 									</div>
 								</div>
 							</div>
