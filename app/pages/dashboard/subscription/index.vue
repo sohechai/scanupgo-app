@@ -17,8 +17,8 @@ const loading = ref(false)
 const plans = ref<any[]>([])
 const planLoading = ref(true)
 const planError = ref<any>(null)
-const currentSubscription = ref<any>(null)
-const subscriptionLoading = ref(true)
+const currentSubscription = ref<any>(sharedSubscription.value ?? null)
+const subscriptionLoading = ref(sharedSubscription.value === null)
 const showPlanSelector = ref(false)
 const showCancelModal = ref(false)
 const showUpgradeModal = ref(false)
@@ -50,8 +50,9 @@ const wasImmediatelyCancelled = computed(() => {
 	if (!currentSubscription.value) return false
 	if (currentSubscription.value.status !== 'canceled') return false
 	if (!currentSubscription.value.cancelledAt) return false
+	// "cancel at period end" users still have time left — show CurrentSubscription with "ending soon" badge
 	if (!currentSubscription.value.currentPeriodEnd) return true
-	return new Date(currentSubscription.value.currentPeriodEnd) > new Date()
+	return new Date(currentSubscription.value.currentPeriodEnd) <= new Date()
 })
 
 const cleanUrlParams = () => {

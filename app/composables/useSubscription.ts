@@ -35,7 +35,10 @@ export const useSubscription = () => {
 		if (fetched.value && !force && !cacheExpired) return subscription.value
 
 		// Dedup: if a fetch is already in-flight, wait for it instead of firing another
-		if (_pendingFetch) return _pendingFetch
+		if (_pendingFetch) {
+			await _pendingFetch
+			return subscription.value
+		}
 
 		loading.value = true
 		_pendingFetch = $api('/subscriptions/current', { params: force ? { sync: 'true' } : {} })
