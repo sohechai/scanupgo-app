@@ -400,16 +400,15 @@ const savingFlyer = ref(false)
 const showOrderModal = ref(false)
 const showFlyerEditor = ref(false)
 
-const handleFlyerSave = async (imageUrl: string) => {
+const handleFlyerSave = async (imageUrl: string, canvasJson?: Record<string, any>) => {
 	savingFlyer.value = true
 	try {
-		// Update game with flyer design URL
-		await $api(`/games/${route.params.id}`, {
-			method: 'PATCH',
-			body: { flyerDesignUrl: imageUrl }
-		})
+		const body: Record<string, any> = { flyerDesignUrl: imageUrl }
+		if (canvasJson) body.flyerDesignJson = canvasJson
+		await $api(`/games/${route.params.id}`, { method: 'PATCH', body })
 		game.value.flyerDesignUrl = imageUrl
-		showFlyerEditor.value = false // Switch to preview mode
+		if (canvasJson) (game.value as any).flyerDesignJson = canvasJson
+		showFlyerEditor.value = false
 		showToast(t('games.detail.flyer_saved'), 'success')
 	} catch (error) {
 		console.error('Failed to save flyer design:', error)

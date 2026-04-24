@@ -119,7 +119,7 @@ const currentQrCodeUrl = computed(() => props.qrCodeUrl)
 const currentGame = computed(() => props.game)
 
 const emit = defineEmits<{
-	'save': [imageUrl: string]
+	'save': [imageUrl: string, canvasJson?: Record<string, any>]
 }>()
 
 const { $api } = useNuxtApp()
@@ -252,8 +252,18 @@ onMounted(async () => {
 	}
 	// Initialize Fabric only if not in smart mode initially (default is canvas)
 	await initCanvas()
-	// Ensure canvas has white background and is rendered
-	if (canvas.value) {
+
+	// Restore existing canvas state if available
+	if (canvas.value && props.game?.flyerDesignJson) {
+		try {
+			await canvas.value.loadFromJSON(props.game.flyerDesignJson)
+			canvas.value.renderAll()
+		} catch (e) {
+			console.warn('Could not restore canvas JSON:', e)
+			canvas.value.backgroundColor = '#ffffff'
+			canvas.value.renderAll()
+		}
+	} else if (canvas.value) {
 		canvas.value.backgroundColor = '#ffffff'
 		canvas.value.renderAll()
 	}
@@ -812,7 +822,7 @@ const exportFlyer = async () => {
 		try {
 			const imageUrl = await smartFlyerRef.value?.exportImage()
 			if (imageUrl) {
-				emit('save', imageUrl)
+				emit('save', imageUrl, undefined)
 			} else {
 				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
 			}
@@ -853,7 +863,8 @@ const exportFlyer = async () => {
 
 		if (response?.url) {
 			showToast('Flyer exporté avec succès', 'success')
-			emit('save', response.url)
+			const canvasJson = canvas.value?.toJSON()
+			emit('save', response.url, canvasJson)
 		}
 	} catch (e) {
 		console.error('Export failed', e)
