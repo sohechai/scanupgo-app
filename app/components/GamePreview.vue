@@ -153,18 +153,18 @@ const previewPrizes = computed(() => {
 							displayTagline }}</p>
 					</div>
 
+					<!-- Wheel -->
+					<div class="wheel-preview-container-intro">
+						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
+							:target-prize-index="null" :is-spinning="false" :has-lost="false" :preview-mode="true" />
+					</div>
+
 					<!-- Button -->
-					<div class="w-full px-4 mb-2 z-20">
+					<div class="w-full px-4 z-20">
 						<div
 							class="bg-slate-900 text-white py-2.5 rounded-full font-black text-[9px] uppercase tracking-wider text-center shadow-lg">
 							{{ $t('play.intro.play_button') }}
 						</div>
-					</div>
-
-					<!-- Wheel (positioned below button) -->
-					<div class="wheel-preview-container-intro">
-						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
-							:target-prize-index="null" :is-spinning="false" :has-lost="false" :preview-mode="true" />
 					</div>
 
 					<!-- Footer -->
@@ -309,14 +309,15 @@ const previewPrizes = computed(() => {
 
 <style scoped>
 .wheel-preview-container-intro {
-	transform: scale(0.58);
+	transform: scale(0.46);
 	transform-origin: top center;
 	z-index: 1;
-	margin-top: 20px;
+	margin-top: 8px;
+	margin-bottom: -173px;
 }
 
 .wheel-preview-container-playing {
-	transform: scale(0.45);
+	transform: scale(0.38);
 	transform-origin: center center;
 }
 
