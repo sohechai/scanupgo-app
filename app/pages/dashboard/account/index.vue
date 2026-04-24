@@ -268,14 +268,19 @@ watch(user, (newUser) => {
 			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">{{ $t('account.security_section') }}</p>
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
 				<div class="flex items-center gap-3.5 px-5 py-3.5">
-					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-						<Icon name="ph:lock-key-bold" class="text-slate-400 dark:text-slate-500" size="14" />
+					<div class="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+						:class="user?.googleId ? 'bg-red-50 dark:bg-red-900/10' : 'bg-slate-100 dark:bg-slate-800'">
+						<Icon :name="user?.googleId ? 'ph:google-logo-bold' : 'ph:lock-key-bold'"
+							:class="user?.googleId ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'" size="14" />
 					</div>
 					<div class="flex-1 min-w-0">
 						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.password') }}</p>
-						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('account.password_change') }}</p>
+						<p class="text-xs mt-0.5"
+							:class="user?.googleId ? 'text-slate-400 dark:text-slate-500' : 'text-slate-400 dark:text-slate-500'">
+							{{ user?.googleId ? $t('account.google_account') : $t('account.password_change') }}
+						</p>
 					</div>
-					<button @click="showPasswordModal = true"
+					<button v-if="!user?.googleId" @click="showPasswordModal = true"
 						class="text-[#007AFF] text-xs font-medium hover:opacity-70 transition-opacity shrink-0">
 						{{ $t('account.password_button') }}
 					</button>

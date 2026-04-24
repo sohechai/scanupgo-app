@@ -26,6 +26,7 @@ interface User {
 	notifLoginAlert?: boolean
 	notifWeeklySummary?: boolean
 	notifOrderUpdates?: boolean
+	googleId?: string | null
 	business?: Business
 }
 

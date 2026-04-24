@@ -944,6 +944,7 @@
 		"security_subtitle": "قم بإدارة أمان حسابك",
 		"password": "كلمة المرور",
 		"password_change": "قم بتغيير كلمة المرور",
+		"google_account": "تم إنشاء حسابك عبر Google",
 		"password_button": "تعديل",
 		"two_factor": "المصادقة الثنائية",
 		"two_factor_coming": "قريبًا",

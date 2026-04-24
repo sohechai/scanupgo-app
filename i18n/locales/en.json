@@ -975,6 +975,7 @@
 		"security_subtitle": "Manage your account security",
 		"password": "Password",
 		"password_change": "Change your password",
+		"google_account": "Your account was created with Google",
 		"password_button": "Change",
 		"two_factor": "Two-factor authentication",
 		"two_factor_coming": "Coming soon",
