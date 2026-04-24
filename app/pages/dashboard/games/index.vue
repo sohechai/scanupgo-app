@@ -131,15 +131,15 @@ onMounted(async () => {
 						:title="game.active ? $t('games.deactivate') : $t('games.activate')"
 						class="shrink-0 flex items-center gap-1.5 mt-0.5"
 					>
-						<div class="relative w-7 h-3.5 rounded-full transition-colors"
+						<span class="text-[11px] font-medium w-16 text-right"
+							:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
+							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+						</span>
+						<div class="relative w-7 h-3.5 rounded-full transition-colors shrink-0"
 							:class="game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
 							<div class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-all"
 								:class="game.active ? 'left-[14px]' : 'left-0.5'"></div>
 						</div>
-						<span class="text-[11px] font-medium"
-							:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
-							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
-						</span>
 					</button>
 				</div>
 
