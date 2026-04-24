@@ -160,19 +160,19 @@ onMounted(async () => {
 				</div>
 
 				<!-- Actions -->
-				<div class="px-4 pb-4 mt-auto flex gap-2 items-center">
+				<div class="px-4 pb-4 mt-auto flex gap-2 items-stretch">
 					<NuxtLink :to="`/dashboard/games/${game.id}`"
-						class="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-md text-xs transition-colors flex items-center justify-center gap-1.5">
+						class="flex-1 h-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-md text-xs transition-colors flex items-center justify-center gap-1.5">
 						<Icon name="ph:gear-six-bold" size="13" />
 						{{ $t('games.config_button') }}
 					</NuxtLink>
 					<a :href="`/play/${game.slug}`" target="_blank"
-						class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md transition-colors"
+						class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md transition-colors shrink-0"
 						:title="$t('games.preview_button')">
 						<Icon name="ph:arrow-square-out-bold" size="14" />
 					</a>
 					<button @click.stop="openDeleteModal(game)"
-						class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/10 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 rounded-md transition-colors"
+						class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/10 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 rounded-md transition-colors shrink-0"
 						:title="$t('games.delete_button')">
 						<Icon name="ph:trash-bold" size="14" />
 					</button>
