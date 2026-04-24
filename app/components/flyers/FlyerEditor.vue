@@ -240,6 +240,30 @@ const initCanvas = async () => {
 	}
 }
 
+const loadFlyerImageAsBackground = async () => {
+	if (!canvas.value || !props.game?.flyerDesignUrl) return
+	try {
+		const { FabricImage } = await import('fabric')
+		const img = await FabricImage.fromURL(props.game.flyerDesignUrl, { crossOrigin: 'anonymous' })
+		img.set({
+			left: 0,
+			top: 0,
+			originX: 'left',
+			originY: 'top',
+			scaleX: CANVAS_WIDTH / (img.width || CANVAS_WIDTH),
+			scaleY: CANVAS_HEIGHT / (img.height || CANVAS_HEIGHT),
+			selectable: false,
+			evented: false,
+			lockMovementX: true,
+			lockMovementY: true,
+		})
+		canvas.value.add(img)
+		canvas.value.sendObjectToBack(img)
+	} catch (e) {
+		console.warn('Could not load flyer image as background:', e)
+	}
+}
+
 onMounted(async () => {
 	// Preload all canvas fonts so Fabric.js renders them correctly
 	if (process.client) {
@@ -253,18 +277,34 @@ onMounted(async () => {
 	// Initialize Fabric only if not in smart mode initially (default is canvas)
 	await initCanvas()
 
-	// Restore existing canvas state if available
-	if (canvas.value && props.game?.flyerDesignJson) {
-		try {
-			await canvas.value.loadFromJSON(props.game.flyerDesignJson)
-			canvas.value.renderAll()
-		} catch (e) {
-			console.warn('Could not restore canvas JSON:', e)
-			canvas.value.backgroundColor = '#ffffff'
-			canvas.value.renderAll()
-		}
-	} else if (canvas.value) {
+	const savedJson = props.game?.flyerDesignJson
+		? (typeof props.game.flyerDesignJson === 'string'
+			? JSON.parse(props.game.flyerDesignJson)
+			: props.game.flyerDesignJson)
+		: null
+
+	// If flyer was saved in smart mode, switch automatically
+	if (savedJson?._mode === 'smart') {
+		mode.value = 'smart'
+		return
+	}
+
+	if (canvas.value) {
 		canvas.value.backgroundColor = '#ffffff'
+
+		if (savedJson) {
+			// Full restore: all Fabric.js objects are re-editable
+			try {
+				await canvas.value.loadFromJSON(savedJson)
+			} catch (e) {
+				console.warn('Could not restore canvas JSON, falling back to image:', e)
+				await loadFlyerImageAsBackground()
+			}
+		} else if (props.game?.flyerDesignUrl) {
+			// Fallback for flyers saved before JSON feature: load PNG as locked background
+			await loadFlyerImageAsBackground()
+		}
+
 		canvas.value.renderAll()
 	}
 })
@@ -822,7 +862,7 @@ const exportFlyer = async () => {
 		try {
 			const imageUrl = await smartFlyerRef.value?.exportImage()
 			if (imageUrl) {
-				emit('save', imageUrl, undefined)
+				emit('save', imageUrl, { _mode: 'smart' })
 			} else {
 				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
 			}
