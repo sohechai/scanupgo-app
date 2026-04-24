@@ -17,14 +17,19 @@ const togglingId = ref<string | null>(null)
 const toggleActive = async (game: any) => {
 	if (togglingId.value === game.id) return
 	togglingId.value = game.id
+	// Optimistic update — toggle immediately, no spinner
+	const idx = games.value.findIndex(g => g.id === game.id)
+	const newState = !game.active
+	if (idx !== -1) games.value[idx] = { ...games.value[idx], active: newState }
 	try {
-		const updated = await $api<any>(`/games/${game.id}`, {
+		await $api<any>(`/games/${game.id}`, {
 			method: 'PATCH',
-			body: { active: !game.active },
+			body: { active: newState },
 		})
-		const idx = games.value.findIndex(g => g.id === game.id)
-		if (idx !== -1) games.value[idx] = { ...games.value[idx], active: updated.active }
+		showToast(newState ? t('games.status_active') : t('games.status_draft'), 'success')
 	} catch (e: any) {
+		// Rollback on error
+		if (idx !== -1) games.value[idx] = { ...games.value[idx], active: !newState }
 		showToast(e?.data?.message || t('games.update_error'), 'error')
 	} finally {
 		togglingId.value = null
@@ -123,22 +128,18 @@ onMounted(async () => {
 					<!-- Toggle actif/inactif -->
 					<button
 						@click.prevent.stop="toggleActive(game)"
-						:disabled="togglingId === game.id"
 						:title="game.active ? $t('games.deactivate') : $t('games.activate')"
 						class="shrink-0 flex items-center gap-1.5 mt-0.5"
 					>
-						<Icon v-if="togglingId === game.id" name="svg-spinners:ring-resize" class="text-slate-400" size="14" />
-						<template v-else>
-							<div class="relative w-7 h-3.5 rounded-full transition-colors"
-								:class="game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
-								<div class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-all"
-									:class="game.active ? 'left-[14px]' : 'left-0.5'"></div>
-							</div>
-							<span class="text-[11px] font-medium"
-								:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
-								{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
-							</span>
-						</template>
+						<div class="relative w-7 h-3.5 rounded-full transition-colors"
+							:class="game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
+							<div class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-all"
+								:class="game.active ? 'left-[14px]' : 'left-0.5'"></div>
+						</div>
+						<span class="text-[11px] font-medium"
+							:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
+							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+						</span>
 					</button>
 				</div>
 
