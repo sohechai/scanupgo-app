@@ -460,52 +460,55 @@ onMounted(() => {
 		</div>
 
 		<!-- ========================================== -->
-		<!-- 2. STATS ROW                            -->
+		<!-- 2. STATS BLOCK (2 rows grouped)         -->
 		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.players') }}</p>
-				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}</p>
-				<NuxtLink to="/dashboard/players" class="text-[11px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.view_all') }}</NuxtLink>
-			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.participations') }}</p>
-				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalSessions || 0) }}</p>
-				<p v-if="dashboardStats?.winRate" class="text-[11px] text-slate-400 mt-1">{{ dashboardStats.winRate }}{{ $t('dashboard.stats.winners_rate') }}</p>
-			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.prizes_won') }}</p>
-				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPrizesWon || 0) }}</p>
-				<p class="text-[11px] text-slate-400 mt-1">{{ dashboardStats?.totalPrizesRedeemed || 0 }} {{ $t('dashboard.stats.prizes_collected') }}</p>
-			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[11px] text-slate-400 font-medium mb-1">{{ $t('dashboard.stats.pending_prizes') }}</p>
-				<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : ((dashboardStats?.totalPrizesWon || 0) - (dashboardStats?.totalPrizesRedeemed || 0)) }}</p>
-				<NuxtLink to="/dashboard/redeem" class="text-[11px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.validate_prize') }}</NuxtLink>
-			</div>
-		</div>
+		<div v-if="hasActiveSubscription" class="space-y-2">
 
-		<!-- ========================================== -->
-		<!-- 2.5 ANALYTICS EVENTS (Compact)           -->
-		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription && (analyticsEvents.page_visit || analyticsEvents.game_start || analyticsEvents.game_complete || analyticsEvents.prize_claim)"
-			class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.page_views') }}</p>
-				<p class="text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{{ analyticsEvents.page_visit || 0 }}</p>
+			<!-- Row 1 — Main KPIs -->
+			<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.players') }}</p>
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}</p>
+					<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.view_all') }}</NuxtLink>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.participations') }}</p>
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalSessions || 0) }}</p>
+					<p v-if="dashboardStats?.winRate" class="text-[10px] text-slate-400 mt-1">{{ dashboardStats.winRate }}{{ $t('dashboard.stats.winners_rate') }}</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.prizes_won') }}</p>
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPrizesWon || 0) }}</p>
+					<p class="text-[10px] text-slate-400 mt-1">{{ dashboardStats?.totalPrizesRedeemed || 0 }} {{ $t('dashboard.stats.prizes_collected') }}</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.pending_prizes') }}</p>
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : ((dashboardStats?.totalPrizesWon || 0) - (dashboardStats?.totalPrizesRedeemed || 0)) }}</p>
+					<NuxtLink to="/dashboard/redeem" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.validate_prize') }}</NuxtLink>
+				</div>
 			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.games_started') }}</p>
-				<p class="text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{{ analyticsEvents.game_start || 0 }}</p>
+
+			<!-- Row 2 — Analytics events (secondary) -->
+			<div v-if="analyticsEvents.page_visit || analyticsEvents.game_start || analyticsEvents.game_complete || analyticsEvents.prize_claim"
+				class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center justify-between">
+					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.page_views') }}</p>
+					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.page_visit || 0 }}</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center justify-between">
+					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.games_started') }}</p>
+					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.game_start || 0 }}</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center justify-between">
+					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.games_completed') }}</p>
+					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.game_complete || 0 }}</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center justify-between">
+					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.prizes_claimed') }}</p>
+					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.prize_claim || 0 }}</p>
+				</div>
 			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.games_completed') }}</p>
-				<p class="text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{{ analyticsEvents.game_complete || 0 }}</p>
-			</div>
-			<div class="bg-white dark:bg-[#1C1C1E] px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">{{ $t('dashboard.analytics.prizes_claimed') }}</p>
-				<p class="text-lg font-semibold text-slate-900 dark:text-white tabular-nums">{{ analyticsEvents.prize_claim || 0 }}</p>
-			</div>
+
 		</div>
 
 		<!-- ========================================== -->
