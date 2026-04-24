@@ -77,11 +77,11 @@ const game = ref({
 	gameLanguage: 'fr',
 	active: true,
 	winProbability: 50, // Global win probability (50-100%)
-	participationFrequencyEnabled: false,
+	participationFrequencyEnabled: true,
 	participationFrequencyHours: 24,
 	prizeRedemptionDelayEnabled: false,
 	prizeRedemptionDelayHours: 0,
-	prizeExpiryEnabled: false,
+	prizeExpiryEnabled: true,
 	prizeExpiryHours: 24,
 	businessId: '', // Set from fetchBusiness
 	// QR Code customization
