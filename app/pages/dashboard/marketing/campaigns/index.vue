@@ -11,6 +11,9 @@ const { show: showToast } = useToast()
 
 const campaigns = ref<any[]>([])
 const loading = ref(true)
+const deleteModalOpen = ref(false)
+const campaignToDelete = ref<string | null>(null)
+const deleting = ref(false)
 
 const fetchCampaigns = async () => {
 	loading.value = true
@@ -23,14 +26,24 @@ const fetchCampaigns = async () => {
 	}
 }
 
-const deleteCampaign = async (id: string) => {
-	if (!confirm(t('marketing.campaign_detail.delete_confirmation_message'))) return
+const confirmDeleteCampaign = (id: string) => {
+	campaignToDelete.value = id
+	deleteModalOpen.value = true
+}
+
+const deleteCampaign = async () => {
+	if (!campaignToDelete.value) return
+	deleting.value = true
 	try {
-		await $api(`/marketing/campaigns/${id}`, { method: 'DELETE' })
-		campaigns.value = campaigns.value.filter(c => c.id !== id)
+		await $api(`/marketing/campaigns/${campaignToDelete.value}`, { method: 'DELETE' })
+		campaigns.value = campaigns.value.filter(c => c.id !== campaignToDelete.value)
 		showToast(t('marketing.campaigns.delete'), 'success')
 	} catch (e) {
 		showToast(t('common.error'), 'error')
+	} finally {
+		deleting.value = false
+		deleteModalOpen.value = false
+		campaignToDelete.value = null
 	}
 }
 
@@ -133,7 +146,7 @@ onMounted(() => {
 									class="p-1.5 text-slate-400 hover:text-[#007AFF] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
 									<Icon name="ph:eye-bold" size="15" />
 								</NuxtLink>
-								<button v-if="campaign.status === 'draft'" @click="deleteCampaign(campaign.id)"
+								<button v-if="campaign.status === 'draft'" @click="confirmDeleteCampaign(campaign.id)"
 									class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-md transition-colors">
 									<Icon name="ph:trash-bold" size="15" />
 								</button>
@@ -143,5 +156,15 @@ onMounted(() => {
 				</tbody>
 			</table>
 		</div>
+
+		<ConfirmModal
+			v-model="deleteModalOpen"
+			:title="$t('marketing.campaign_detail.delete_confirmation_title')"
+			:description="$t('marketing.campaign_detail.delete_confirmation_message')"
+			:confirm-text="$t('marketing.campaigns.delete')"
+			type="danger"
+			:loading="deleting"
+			@confirm="deleteCampaign"
+		/>
 	</div>
 </template>

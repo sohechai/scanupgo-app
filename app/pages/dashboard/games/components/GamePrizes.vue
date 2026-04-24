@@ -371,34 +371,16 @@ watch(() => props.gameId, (newId) => {
 		</div>
 
 		<!-- Delete Confirmation Modal -->
-		<div v-if="deleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeDeleteModal"></div>
-			<div
-				class="relative bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-				<div class="p-6 text-center">
-					<div
-						class="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
-						<Icon name="ph:trash-bold" size="32" />
-					</div>
-					<h3 class="text-xl font-display font-bold text-slate-900 dark:text-white mb-2">{{ $t('games.prizes.delete_title') }}
-					</h3>
-					<p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">
-						{{ $t('games.prizes.delete_message') }}
-					</p>
-
-					<div class="flex gap-3 justify-center">
-						<button @click="closeDeleteModal"
-							class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
-							{{ $t('games.prizes.delete_cancel') }}
-						</button>
-						<button @click="deletePrizeItem" :disabled="deleting"
-							class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 flex items-center gap-2 disabled:opacity-50">
-							<Icon v-if="deleting" name="ph:spinner-gap-bold" class="animate-spin" />
-							{{ deleting ? $t('games.prizes.delete_deleting') : $t('games.prizes.delete_confirm') }}
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
+		<ConfirmModal
+			v-model="deleteModalOpen"
+			:title="$t('games.prizes.delete_title')"
+			:description="$t('games.prizes.delete_message')"
+			:confirm-text="deleting ? $t('games.prizes.delete_deleting') : $t('games.prizes.delete_confirm')"
+			:cancel-text="$t('games.prizes.delete_cancel')"
+			type="danger"
+			:loading="deleting"
+			@confirm="deletePrizeItem"
+			@cancel="closeDeleteModal"
+		/>
 	</div>
 </template>
