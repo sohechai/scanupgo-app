@@ -79,10 +79,9 @@ const game = ref({
 	winProbability: 50, // Global win probability (50-100%)
 	participationFrequencyEnabled: true,
 	participationFrequencyHours: 24,
-	prizeRedemptionDelayEnabled: false,
-	prizeRedemptionDelayHours: 0,
-	prizeExpiryEnabled: true,
-	prizeExpiryHours: 24,
+	prizeRedemptionDelayEnabled: true,
+	prizeRedemptionDelayHours: 24,
+
 	businessId: '', // Set from fetchBusiness
 	// QR Code customization
 	qrCodeColor: '#000000',
@@ -911,27 +910,7 @@ const downloadFlyerPDF = async () => {
 										</div>
 									</div>
 
-									<!-- Prize Expiry -->
-									<div
-										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
-										<div class="flex items-center justify-between mb-1">
-											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.prize_expiry') }}</span>
-											<label class="relative inline-flex items-center cursor-pointer">
-												<input v-model="game.prizeExpiryEnabled" type="checkbox"
-													class="sr-only peer">
-												<div
-													class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 dark:peer-checked:bg-[#007AFF]">
-												</div>
-											</label>
-										</div>
-										<p class="text-xs text-slate-400 dark:text-slate-500 mb-3">{{ $t('games.detail.prize_expiry_hint') }}</p>
-										<div v-if="game.prizeExpiryEnabled" class="flex items-center gap-2">
-											<input v-model.number="game.prizeExpiryHours" type="number" min="1"
-												class="w-20 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white focus:border-slate-400 outline-none">
-											<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.frequency_hours') }}</span>
-										</div>
 									</div>
-								</div>
 							</div>
 
 							<!-- Navigation buttons -->

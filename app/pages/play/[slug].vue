@@ -80,26 +80,6 @@ const wonPrize = ref<any>(null)
 const rateLimitError = ref(false)
 const qrCodeDataUrl = ref<string | null>(null)
 
-// Prize expiry countdown
-const prizeExpiresAt = ref<Date | null>(null)
-const expiryCountdown = ref('')
-let expiryInterval: ReturnType<typeof setInterval> | null = null
-
-const updateExpiryCountdown = () => {
-	if (!prizeExpiresAt.value) return
-	const diff = prizeExpiresAt.value.getTime() - Date.now()
-	if (diff <= 0) {
-		expiryCountdown.value = '00:00:00'
-		if (expiryInterval) clearInterval(expiryInterval)
-		return
-	}
-	const h = Math.floor(diff / 3600000)
-	const m = Math.floor((diff % 3600000) / 60000)
-	const s = Math.floor((diff % 60000) / 1000)
-	expiryCountdown.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-onUnmounted(() => { if (expiryInterval) clearInterval(expiryInterval) })
 
 // Wheel State
 const isSpinning = ref(false)
@@ -226,13 +206,7 @@ const submitForm = async () => {
 			wonPrize.value = response.prize
 
 			if (isWin.value && wonPrize.value) {
-				// Start expiry countdown if applicable
-				if (wonPrize.value.expiresAt) {
-					prizeExpiresAt.value = new Date(wonPrize.value.expiresAt)
-					updateExpiryCountdown()
-					expiryInterval = setInterval(updateExpiryCountdown, 1000)
-				}
-				const index = game.value.prizes.findIndex((p: any) => p.id === wonPrize.value.id)
+	const index = game.value.prizes.findIndex((p: any) => p.id === wonPrize.value.id)
 				if (index !== -1) {
 					targetPrizeIndex.value = index
 				} else {
@@ -660,14 +634,6 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 					</div>
 				</div>
 
-				<!-- Expiry countdown -->
-				<div v-if="prizeExpiresAt" class="bg-orange-500/20 border border-orange-400/40 backdrop-blur-sm rounded-xl px-5 py-3 flex items-center gap-3">
-					<Icon name="ph:clock-countdown-bold" size="22" class="text-orange-300 shrink-0" />
-					<div class="text-left">
-						<p class="text-xs font-semibold text-orange-200 uppercase tracking-wide">{{ $t('play.result.win.expiry_title') }}</p>
-						<p class="font-mono text-lg font-bold text-white">{{ expiryCountdown }}</p>
-					</div>
-				</div>
 
 				<p class="text-xs opacity-60">{{ $t('play.result.win.save_hint') }}</p>
 			</div>
