@@ -47,6 +47,14 @@ const deleteCampaign = async () => {
 	}
 }
 
+const currentPage = ref(1)
+const PAGE_SIZE = 20
+const totalPages = computed(() => Math.ceil(campaigns.value.length / PAGE_SIZE))
+const paginatedCampaigns = computed(() => {
+	const start = (currentPage.value - 1) * PAGE_SIZE
+	return campaigns.value.slice(start, start + PAGE_SIZE)
+})
+
 const statusConfig: Record<string, { label: string; dot: string; text: string }> = {
 	draft:     { label: t('marketing.campaigns.status_draft'),     dot: 'bg-slate-400',   text: 'text-slate-500' },
 	scheduled: { label: t('marketing.campaigns.status_scheduled'), dot: 'bg-blue-500',    text: 'text-blue-600' },
@@ -118,7 +126,7 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-					<tr v-for="campaign in campaigns" :key="campaign.id"
+					<tr v-for="campaign in paginatedCampaigns" :key="campaign.id"
 						class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
 						<td class="px-5 py-3.5">
 							<NuxtLink :to="`/dashboard/marketing/campaigns/${campaign.id}`" class="block">
@@ -155,6 +163,24 @@ onMounted(() => {
 					</tr>
 				</tbody>
 			</table>
+		</div>
+
+		<!-- Pagination -->
+		<div v-if="totalPages > 1" class="flex items-center justify-between px-1">
+			<span class="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+				{{ (currentPage - 1) * PAGE_SIZE + 1 }}–{{ Math.min(currentPage * PAGE_SIZE, campaigns.length) }} / {{ campaigns.length }}
+			</span>
+			<div class="flex items-center gap-1">
+				<button @click="currentPage--" :disabled="currentPage === 1"
+					class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+					<Icon name="ph:caret-left-bold" size="14" />
+				</button>
+				<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 px-2">{{ currentPage }} / {{ totalPages }}</span>
+				<button @click="currentPage++" :disabled="currentPage === totalPages"
+					class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+					<Icon name="ph:caret-right-bold" size="14" />
+				</button>
+			</div>
 		</div>
 
 		<ConfirmModal

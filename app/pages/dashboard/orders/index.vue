@@ -25,6 +25,15 @@ const filteredOrders = computed(() =>
 	filterStatus.value === 'all' ? orders.value : orders.value.filter(o => o.status === filterStatus.value)
 )
 
+const currentPage = ref(1)
+const PAGE_SIZE = 20
+const totalPages = computed(() => Math.ceil(filteredOrders.value.length / PAGE_SIZE))
+const paginatedOrders = computed(() => {
+	const start = (currentPage.value - 1) * PAGE_SIZE
+	return filteredOrders.value.slice(start, start + PAGE_SIZE)
+})
+watch(filterStatus, () => { currentPage.value = 1 })
+
 const handleOrderCreated = async () => await Promise.all([fetchOrders(), fetchStats()])
 
 const viewOrderDetails = (order: Order) => {
@@ -135,7 +144,7 @@ const statusTextColor: Record<string, string> = {
 
 			<div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
 				<div
-					v-for="order in filteredOrders" :key="order.id"
+					v-for="order in paginatedOrders" :key="order.id"
 					@click="viewOrderDetails(order)"
 					class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
 					<!-- Status dot -->
@@ -160,6 +169,24 @@ const statusTextColor: Record<string, string> = {
 					</div>
 					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</div>
+			</div>
+		</div>
+
+		<!-- Pagination -->
+		<div v-if="totalPages > 1" class="flex items-center justify-between px-1">
+			<span class="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+				{{ (currentPage - 1) * PAGE_SIZE + 1 }}–{{ Math.min(currentPage * PAGE_SIZE, filteredOrders.length) }} / {{ filteredOrders.length }}
+			</span>
+			<div class="flex items-center gap-1">
+				<button @click="currentPage--" :disabled="currentPage === 1"
+					class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+					<Icon name="ph:caret-left-bold" size="14" />
+				</button>
+				<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 px-2">{{ currentPage }} / {{ totalPages }}</span>
+				<button @click="currentPage++" :disabled="currentPage === totalPages"
+					class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+					<Icon name="ph:caret-right-bold" size="14" />
+				</button>
 			</div>
 		</div>
 

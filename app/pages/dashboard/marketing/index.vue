@@ -15,8 +15,6 @@ const stats = ref<any>(null)
 const statsLoading = ref(true)
 const campaigns = ref<any[]>([])
 const campaignsLoading = ref(true)
-const automations = ref<any[]>([])
-const automationsLoading = ref(true)
 const creditPacks = ref<any[]>([])
 const buyingPackId = ref<string | null>(null)
 
@@ -35,13 +33,6 @@ const fetchCampaigns = async () => {
 	try { campaigns.value = await $api('/marketing/campaigns') }
 	catch (e) { console.error(e) }
 	finally { campaignsLoading.value = false }
-}
-
-const fetchAutomations = async () => {
-	automationsLoading.value = true
-	try { automations.value = await $api('/marketing/automations') }
-	catch (e) { console.error(e) }
-	finally { automationsLoading.value = false }
 }
 
 const fetchCreditPacks = async () => {
@@ -72,18 +63,11 @@ const statusConfig = computed(() => ({
 
 const getStatus = (s: string) => statusConfig.value[s] || statusConfig.value.draft
 
-const automationsList = computed(() => [
-	{ type: 'welcome',    label: t('marketing.automations.welcome_type'),        icon: 'ph:hand-waving-fill',     configured: !!automations.value.find(a => a.type === 'welcome'),    enabled: automations.value.find(a => a.type === 'welcome')?.enabled },
-	{ type: 'inactivity', label: t('marketing.automations.inactivity_type'),     icon: 'ph:clock-clockwise-fill', configured: !!automations.value.find(a => a.type === 'inactivity'), enabled: automations.value.find(a => a.type === 'inactivity')?.enabled },
-	{ type: 'post_win',   label: t('marketing.automations.prize_reminder_type'), icon: 'ph:gift-fill',            configured: !!automations.value.find(a => a.type === 'post_win'),   enabled: automations.value.find(a => a.type === 'post_win')?.enabled },
-])
-
 onMounted(async () => {
 	await fetchSubscription()
 	if (hasActiveSubscription.value) {
 		fetchStats()
 		fetchCampaigns()
-		fetchAutomations()
 		fetchCreditPacks()
 	}
 
@@ -167,12 +151,11 @@ onMounted(async () => {
 		</div>
 
 		<!-- Stats -->
-		<div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
+		<div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
 			<div v-for="(val, key) in {
 				[t('marketing.index.stats.campaigns')]: statsLoading ? '—' : (stats?.totalCampaigns || 0),
 				[t('marketing.index.stats.sent')]: statsLoading ? '—' : (stats?.totalSent || 0),
 				[t('marketing.index.stats.open_rate')]: statsLoading ? '—' : `${stats?.openRate || 0}%`,
-				[t('marketing.index.stats.automations')]: statsLoading ? '—' : (stats?.activeAutomations || 0),
 				[t('marketing.index.stats.optin_players')]: statsLoading ? '—' : (stats?.optInPlayers || 0),
 			}" :key="key" class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
 				<p class="text-xs text-slate-400 dark:text-slate-500 mb-1">{{ key }}</p>
@@ -317,35 +300,6 @@ onMounted(async () => {
 					</div>
 				</div>
 
-				<!-- Automations -->
-				<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-					<div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-slate-800">
-						<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.index.automations_link') }}</p>
-						<NuxtLink to="/dashboard/marketing/automations"
-							class="text-xs font-medium text-[#007AFF] hover:text-[#0066DD] transition-colors">
-							{{ $t('marketing.index.manage') }} →
-						</NuxtLink>
-					</div>
-
-					<div v-if="automationsLoading" class="p-5 flex items-center justify-center">
-						<Icon name="ph:spinner-gap-bold" size="18" class="text-slate-300 animate-spin" />
-					</div>
-
-					<div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
-						<NuxtLink v-for="auto in automationsList" :key="auto.type"
-							to="/dashboard/marketing/automations"
-							class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-							<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-								<Icon :name="auto.icon" class="text-slate-400 dark:text-slate-500" size="12" />
-							</div>
-							<span class="text-sm text-slate-700 dark:text-slate-300 flex-1">{{ auto.label }}</span>
-							<span class="inline-flex items-center gap-1 text-xs" :class="auto.enabled ? 'text-emerald-600' : auto.configured ? 'text-slate-400' : 'text-amber-500'">
-								<span class="w-1.5 h-1.5 rounded-full shrink-0" :class="auto.enabled ? 'bg-emerald-500' : auto.configured ? 'bg-slate-300' : 'bg-amber-400'"></span>
-								{{ auto.enabled ? $t('marketing.automations.active') : auto.configured ? $t('marketing.automations.inactive') : $t('marketing.index.to_configure') }}
-							</span>
-						</NuxtLink>
-					</div>
-				</div>
 
 			</div>
 		</div>
