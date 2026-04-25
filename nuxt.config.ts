@@ -58,7 +58,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			apiUrl: process.env.API_URL || 'http://localhost:4000',
-			siteUrl: process.env.SITE_URL || 'http://localhost.com:3000',
+			siteUrl: process.env.SITE_URL || '',
 			// Subdomain URLs for cross-subdomain navigation
 			merchantUrl: process.env.MERCHANT_URL || 'http://merchant.localhost.com:3000',
 			adminUrl: process.env.ADMIN_URL || 'http://admin.localhost.com:3000',
