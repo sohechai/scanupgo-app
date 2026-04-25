@@ -1018,8 +1018,8 @@ const downloadFlyerPDF = async () => {
 								<p class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_no_flyer') }}</p>
 							</div>
 							<div v-else class="space-y-4">
-								<!-- QR Code Card -->
-								<div class="bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+								<!-- QR Code Card (only shown when flyer is configured and editor is closed) -->
+								<div v-if="game.flyerDesignUrl && !showFlyerEditor" class="bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
 									<div class="flex flex-col sm:flex-row items-start gap-6">
 										<!-- QR Preview -->
 										<div class="shrink-0 flex flex-col items-center gap-3">

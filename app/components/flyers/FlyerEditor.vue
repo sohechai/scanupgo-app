@@ -283,8 +283,12 @@ onMounted(async () => {
 			: props.game.flyerDesignJson)
 		: null
 
-	// If flyer was saved in smart mode, switch automatically
+	// If flyer was saved in smart mode, switch automatically and restore options
 	if (savedJson?._mode === 'smart') {
+		if (savedJson.fontFamily) smartOptions.value.fontFamily = savedJson.fontFamily
+		if (savedJson.backgroundColor) smartOptions.value.backgroundColor = savedJson.backgroundColor
+		if (savedJson.accentColor) smartOptions.value.accentColor = savedJson.accentColor
+		if (savedJson.buttonColor) smartOptions.value.buttonColor = savedJson.buttonColor
 		mode.value = 'smart'
 		return
 	}
@@ -862,7 +866,13 @@ const exportFlyer = async () => {
 		try {
 			const imageUrl = await smartFlyerRef.value?.exportImage()
 			if (imageUrl) {
-				emit('save', imageUrl, { _mode: 'smart' })
+				emit('save', imageUrl, {
+						_mode: 'smart',
+						fontFamily: smartOptions.value.fontFamily,
+						backgroundColor: smartOptions.value.backgroundColor,
+						accentColor: smartOptions.value.accentColor,
+						buttonColor: smartOptions.value.buttonColor,
+					})
 			} else {
 				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
 			}

@@ -252,7 +252,7 @@ defineExpose({
 			<!-- CTA Button - Centered -->
 			<div class="absolute z-30 w-full flex justify-center" style="bottom: 100px;">
 				<div class="border-2 border-black text-white px-8 py-2 rounded-xl uppercase font-black text-xl tracking-wide"
-					:style="{ backgroundColor: buttonColor, fontFamily: currentFont, boxShadow: '4px 4px 0px rgba(0,0,0,1)', marginRight: '4px' }">
+					:style="{ backgroundColor: buttonColor, fontFamily: currentFont, boxShadow: '4px 4px 0px rgba(0,0,0,1)' }">
 					{{ $t('flyers.smart_flyer.scan_to_play') }}
 				</div>
 			</div>

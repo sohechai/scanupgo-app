@@ -45,6 +45,71 @@ const gameToDelete = ref<any>(null)
 const deleting = ref(false)
 const openDeleteModal = (game: any) => { gameToDelete.value = game; showDeleteModal.value = true }
 
+const showQRModal = ref(false)
+const selectedQRGame = ref<any>(null)
+const qrCodeDataUrl = ref<string | null>(null)
+const generatingQR = ref(false)
+const config = useRuntimeConfig()
+
+const getGamePlayUrl = (game: any) => {
+	const base = (config.public.siteUrl as string | undefined) || window.location.origin
+	return `${base}/play/${game.slug}`
+}
+
+const openQRModal = async (game: any) => {
+	selectedQRGame.value = game
+	qrCodeDataUrl.value = null
+	showQRModal.value = true
+	generatingQR.value = true
+	try {
+		const QRCode = (await import('qrcode')).default
+		const canvas = document.createElement('canvas')
+		await QRCode.toCanvas(canvas, getGamePlayUrl(game), {
+			width: 400,
+			margin: 2,
+			errorCorrectionLevel: 'H',
+			color: {
+				dark: game.qrCodeColor || '#000000',
+				light: game.qrCodeBgColor || '#ffffff',
+			},
+		})
+		qrCodeDataUrl.value = canvas.toDataURL('image/png')
+	} catch (e) {
+		console.error('QR generation failed', e)
+	} finally {
+		generatingQR.value = false
+	}
+}
+
+const downloadQRPNG = () => {
+	if (!qrCodeDataUrl.value || !selectedQRGame.value) return
+	const link = document.createElement('a')
+	link.download = `qrcode-${selectedQRGame.value.slug || 'jeu'}.png`
+	link.href = qrCodeDataUrl.value
+	link.click()
+}
+
+const downloadQRSVG = async () => {
+	if (!selectedQRGame.value?.slug) return
+	const QRCode = (await import('qrcode')).default
+	const svgString = await QRCode.toString(getGamePlayUrl(selectedQRGame.value), {
+		type: 'svg',
+		margin: 2,
+		errorCorrectionLevel: 'H',
+		color: {
+			dark: selectedQRGame.value.qrCodeColor || '#000000',
+			light: selectedQRGame.value.qrCodeBgColor || '#ffffff',
+		},
+	})
+	const blob = new Blob([svgString], { type: 'image/svg+xml' })
+	const url = URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.download = `qrcode-${selectedQRGame.value.slug}.svg`
+	link.href = url
+	link.click()
+	URL.revokeObjectURL(url)
+}
+
 const deleteGame = async () => {
 	if (!gameToDelete.value) return
 	try {
@@ -167,6 +232,11 @@ onMounted(async () => {
 						<Icon name="ph:gear-six-bold" size="13" />
 						{{ $t('games.config_button') }}
 					</NuxtLink>
+					<button @click.stop="openQRModal(game)"
+						class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md transition-colors shrink-0"
+						title="QR Code">
+						<Icon name="ph:qr-code-bold" size="14" />
+					</button>
 					<a :href="`/play/${game.slug}`" target="_blank"
 						class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md transition-colors shrink-0"
 						:title="$t('games.preview_button')">
@@ -206,6 +276,63 @@ onMounted(async () => {
 			:loading="deleting"
 			@confirm="deleteGame"
 		/>
+
+		<!-- QR Code Modal -->
+		<Teleport to="body">
+			<Transition name="modal">
+				<div v-if="showQRModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+					@click.self="showQRModal = false">
+					<div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+					<div class="relative bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+						<!-- Header -->
+						<div class="flex items-start justify-between">
+							<div>
+								<h3 class="text-base font-bold text-slate-900 dark:text-white">QR Code</h3>
+								<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[220px]">{{ selectedQRGame?.title }}</p>
+							</div>
+							<button @click="showQRModal = false"
+								class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+								<Icon name="ph:x-bold" size="16" />
+							</button>
+						</div>
+
+						<!-- QR Preview -->
+						<div class="flex justify-center">
+							<div class="w-44 h-44 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+								<Icon v-if="generatingQR" name="ph:spinner-gap-bold" size="28" class="animate-spin text-slate-300" />
+								<img v-else-if="qrCodeDataUrl" :src="qrCodeDataUrl" class="w-full h-full object-contain p-2" />
+								<Icon v-else name="ph:qr-code-bold" size="48" class="text-slate-200" />
+							</div>
+						</div>
+
+						<!-- Game URL -->
+						<p v-if="selectedQRGame?.slug" class="text-[11px] text-center text-slate-400 font-mono truncate">
+							{{ getGamePlayUrl(selectedQRGame) }}
+						</p>
+
+						<!-- Download buttons -->
+						<div class="flex gap-2">
+							<button @click="downloadQRPNG" :disabled="!qrCodeDataUrl"
+								class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors disabled:opacity-40">
+								<Icon name="ph:file-png-bold" size="15" class="text-blue-500" />
+								PNG
+							</button>
+							<button @click="downloadQRSVG" :disabled="!selectedQRGame?.slug"
+								class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors disabled:opacity-40">
+								<Icon name="ph:file-svg-bold" size="15" class="text-orange-500" />
+								SVG
+							</button>
+							<NuxtLink :to="`/dashboard/games/${selectedQRGame?.id}?tab=flyers`"
+								@click="showQRModal = false"
+								class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors">
+								<Icon name="ph:pencil-simple-bold" size="15" />
+								{{ $t('games.qr_customize') }}
+							</NuxtLink>
+						</div>
+					</div>
+				</div>
+			</Transition>
+		</Teleport>
 	</div>
 	</SubscriptionGate>
 </template>

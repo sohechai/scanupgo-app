@@ -361,6 +361,7 @@
 		"config_button": "Configure",
 		"preview_button": "View game",
 		"delete_button": "Delete game",
+		"qr_customize": "Customize",
 		"new_game": "New Game",
 		"game_deleted": "Game deleted successfully",
 		"delete_error": "Error deleting game",
