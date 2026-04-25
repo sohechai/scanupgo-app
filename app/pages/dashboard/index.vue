@@ -98,6 +98,15 @@ const filteredSessions = computed(() => {
 	return sessions.value
 })
 
+const sessionsPage = ref(1)
+const SESSIONS_PAGE_SIZE = 20
+const sessionsTotalPages = computed(() => Math.ceil(filteredSessions.value.length / SESSIONS_PAGE_SIZE))
+const paginatedSessions = computed(() => {
+	const start = (sessionsPage.value - 1) * SESSIONS_PAGE_SIZE
+	return filteredSessions.value.slice(start, start + SESSIONS_PAGE_SIZE)
+})
+watch([sessionFilter], () => { sessionsPage.value = 1 })
+
 // --- COMPUTED: PLAYERS STATS ---
 const playerStats = computed(() => {
 	const total = players.value.length
@@ -777,7 +786,7 @@ onMounted(() => {
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-slate-100 dark:divide-slate-700/40">
-						<tr v-for="session in filteredSessions.slice(0, 10)" :key="session.id"
+						<tr v-for="session in paginatedSessions" :key="session.id"
 							class="hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
 							<td class="px-5 py-3 font-mono text-xs text-slate-400">#{{ session.id.slice(0, 6) }}</td>
 							<td class="px-5 py-3">
@@ -802,10 +811,21 @@ onMounted(() => {
 					</tbody>
 				</table>
 			</div>
-			<div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700/40 text-center">
+			<div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700/40 flex items-center justify-between">
 				<NuxtLink to="/dashboard/players" class="text-xs font-medium text-[#007AFF] hover:opacity-70 transition-opacity">
 					{{ $t('dashboard.sessions_table.view_history') }}
 				</NuxtLink>
+				<div v-if="sessionsTotalPages > 1" class="flex items-center gap-1">
+					<button @click="sessionsPage--" :disabled="sessionsPage === 1"
+						class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+						<Icon name="ph:caret-left-bold" size="13" />
+					</button>
+					<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 px-1.5">{{ sessionsPage }} / {{ sessionsTotalPages }}</span>
+					<button @click="sessionsPage++" :disabled="sessionsPage === sessionsTotalPages"
+						class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
+						<Icon name="ph:caret-right-bold" size="13" />
+					</button>
+				</div>
 			</div>
 		</div>
 
