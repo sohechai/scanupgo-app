@@ -17,6 +17,11 @@ const editingTemplate = ref<any>(null)
 const modalForm = ref({ name: '', description: '', imageUrl: '' })
 const uploading = ref(false)
 const saving = ref(false)
+const uploadError = ref('')
+
+const MAX_SIZE_MB = 3
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
+const ACCEPTED_TYPES = ['image/png', 'image/jpeg']
 
 const showDeleteModal = ref(false)
 const deletingTemplate = ref<any>(null)
@@ -43,25 +48,45 @@ onMounted(() => fetchTemplates())
 const openCreateModal = () => {
 	editingTemplate.value = null
 	modalForm.value = { name: '', description: '', imageUrl: '' }
+	uploadError.value = ''
 	showModal.value = true
 }
 
 const openEditModal = (template: any) => {
 	editingTemplate.value = template
 	modalForm.value = { name: template.name, description: template.description || '', imageUrl: template.imageUrl }
+	uploadError.value = ''
 	showModal.value = true
 }
 
 const handleFileUpload = async (event: Event) => {
 	const input = event.target as HTMLInputElement
 	if (!input.files?.length) return
+
+	const file = input.files[0]
+	uploadError.value = ''
+
+	if (!ACCEPTED_TYPES.includes(file.type)) {
+		uploadError.value = t('admin.templates.modal_error_type')
+		input.value = ''
+		return
+	}
+
+	if (file.size > MAX_SIZE_BYTES) {
+		const sizeMb = (file.size / (1024 * 1024)).toFixed(1)
+		uploadError.value = t('admin.templates.modal_error_size', { size: sizeMb })
+		input.value = ''
+		return
+	}
+
 	uploading.value = true
 	try {
 		const formData = new FormData()
-		formData.append('file', input.files[0])
+		formData.append('file', file)
 		const response = await $api<{ url: string }>('/uploads', { method: 'POST', body: formData })
 		modalForm.value.imageUrl = response.url
 	} catch (error) {
+		uploadError.value = t('admin.templates.modal_error_upload')
 		console.error('Upload failed:', error)
 	} finally {
 		uploading.value = false
@@ -264,26 +289,41 @@ const toggleActive = async (template: any) => {
 
 						<div>
 							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.templates.modal_image_label') }}</label>
-							<div v-if="modalForm.imageUrl" class="mb-3 rounded-md overflow-hidden border border-white/[0.08] relative group/img">
-								<img :src="modalForm.imageUrl" class="w-full h-48 object-cover object-top" />
+
+							<!-- Preview (full portrait image) -->
+							<div v-if="modalForm.imageUrl && !uploading"
+								class="mb-3 relative group/img aspect-[3/4] w-40 mx-auto bg-slate-950 rounded-md overflow-hidden border border-white/[0.08]">
+								<img :src="modalForm.imageUrl" class="w-full h-full object-contain" />
 								<label class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
 									<div class="flex items-center gap-2 text-white text-sm font-medium">
 										<Icon name="ph:swap-bold" size="16" />
 										{{ $t('admin.templates.modal_image_change') }}
 									</div>
-									<input type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+									<input type="file" accept="image/png,image/jpeg" class="hidden" @change="handleFileUpload" />
 								</label>
 							</div>
+
+							<!-- Upload zone -->
 							<label v-if="!modalForm.imageUrl || uploading"
-								class="flex flex-col items-center justify-center gap-2 px-4 py-8 bg-white/[0.02] border-2 border-dashed border-white/[0.08] rounded-md cursor-pointer hover:border-white/[0.18] transition-colors"
-								:class="{ 'opacity-50 pointer-events-none': uploading }">
+								class="flex flex-col items-center justify-center gap-2 px-4 py-8 bg-white/[0.02] border-2 border-dashed rounded-md cursor-pointer transition-colors"
+								:class="[
+									uploading ? 'opacity-50 pointer-events-none border-white/[0.08]' : 'border-white/[0.08] hover:border-white/[0.18]',
+									uploadError ? 'border-red-500/40' : ''
+								]">
 								<Icon v-if="uploading" name="ph:spinner" class="animate-spin text-slate-400" size="22" />
 								<Icon v-else name="ph:cloud-arrow-up-bold" class="text-slate-500" size="22" />
 								<span class="text-xs text-slate-500">
 									{{ uploading ? $t('admin.templates.modal_uploading') : $t('admin.templates.modal_image_upload_text') }}
 								</span>
-								<input type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+								<span class="text-[11px] text-slate-600">{{ $t('admin.templates.modal_image_upload_hint') }}</span>
+								<input type="file" accept="image/png,image/jpeg" class="hidden" @change="handleFileUpload" />
 							</label>
+
+							<!-- Error message -->
+							<div v-if="uploadError" class="mt-2 flex items-start gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-md">
+								<Icon name="ph:warning-circle-bold" class="text-red-400 shrink-0 mt-0.5" size="14" />
+								<p class="text-xs text-red-400">{{ uploadError }}</p>
+							</div>
 						</div>
 					</div>
 
