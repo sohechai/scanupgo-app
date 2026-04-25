@@ -506,8 +506,29 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	await initCanvas()
 	if (!canvas.value) return false
 
+	// Convert CDN URL to data URL via backend proxy to avoid CORS restrictions in Fabric canvas
+	let canvasImageUrl = imageUrl
+	if (!imageUrl.startsWith('data:')) {
+		try {
+			const apiBase = config.public.apiBase || 'http://localhost:4000'
+			const proxyUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(imageUrl)}`
+			const response = await fetch(proxyUrl)
+			if (response.ok) {
+				const blob = await response.blob()
+				canvasImageUrl = await new Promise<string>((resolve, reject) => {
+					const reader = new FileReader()
+					reader.onloadend = () => resolve(reader.result as string)
+					reader.onerror = reject
+					reader.readAsDataURL(blob)
+				})
+			}
+		} catch (e) {
+			console.warn('Proxy failed, using direct URL:', e)
+		}
+	}
+
 	const { FabricImage } = await import('fabric')
-	const img = await FabricImage.fromURL(imageUrl, { crossOrigin: 'anonymous' })
+	const img = await FabricImage.fromURL(canvasImageUrl, { crossOrigin: 'anonymous' })
 	const scaleX = CANVAS_WIDTH / (img.width || 1)
 	const scaleY = CANVAS_HEIGHT / (img.height || 1)
 	img.set({
@@ -537,8 +558,9 @@ const addText = async () => {
 
 	const { Textbox } = await import('fabric')
 
-	// Ensure the selected font is loaded before rendering
+	// Ensure font is fully loaded in the canvas context before rendering
 	await document.fonts.load(`20px "${textFontFamily.value}"`)
+	await document.fonts.ready
 
 	const text = new Textbox('Nouveau texte', {
 		left: 100,
