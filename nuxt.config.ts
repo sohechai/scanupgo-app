@@ -44,6 +44,17 @@ export default defineNuxtConfig({
 		'/dashboard/**': { ssr: false },
 	},
 	compatibilityDate: '2025-07-15',
+	hooks: {
+		// Workaround for Nuxt 4.2.2 + Nitro 2.12.9 bug:
+		// nuxt.options.alias['#build'] = withTrailingSlash(buildDir) overrides Nitro's
+		// rollup alias, causing double slashes in generated import paths (.nuxt//dist/...)
+		'nitro:config'(nitroConfig) {
+			const buildAlias = nitroConfig.alias?.['#build']
+			if (typeof buildAlias === 'string' && buildAlias.endsWith('/')) {
+				nitroConfig.alias!['#build'] = buildAlias.slice(0, -1)
+			}
+		}
+	},
 	runtimeConfig: {
 		public: {
 			apiUrl: process.env.API_URL || 'http://localhost:4000',
