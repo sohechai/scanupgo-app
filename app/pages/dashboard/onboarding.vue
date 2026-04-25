@@ -211,15 +211,11 @@ onMounted(() => fetchBusiness())
 								</div>
 								<div class="space-y-2">
 									<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
-									<div class="relative">
-										<Icon name="ph:phone-duotone" class="absolute left-3 top-3.5 text-slate-400" size="16" />
-										<input
-											v-model="business.phone"
-											type="tel"
-											placeholder="+33 6 00 00 00 00"
-											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
-										/>
-									</div>
+									<PhoneInput
+										v-model="business.phone"
+										variant="light"
+										placeholder="6 00 00 00 00"
+									/>
 								</div>
 							</div>
 

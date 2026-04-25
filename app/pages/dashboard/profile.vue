@@ -7,6 +7,7 @@ definePageMeta({
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const authStore = useAuthStore()
+const colorMode = useColorMode()
 const user = computed(() => authStore.user)
 
 const business = ref({
@@ -235,12 +236,12 @@ onMounted(() => {
 					<!-- Phone -->
 					<div>
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.phone') }}</label>
-						<div class="relative">
-							<Icon name="ph:phone-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
-							<input v-model="business.phone" type="tel" :disabled="!canEdit"
-								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
-								:placeholder="$t('profile.phone_placeholder')">
-						</div>
+						<PhoneInput
+							v-model="business.phone"
+							:disabled="!canEdit"
+							:variant="colorMode.value === 'dark' ? 'dark' : 'light'"
+							:placeholder="$t('profile.phone_placeholder')"
+						/>
 					</div>
 
 					<!-- Website -->
