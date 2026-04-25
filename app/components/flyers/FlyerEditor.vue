@@ -143,6 +143,8 @@ const smartOptions = ref({
 	conditions: '',
 	footerIconColor: '#000000',
 	lostColor: '#000000',
+	qrColor: '#000000',
+	qrBgColor: '#ffffff',
 })
 
 // Watch game prop changes to update defaults if needed
@@ -152,6 +154,8 @@ watch(() => props.game, (newGame) => {
 		smartOptions.value.buttonColor = newGame.primaryColor
 		smartOptions.value.accentColor = newGame.primaryColor
 	}
+	if (newGame?.qrCodeColor) smartOptions.value.qrColor = newGame.qrCodeColor
+	if (newGame?.qrCodeBgColor) smartOptions.value.qrBgColor = newGame.qrCodeBgColor
 }, { immediate: true })
 
 const updateSelectedColor = (event: Event) => {
@@ -293,6 +297,8 @@ onMounted(async () => {
 		if (savedJson.buttonColor) smartOptions.value.buttonColor = savedJson.buttonColor
 		if (savedJson.footerIconColor) smartOptions.value.footerIconColor = savedJson.footerIconColor
 		if (savedJson.lostColor) smartOptions.value.lostColor = savedJson.lostColor
+		if (savedJson.qrColor) smartOptions.value.qrColor = savedJson.qrColor
+		if (savedJson.qrBgColor) smartOptions.value.qrBgColor = savedJson.qrBgColor
 		mode.value = 'smart'
 		return
 	}
@@ -900,6 +906,8 @@ const exportFlyer = async () => {
 						buttonColor: smartOptions.value.buttonColor,
 						footerIconColor: smartOptions.value.footerIconColor,
 						lostColor: smartOptions.value.lostColor,
+						qrColor: smartOptions.value.qrColor,
+						qrBgColor: smartOptions.value.qrBgColor,
 					})
 			} else {
 				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
@@ -1421,7 +1429,9 @@ const previewFlyer = async () => {
 						:primary-color="smartOptions.backgroundColor" :accent-color="smartOptions.accentColor"
 						:button-color="smartOptions.buttonColor" :font-family="smartOptions.fontFamily"
 						:prizes="currentGame?.prizes" :conditions="smartOptions.conditions"
-						:footer-icon-color="smartOptions.footerIconColor" :lost-color="smartOptions.lostColor" />
+						:footer-icon-color="smartOptions.footerIconColor" :lost-color="smartOptions.lostColor"
+						:qr-color="smartOptions.qrColor" :qr-bg-color="smartOptions.qrBgColor"
+						:qr-play-url="getGameUrl()" />
 
 					<!-- Floating Smart Controls (Moved to Bottom) -->
 					<div
@@ -1523,6 +1533,36 @@ const previewFlyer = async () => {
 											:style="{ backgroundColor: smartOptions.lostColor }"></div>
 									</div>
 									<span class="text-[10px] font-bold text-slate-500 uppercase">Perdu</span>
+								</div>
+							</div>
+
+							<!-- QR Color -->
+							<div class="relative group cursor-pointer" title="Couleur du QR code">
+								<div
+									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
+									<div
+										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
+										<input v-model="smartOptions.qrColor" type="color"
+											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
+										<div class="w-full h-full pointer-events-none"
+											:style="{ backgroundColor: smartOptions.qrColor }"></div>
+									</div>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">QR</span>
+								</div>
+							</div>
+
+							<!-- QR Background Color -->
+							<div class="relative group cursor-pointer" title="Fond du QR code">
+								<div
+									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
+									<div
+										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
+										<input v-model="smartOptions.qrBgColor" type="color"
+											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
+										<div class="w-full h-full pointer-events-none"
+											:style="{ backgroundColor: smartOptions.qrBgColor }"></div>
+									</div>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">Fond QR</span>
 								</div>
 							</div>
 

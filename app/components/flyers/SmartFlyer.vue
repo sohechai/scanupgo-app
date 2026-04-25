@@ -18,6 +18,9 @@ const props = defineProps<{
 	prizes?: Prize[]
 	footerIconColor?: string
 	lostColor?: string
+	qrColor?: string
+	qrBgColor?: string
+	qrPlayUrl?: string
 }>()
 
 const flyerRef = ref<HTMLElement>()
@@ -35,7 +38,38 @@ const lostSegmentColor = computed(() => props.lostColor || backgroundColor.value
 // Computed for logo and other props (for template use)
 const displayLogo = computed(() => props.businessLogo)
 const displayBusinessName = computed(() => props.businessName)
-const displayQrCodeUrl = computed(() => props.qrCodeUrl)
+
+// QR code — regenerate dynamically when custom colors are provided
+const generatedQrDataUrl = ref<string | null>(null)
+
+const generateQR = async () => {
+	const playUrl = props.qrPlayUrl
+	if (!playUrl) {
+		generatedQrDataUrl.value = null
+		return
+	}
+	try {
+		const QRCode = (await import('qrcode')).default
+		const canvas = document.createElement('canvas')
+		await QRCode.toCanvas(canvas, playUrl, {
+			width: 400,
+			margin: 2,
+			errorCorrectionLevel: 'H',
+			color: {
+				dark: props.qrColor || '#000000',
+				light: props.qrBgColor || '#ffffff',
+			},
+		})
+		generatedQrDataUrl.value = canvas.toDataURL('image/png')
+	} catch (e) {
+		console.error('QR generation failed', e)
+		generatedQrDataUrl.value = null
+	}
+}
+
+watch([() => props.qrPlayUrl, () => props.qrColor, () => props.qrBgColor], generateQR, { immediate: true })
+
+const displayQrCodeUrl = computed(() => generatedQrDataUrl.value || props.qrCodeUrl)
 
 // Helper to create SVG arc path (for display only)
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -77,6 +111,9 @@ const generateFlyerOnServer = async (): Promise<string | null> => {
 				fontFamily: currentFont.value,
 				footerIconColor: footerIconColor.value,
 				lostColor: lostSegmentColor.value,
+				qrColor: props.qrColor || '#000000',
+				qrBgColor: props.qrBgColor || '#ffffff',
+				qrPlayUrl: props.qrPlayUrl || null,
 				prizes: prizesToSend.map((p: Prize) => ({
 					name: p.name,
 					rank: p.rank,
