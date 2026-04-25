@@ -133,10 +133,16 @@ const savePlan = async () => {
 	} catch { toast.show(t('admin.subscriptions.modal_save'), 'error') }
 }
 
-const deletePlan = async (plan: SubscriptionPlan) => {
-	if (!confirm(`${t('admin.subscriptions.plans_delete')} "${plan.name}" ?`)) return
-	try { await $api(`/admin/plans/${plan.id}`, { method: 'DELETE' }); toast.show(t('admin.subscriptions.plans_delete'), 'success'); await fetchPlans() }
-	catch (error: any) { toast.show(error?.data?.message || t('admin.subscriptions.plans_delete'), 'error') }
+const deletePlan = (plan: SubscriptionPlan) => {
+	openConfirm(
+		`Supprimer le plan "${plan.name}" ?`,
+		'Cette action est irréversible. Le plan sera retiré définitivement.',
+		'Supprimer',
+		async () => {
+			try { await $api(`/admin/plans/${plan.id}`, { method: 'DELETE' }); toast.show(t('admin.subscriptions.plans_delete'), 'success'); await fetchPlans() }
+			catch (error: any) { toast.show(error?.data?.message || t('admin.subscriptions.plans_delete'), 'error') }
+		}
+	)
 }
 
 // Manual access
@@ -174,13 +180,35 @@ const submitGrant = async () => {
 	finally { grantLoading.value = false }
 }
 
+// --- CONFIRM MODAL ---
+const showConfirmModal = ref(false)
+const confirmConfig = ref({ title: '', message: '', label: '', action: async () => {} })
+const confirmLoading = ref(false)
+
+const openConfirm = (title: string, message: string, label: string, action: () => Promise<void>) => {
+	confirmConfig.value = { title, message, label, action }
+	showConfirmModal.value = true
+}
+
+const runConfirm = async () => {
+	confirmLoading.value = true
+	try { await confirmConfig.value.action(); showConfirmModal.value = false }
+	finally { confirmLoading.value = false }
+}
+
 const revokeLoading = ref<string | null>(null)
-const revokeSubscription = async (sub: any) => {
-	if (!confirm(`Révoquer l'accès de "${sub.businessName}" ?`)) return
-	revokeLoading.value = sub.id
-	try { await $api(`/admin/subscriptions/${sub.id}/revoke`, { method: 'POST' }); toast.show("Accès révoqué", 'success'); await fetchSubscriptions() }
-	catch (e: any) { toast.show(e?.data?.message || "Erreur lors de la révocation", 'error') }
-	finally { revokeLoading.value = null }
+const revokeSubscription = (sub: any) => {
+	openConfirm(
+		`Révoquer l'accès de "${sub.businessName}" ?`,
+		'L\'abonnement sera immédiatement désactivé. Le commerce perdra l\'accès à toutes les fonctionnalités premium.',
+		'Révoquer',
+		async () => {
+			revokeLoading.value = sub.id
+			try { await $api(`/admin/subscriptions/${sub.id}/revoke`, { method: 'POST' }); toast.show("Accès révoqué", 'success'); await fetchSubscriptions() }
+			catch (e: any) { toast.show(e?.data?.message || "Erreur lors de la révocation", 'error') }
+			finally { revokeLoading.value = null }
+		}
+	)
 }
 
 const handleNew = () => { if (activeTab.value === 'plans') openNewPlanModal(); if (activeTab.value === 'manual') openGrantModal() }
@@ -692,6 +720,43 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 					</div>
 				</div>
 			</div>
+		</Teleport>
+
+		<!-- MODAL: CONFIRM -->
+		<Teleport to="body">
+			<Transition enter-active-class="transition ease-out duration-150" enter-from-class="opacity-0" enter-to-class="opacity-100"
+				leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+				<div v-if="showConfirmModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+					<div class="fixed inset-0 bg-black/75" @click="showConfirmModal = false"></div>
+					<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-sm shadow-2xl">
+						<div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+							<div class="flex items-center gap-3">
+								<div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+									<Icon name="ph:warning-bold" size="16" class="text-red-400" />
+								</div>
+								<h2 class="text-sm font-semibold text-white">{{ confirmConfig.title }}</h2>
+							</div>
+							<button @click="showConfirmModal = false" class="p-1.5 hover:bg-white/[0.06] rounded text-slate-400 hover:text-white transition-colors">
+								<Icon name="ph:x-bold" size="14" />
+							</button>
+						</div>
+						<div class="px-5 py-4">
+							<p class="text-sm text-slate-400 leading-relaxed">{{ confirmConfig.message }}</p>
+						</div>
+						<div class="px-5 py-3 border-t border-white/[0.06] flex justify-end gap-2">
+							<button @click="showConfirmModal = false"
+								class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors">
+								Annuler
+							</button>
+							<button @click="runConfirm" :disabled="confirmLoading"
+								class="px-4 py-2 rounded-lg text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5">
+								<Icon v-if="confirmLoading" name="ph:spinner-gap-bold" class="animate-spin" size="12" />
+								{{ confirmConfig.label }}
+							</button>
+						</div>
+					</div>
+				</div>
+			</Transition>
 		</Teleport>
 	</div>
 </template>
