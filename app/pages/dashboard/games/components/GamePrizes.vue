@@ -71,13 +71,11 @@ const openModal = (prize?: Prize) => {
 		form.value = { ...prize }
 	} else {
 		editingPrize.value = null
-		// Auto-increment rank logic
-		const nextRank = prizes.value.length + 1
 		form.value = {
 			name: '',
 			description: '',
 			imageUrl: '',
-			rank: nextRank <= 3 ? nextRank : 3,
+			rank: 1,
 			quantity: 10,
 			probability: 20,
 			winningMessage: t('games.prizes.default_message'),
@@ -208,14 +206,14 @@ watch(() => props.gameId, (newId) => {
 		<div v-else class="grid gap-4">
 			<div v-for="prize in prizes" :key="prize.id"
 				class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">
-				<!-- Prize Emoji or Rank -->
+				<!-- Prize Emoji or fallback icon -->
 				<div v-if="prize.imageUrl"
 					class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-2xl shrink-0">
 					{{ prize.imageUrl }}
 				</div>
 				<div v-else
-					class="w-12 h-12 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 flex items-center justify-center text-yellow-600 dark:text-yellow-500 font-bold font-display text-lg shrink-0">
-					{{ prize.rank }}
+					class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+					<Icon name="ph:gift-duotone" class="text-slate-400 dark:text-slate-500" size="22" />
 				</div>
 
 				<div class="flex-1 min-w-0">
@@ -262,19 +260,11 @@ watch(() => props.gameId, (newId) => {
 				</div>
 
 				<div class="p-6 space-y-4">
-					<div class="grid grid-cols-4 gap-4">
-						<div class="col-span-1">
-							<label
-								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.rank') }}</label>
-							<input v-model.number="form.rank" type="number" min="1" max="10"
-								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-center font-bold text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none">
-						</div>
-						<div class="col-span-3">
-							<label
-								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.name') }}</label>
-							<input v-model="form.name" type="text" :placeholder="$t('games.prizes.name_placeholder')" required
-								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none placeholder-slate-400 dark:placeholder-slate-500">
-						</div>
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.name') }}</label>
+						<input v-model="form.name" type="text" :placeholder="$t('games.prizes.name_placeholder')" required
+							class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none placeholder-slate-400 dark:placeholder-slate-500">
 					</div>
 
 					<!-- Emoji Selection -->
@@ -345,6 +335,7 @@ watch(() => props.gameId, (newId) => {
 								<span
 									class="absolute right-4 top-2 text-slate-400 dark:text-slate-500 text-sm font-bold">%</span>
 							</div>
+							<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
 						</div>
 					</div>
 

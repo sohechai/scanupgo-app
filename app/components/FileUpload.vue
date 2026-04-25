@@ -36,8 +36,12 @@ const handleFileSelect = async (event: Event) => {
 		return
 	}
 
-	// Validate file type
-	if (props.accept && !file.type.match(props.accept)) {
+	// Validate file type (accept prop can be "image/*" or "image/png,image/jpeg" etc.)
+	const acceptedTypes = props.accept?.split(',').map(t => t.trim()) ?? []
+	const typeOk = acceptedTypes.length === 0 || acceptedTypes.some(a =>
+		a.endsWith('/*') ? file.type.startsWith(a.replace('/*', '/')) : file.type === a
+	)
+	if (!typeOk) {
 		error.value = t('components.file_upload.error_wrong_type')
 		showToast(error.value, 'error')
 		return
