@@ -18,14 +18,13 @@ const showExportMenu = ref(false)
 const showFilters = ref(false)
 
 const filterOptinEmail = ref<'all' | 'yes' | 'no'>('all')
-const filterOptinSMS = ref<'all' | 'yes' | 'no'>('all')
 const filterPeriod = ref<'all' | '7d' | '30d' | '90d' | '12m'>('all')
 const filterParticipations = ref<'all' | '1' | '2+' | '5+'>('all')
+const currentPage = ref(1)
 
 const activeFilterCount = computed(() => {
 	let count = 0
 	if (filterOptinEmail.value !== 'all') count++
-	if (filterOptinSMS.value !== 'all') count++
 	if (filterPeriod.value !== 'all') count++
 	if (filterParticipations.value !== 'all') count++
 	return count
@@ -33,7 +32,6 @@ const activeFilterCount = computed(() => {
 
 const clearFilters = () => {
 	filterOptinEmail.value = 'all'
-	filterOptinSMS.value = 'all'
 	filterPeriod.value = 'all'
 	filterParticipations.value = 'all'
 }
@@ -57,8 +55,6 @@ const filteredPlayers = computed(() => {
 	}
 	if (filterOptinEmail.value === 'yes') result = result.filter(p => p.emailOptIn)
 	else if (filterOptinEmail.value === 'no') result = result.filter(p => !p.emailOptIn)
-	if (filterOptinSMS.value === 'yes') result = result.filter(p => p.smsOptIn)
-	else if (filterOptinSMS.value === 'no') result = result.filter(p => !p.smsOptIn)
 	if (filterPeriod.value !== 'all') {
 		const now = new Date()
 		const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '12m': 365 }
@@ -69,6 +65,15 @@ const filteredPlayers = computed(() => {
 	else if (filterParticipations.value === '2+') result = result.filter(p => (p._count?.sessions || 0) >= 2)
 	else if (filterParticipations.value === '5+') result = result.filter(p => (p._count?.sessions || 0) >= 5)
 	return result
+})
+
+watch([searchQuery, filterOptinEmail, filterPeriod, filterParticipations], () => { currentPage.value = 1 })
+
+const PAGE_SIZE = 20
+const totalPages = computed(() => Math.ceil(filteredPlayers.value.length / PAGE_SIZE))
+const paginatedPlayers = computed(() => {
+	const start = (currentPage.value - 1) * PAGE_SIZE
+	return filteredPlayers.value.slice(start, start + PAGE_SIZE)
 })
 
 const fetchPlayers = async () => {
@@ -82,7 +87,7 @@ const exportToCSV = async () => {
 	exporting.value = 'csv'; showExportMenu.value = false
 	try {
 		const config = useRuntimeConfig()
-		const response = await fetch(`${config.public.apiBase}/players/export/csv`, { credentials: 'include' })
+		const response = await fetch(`${config.public.apiUrl}/players/export/csv`, { credentials: 'include' })
 		if (!response.ok) throw new Error('Export failed')
 		const blob = await response.blob()
 		const url = URL.createObjectURL(blob)
@@ -97,7 +102,7 @@ const exportToPDF = async () => {
 	exporting.value = 'pdf'; showExportMenu.value = false
 	try {
 		const config = useRuntimeConfig()
-		const response = await fetch(`${config.public.apiBase}/players/export/pdf`, { credentials: 'include' })
+		const response = await fetch(`${config.public.apiUrl}/players/export/pdf`, { credentials: 'include' })
 		if (!response.ok) throw new Error('Export failed')
 		const blob = await response.blob()
 		const url = URL.createObjectURL(blob)
@@ -194,14 +199,13 @@ onMounted(async () => {
 				<div class="divide-y divide-slate-100 dark:divide-slate-800">
 					<div v-for="(filterDef, idx) in [
 						{ label: $t('players.filters.optin_email'), model: filterOptinEmail, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'yes', l: $t('players.filters.yes') }, { v:'no', l: $t('players.filters.no') }], key: 'email' },
-						{ label: $t('players.filters.optin_sms'), model: filterOptinSMS, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'yes', l: $t('players.filters.yes') }, { v:'no', l: $t('players.filters.no') }], key: 'sms' },
 						{ label: $t('players.filters.period'), model: filterPeriod, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'7d', l: $t('players.filters.7days') }, { v:'30d', l: $t('players.filters.30days') }, { v:'90d', l: $t('players.filters.90days') }, { v:'12m', l: $t('players.filters.12months') }], key: 'period' },
 						{ label: $t('players.filters.participations'), model: filterParticipations, opts: [{ v:'all', l: $t('players.filters.all') }, { v:'1', l: $t('players.filters.1x') }, { v:'2+', l: $t('players.filters.2plus') }, { v:'5+', l: $t('players.filters.5plus') }], key: 'part' },
 					]" :key="filterDef.key" class="flex items-center gap-4 px-4 py-2.5">
 						<p class="text-xs font-medium text-slate-500 dark:text-slate-400 w-28 shrink-0">{{ filterDef.label }}</p>
 						<div class="flex gap-1.5 flex-wrap">
 							<button v-for="opt in filterDef.opts" :key="opt.v"
-								@click="idx === 0 ? (filterOptinEmail = opt.v as any) : idx === 1 ? (filterOptinSMS = opt.v as any) : idx === 2 ? (filterPeriod = opt.v as any) : (filterParticipations = opt.v as any)"
+								@click="idx === 0 ? (filterOptinEmail = opt.v as any) : idx === 1 ? (filterPeriod = opt.v as any) : (filterParticipations = opt.v as any)"
 								class="px-2.5 py-1 rounded-md text-xs font-medium transition-all"
 								:class="filterDef.model === opt.v
 									? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
@@ -249,7 +253,7 @@ onMounted(async () => {
 				</div>
 
 				<div class="divide-y divide-slate-100 dark:divide-slate-800">
-					<div v-for="player in filteredPlayers" :key="player.id"
+					<div v-for="player in paginatedPlayers" :key="player.id"
 						class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
 						<!-- Avatar -->
 						<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-xs text-slate-600 dark:text-slate-400 shrink-0">
@@ -288,6 +292,24 @@ onMounted(async () => {
 					<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('players.no_results') }}</p>
 					<p class="text-xs text-slate-400 mt-1 mb-4">{{ $t('players.no_results_message') }}</p>
 					<button @click="searchQuery = ''; clearFilters()" class="text-[#007AFF] font-medium text-xs">{{ $t('players.clear_search') }}</button>
+				</div>
+
+				<!-- Pagination -->
+				<div v-if="totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-slate-100 dark:border-slate-800">
+					<p class="text-xs text-slate-400">
+						{{ (currentPage - 1) * PAGE_SIZE + 1 }}–{{ Math.min(currentPage * PAGE_SIZE, filteredPlayers.length) }} / {{ filteredPlayers.length }}
+					</p>
+					<div class="flex items-center gap-1">
+						<button @click="currentPage--" :disabled="currentPage === 1"
+							class="w-7 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+							<Icon name="ph:caret-left-bold" size="13" />
+						</button>
+						<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 px-2">{{ currentPage }} / {{ totalPages }}</span>
+						<button @click="currentPage++" :disabled="currentPage === totalPages"
+							class="w-7 h-7 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+							<Icon name="ph:caret-right-bold" size="13" />
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

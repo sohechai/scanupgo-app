@@ -2404,8 +2404,8 @@
 				"default_message": "Présentez ce QR code en caisse pour récupérer votre cadeau.",
 				"qr_instruction": "Scannez ce QR Code en caisse",
 				"code_instruction": "Ou présentez ce code",
-				"save_hint": "Conservez cette page ou faites une capture d'écran.",
-				"expiry_title": "Ce cadeau expire dans"
+				"save_hint": "Votre QR code vous sera envoyé par email.",
+				"expiry_title": "Cadeau à retirer dans"
 			},
 			"lose": {
 				"title": "Perdu...",

@@ -145,7 +145,7 @@ const updateInvoiceStatus = async (invoice: any, status: string) => {
 	catch (error: any) { toast.show(error?.data?.message || t('admin.payments.invoices_mark_paid'), 'error') }
 }
 
-const downloadInvoice = (invoiceId: string) => window.open(`${config.public.apiBase}/admin/invoices/${invoiceId}/download`, '_blank')
+const downloadInvoice = (invoiceId: string) => window.open(`${config.public.apiUrl}/admin/invoices/${invoiceId}/download`, '_blank')
 
 const toggleInvoiceSelection = (id: string) => {
 	const idx = selectedInvoices.value.indexOf(id)
@@ -160,7 +160,7 @@ const selectAllInvoices = () => {
 
 const downloadSelectedInvoices = async () => {
 	for (const id of selectedInvoices.value) {
-		window.open(`${config.public.apiBase}/admin/invoices/${id}/download`, '_blank')
+		window.open(`${config.public.apiUrl}/admin/invoices/${id}/download`, '_blank')
 		await new Promise(r => setTimeout(r, 500))
 	}
 }

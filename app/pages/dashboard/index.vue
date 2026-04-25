@@ -30,6 +30,9 @@ const players = ref<any[]>([])
 const playersLoading = ref(true)
 const playerSearchQuery = ref('')
 
+// --- STATE: CHART TOOLTIP ---
+const hoveredIdx = ref<number | null>(null)
+
 // --- COMPUTED: SESSIONS STATS ---
 const sessionStats = computed(() => {
 	const wonSessions = sessions.value.filter(s => s.prize !== null)
@@ -551,7 +554,7 @@ onMounted(() => {
 				<template v-else>
 					<!-- Line Chart -->
 					<template v-if="lineChartData">
-						<div class="h-64 w-full px-2">
+						<div class="h-64 w-full px-2 relative" @mouseleave="hoveredIdx = null">
 							<svg :viewBox="`0 0 ${lineChartData.w} ${lineChartData.h}`" class="w-full h-full">
 								<!-- Grid lines -->
 								<line v-for="i in 4" :key="'grid'+i"
@@ -579,15 +582,52 @@ onMounted(() => {
 								<polyline :points="lineChartData.winLine"
 									fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 
-								<g v-for="(p, i) in lineChartData.points" :key="'sd'+i">
-									<circle :cx="p.x" :cy="p.sessionY" r="3.5" fill="#007AFF" stroke="white" stroke-width="1.5" class="cursor-pointer" />
-									<title>{{ p.sessions }} participation(s)</title>
-								</g>
-								<g v-for="(p, i) in lineChartData.points" :key="'wd'+i">
-									<circle :cx="p.x" :cy="p.winY" r="3.5" fill="#8E8E93" stroke="white" stroke-width="1.5" class="cursor-pointer" />
-									<title>{{ p.wins }} gain(s)</title>
+								<!-- Hover zones + dots per point -->
+								<g v-for="(p, i) in lineChartData.points" :key="'pt'+i"
+									@mouseenter="hoveredIdx = i" style="cursor:pointer">
+									<!-- Invisible wide hit area -->
+									<rect
+										:x="i === 0 ? 0 : (lineChartData.points[i-1].x + p.x) / 2"
+										y="0"
+										:width="i === 0
+											? (lineChartData.points.length > 1 ? (lineChartData.points[1].x + p.x) / 2 : lineChartData.w)
+											: (i === lineChartData.points.length - 1 ? lineChartData.w - (lineChartData.points[i-1].x + p.x) / 2 : ((lineChartData.points[i+1]?.x ?? p.x) + p.x) / 2 - (lineChartData.points[i-1].x + p.x) / 2)"
+										:height="lineChartData.h"
+										fill="transparent" />
+									<!-- Session dot -->
+									<circle :cx="p.x" :cy="p.sessionY" :r="hoveredIdx === i ? 5 : 3.5" fill="#007AFF" stroke="white" stroke-width="1.5" />
+									<!-- Win dot -->
+									<circle :cx="p.x" :cy="p.winY" :r="hoveredIdx === i ? 5 : 3.5" fill="#8E8E93" stroke="white" stroke-width="1.5" />
+									<!-- Vertical line on hover -->
+									<line v-if="hoveredIdx === i"
+										:x1="p.x" :x2="p.x" :y1="lineChartData.padY" :y2="lineChartData.padY + lineChartData.usableH"
+										stroke="#007AFF" stroke-width="1" stroke-dasharray="3,3" opacity="0.4" />
 								</g>
 							</svg>
+
+							<!-- HTML Tooltip -->
+							<div v-if="hoveredIdx !== null && lineChartData.points[hoveredIdx]"
+								class="absolute top-0 pointer-events-none z-10"
+								:style="{
+									left: `${(lineChartData.points[hoveredIdx].x / lineChartData.w) * 100}%`,
+									transform: (lineChartData.points[hoveredIdx].x / lineChartData.w) > 0.75
+										? 'translateX(-100%)'
+										: (lineChartData.points[hoveredIdx].x / lineChartData.w) < 0.25
+											? 'translateX(0%)'
+											: 'translateX(-50%)'
+								}">
+								<div class="bg-slate-900 dark:bg-slate-800 text-white rounded-lg px-3 py-2 text-xs shadow-xl border border-white/10 whitespace-nowrap">
+									<p class="font-semibold text-slate-300 mb-1">{{ dashboardStats.chartData[hoveredIdx]?.label }}</p>
+									<div class="flex items-center gap-1.5 mb-0.5">
+										<span class="w-2 h-2 rounded-full bg-[#007AFF] shrink-0"></span>
+										<span>{{ lineChartData.points[hoveredIdx].sessions }} participation(s)</span>
+									</div>
+									<div class="flex items-center gap-1.5">
+										<span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
+										<span>{{ lineChartData.points[hoveredIdx].wins }} gain(s)</span>
+									</div>
+								</div>
+							</div>
 						</div>
 					</template>
 

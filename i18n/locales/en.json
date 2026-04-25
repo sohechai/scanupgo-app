@@ -2400,8 +2400,8 @@
 				"default_message": "Show this QR code at the counter to collect your prize.",
 				"qr_instruction": "Scan this QR Code at the counter",
 				"code_instruction": "Or show this code",
-				"save_hint": "Save this page or take a screenshot.",
-				"expiry_title": "This prize expires in"
+				"save_hint": "Your QR code will be sent to you by email.",
+				"expiry_title": "Gift to collect after"
 			},
 			"lose": {
 				"title": "Lost...",

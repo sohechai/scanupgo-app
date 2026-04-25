@@ -635,6 +635,13 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 				</div>
 
 
+				<!-- Redemption delay badge -->
+				<div v-if="game?.prizeRedemptionDelayEnabled && game?.prizeRedemptionDelayHours"
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-sm border border-white/20">
+					<Icon name="ph:clock-countdown-bold" size="13" />
+					{{ $t('play.result.win.expiry_title') }} — {{ game.prizeRedemptionDelayHours }}h
+				</div>
+
 				<p class="text-xs opacity-60">{{ $t('play.result.win.save_hint') }}</p>
 			</div>
 
