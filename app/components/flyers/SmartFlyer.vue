@@ -16,6 +16,8 @@ const props = defineProps<{
 	buttonColor?: string
 	fontFamily?: string
 	prizes?: Prize[]
+	footerIconColor?: string
+	lostColor?: string
 }>()
 
 const flyerRef = ref<HTMLElement>()
@@ -27,6 +29,8 @@ const backgroundColor = computed(() => props.primaryColor || props.game?.primary
 const accentColor = computed(() => props.accentColor || props.game?.primaryColor || '#fb923c')
 const buttonColor = computed(() => props.buttonColor || props.game?.primaryColor || '#fb923c')
 const currentFont = computed(() => props.fontFamily || 'Luckiest Guy')
+const footerIconColor = computed(() => props.footerIconColor || '#000000')
+const lostSegmentColor = computed(() => props.lostColor || backgroundColor.value)
 
 // Computed for logo and other props (for template use)
 const displayLogo = computed(() => props.businessLogo)
@@ -220,7 +224,7 @@ defineExpose({
 					<g transform="rotate(-22.5 50 50)">
 						<template v-for="(segment, i) in 8" :key="i">
 							<path :d="describeArc(50, 50, 46, i * 45, (i + 1) * 45)"
-								:fill="i % 2 === 0 ? '#ffffff' : backgroundColor" stroke="#000"
+								:fill="i % 2 === 0 ? '#ffffff' : lostSegmentColor" stroke="#000"
 								stroke-width="0.5" />
 							<g :transform="`rotate(${i * 45 + 22.5} 50 50)`">
 								<text x="50" y="20" text-anchor="middle" :fill="i % 2 === 0 ? '#000' : '#fff'"
@@ -266,10 +270,10 @@ defineExpose({
 				<div class="z-20 flex flex-col items-center gap-1">
 					<!-- Smartphone icon -->
 					<svg width="22" height="28" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M13 1H3C1.89543 1 1 1.89543 1 3V19C1 20.1046 1.89543 21 3 21H13C14.1046 21 15 20.1046 15 19V3C15 1.89543 14.1046 1 13 1Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<path d="M8 17H8.01" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path d="M13 1H3C1.89543 1 1 1.89543 1 3V19C1 20.1046 1.89543 21 3 21H13C14.1046 21 15 20.1046 15 19V3C15 1.89543 14.1046 1 13 1Z" :stroke="footerIconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path d="M8 17H8.01" :stroke="footerIconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 					</svg>
-					<div class="flex flex-col leading-none text-black text-center">
+					<div class="flex flex-col leading-none text-center" :style="{ color: footerIconColor }">
 						<span class="text-xs font-black">1</span>
 						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step1') }}</span>
 					</div>
@@ -280,9 +284,9 @@ defineExpose({
 				<div class="z-20 flex flex-col items-center gap-1">
 					<!-- Spinning wheel icon -->
 					<svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M17.5438 14.2498C16.3502 16.3168 14.3845 17.8251 12.0789 18.4428M17.5438 14.2498C18.7372 12.1826 19.0606 9.72612 18.4428 7.42056M17.5438 14.2498L11.4818 10.7498M12.0789 18.4428C9.77338 19.0606 7.31686 18.7372 5.24975 17.5438M12.0789 18.4428L10.2673 11.6816M5.24975 17.5438C3.1827 16.3502 1.6744 14.3845 1.05666 12.0789M5.24975 17.5438L8.74975 11.4818M18.4428 7.42056C17.8251 5.11501 16.3168 3.14926 14.2498 1.95575M18.4428 7.42056L11.6816 9.23215M14.2498 1.95575C12.1826 0.762332 9.72612 0.43892 7.42056 1.05666M14.2498 1.95575L10.7498 8.01775M11.4818 10.7498C11.2165 11.2091 10.7797 11.5443 10.2673 11.6816M11.4818 10.7498C11.747 10.2904 11.8188 9.7445 11.6816 9.23215M1.05666 12.0789C0.43892 9.77338 0.762332 7.31686 1.95575 5.24975M1.05666 12.0789L7.81795 10.2673M1.95575 5.24975C3.14926 3.1827 5.11501 1.6744 7.42056 1.05666M1.95575 5.24975L8.01775 8.74975M8.74975 11.4818C9.20911 11.747 9.755 11.8188 10.2673 11.6816M8.74975 11.4818C8.29041 11.2165 7.95523 10.7797 7.81795 10.2673M7.42056 1.05666L9.23215 7.81795M8.01775 8.74975C7.75255 9.20911 7.68068 9.755 7.81795 10.2673M8.01775 8.74975C8.28298 8.29041 8.71981 7.95523 9.23215 7.81795M10.7498 8.01775C11.2091 8.28298 11.5443 8.71981 11.6816 9.23215M10.7498 8.01775C10.2904 7.75255 9.7445 7.68068 9.23215 7.81795" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+						<path d="M17.5438 14.2498C16.3502 16.3168 14.3845 17.8251 12.0789 18.4428M17.5438 14.2498C18.7372 12.1826 19.0606 9.72612 18.4428 7.42056M17.5438 14.2498L11.4818 10.7498M12.0789 18.4428C9.77338 19.0606 7.31686 18.7372 5.24975 17.5438M12.0789 18.4428L10.2673 11.6816M5.24975 17.5438C3.1827 16.3502 1.6744 14.3845 1.05666 12.0789M5.24975 17.5438L8.74975 11.4818M18.4428 7.42056C17.8251 5.11501 16.3168 3.14926 14.2498 1.95575M18.4428 7.42056L11.6816 9.23215M14.2498 1.95575C12.1826 0.762332 9.72612 0.43892 7.42056 1.05666M14.2498 1.95575L10.7498 8.01775M11.4818 10.7498C11.2165 11.2091 10.7797 11.5443 10.2673 11.6816M11.4818 10.7498C11.747 10.2904 11.8188 9.7445 11.6816 9.23215M1.05666 12.0789C0.43892 9.77338 0.762332 7.31686 1.95575 5.24975M1.05666 12.0789L7.81795 10.2673M1.95575 5.24975C3.14926 3.1827 5.11501 1.6744 7.42056 1.05666M1.95575 5.24975L8.01775 8.74975M8.74975 11.4818C9.20911 11.747 9.755 11.8188 10.2673 11.6816M8.74975 11.4818C8.29041 11.2165 7.95523 10.7797 7.81795 10.2673M7.42056 1.05666L9.23215 7.81795M8.01775 8.74975C7.75255 9.20911 7.68068 9.755 7.81795 10.2673M8.01775 8.74975C8.28298 8.29041 8.71981 7.95523 9.23215 7.81795M10.7498 8.01775C11.2091 8.28298 11.5443 8.71981 11.6816 9.23215M10.7498 8.01775C10.2904 7.75255 9.7445 7.68068 9.23215 7.81795" :stroke="footerIconColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 					</svg>
-					<div class="flex flex-col leading-none text-black text-center">
+					<div class="flex flex-col leading-none text-center" :style="{ color: footerIconColor }">
 						<span class="text-xs font-black">2</span>
 						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step2') }}</span>
 					</div>
@@ -292,10 +296,10 @@ defineExpose({
 
 				<div class="z-20 flex flex-col items-center gap-1">
 					<!-- Gift/present icon -->
-					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 256 256" fill="black">
+					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 256 256" :fill="footerIconColor">
 						<path d="M216,72H180.92c.39-.33.79-.65,1.17-1A29.53,29.53,0,0,0,192,49.57,32.62,32.62,0,0,0,158.44,16,29.53,29.53,0,0,0,137,25.91a54.94,54.94,0,0,0-9,14.48,54.94,54.94,0,0,0-9-14.48A29.53,29.53,0,0,0,97.56,16,32.62,32.62,0,0,0,64,49.57,29.53,29.53,0,0,0,73.91,71c.38.33.78.65,1.17,1H40A16,16,0,0,0,24,88v32a16,16,0,0,0,16,16v64a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V136a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72ZM149,36.51a13.69,13.69,0,0,1,10-4.5h.49A16.62,16.62,0,0,1,176,49.08a13.69,13.69,0,0,1-4.5,10c-9.49,8.4-25.24,11.36-35,12.4C137.7,60.89,141,45.5,149,36.51Zm-64.09.36A16.63,16.63,0,0,1,96.59,32h.49a13.69,13.69,0,0,1,10,4.5c8.39,9.48,11.35,25.2,12.39,34.92-9.72-1-25.44-4-34.92-12.39a13.69,13.69,0,0,1-4.5-10A16.6,16.6,0,0,1,84.87,36.87ZM40,88h80v32H40Zm16,48h64v64H56Zm144,64H136V136h64Zm16-80H136V88h80Z"/>
 					</svg>
-					<div class="flex flex-col leading-none text-black text-center">
+					<div class="flex flex-col leading-none text-center" :style="{ color: footerIconColor }">
 						<span class="text-xs font-black">3</span>
 						<span class="text-[8px] font-bold uppercase">{{ $t('flyers.smart_flyer.step3') }}</span>
 					</div>
