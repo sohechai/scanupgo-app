@@ -75,6 +75,8 @@ const generateFlyerOnServer = async (): Promise<string | null> => {
 				accentColor: accentColor.value,
 				buttonColor: buttonColor.value,
 				fontFamily: currentFont.value,
+				footerIconColor: footerIconColor.value,
+				lostColor: lostSegmentColor.value,
 				prizes: prizesToSend.map((p: Prize) => ({
 					name: p.name,
 					rank: p.rank,

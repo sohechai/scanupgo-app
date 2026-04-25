@@ -140,7 +140,9 @@ const smartOptions = ref({
 	accentColor: '#fb923c',
 	buttonColor: props.game?.primaryColor || '#fb923c',
 	fontFamily: 'Luckiest Guy',
-	conditions: ''
+	conditions: '',
+	footerIconColor: '#000000',
+	lostColor: '#000000',
 })
 
 // Watch game prop changes to update defaults if needed
@@ -289,6 +291,8 @@ onMounted(async () => {
 		if (savedJson.backgroundColor) smartOptions.value.backgroundColor = savedJson.backgroundColor
 		if (savedJson.accentColor) smartOptions.value.accentColor = savedJson.accentColor
 		if (savedJson.buttonColor) smartOptions.value.buttonColor = savedJson.buttonColor
+		if (savedJson.footerIconColor) smartOptions.value.footerIconColor = savedJson.footerIconColor
+		if (savedJson.lostColor) smartOptions.value.lostColor = savedJson.lostColor
 		mode.value = 'smart'
 		return
 	}
@@ -479,8 +483,8 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	if (mode.value !== 'smart') return true
 
 	converting.value = true
-	// Capture the smart flyer DOM directly (client-side, no server/Puppeteer needed)
-	const imageUrl = await smartFlyerRef.value?.captureAsDataUrl()
+	// Use server-side Puppeteer rendering (html2canvas fails to load Google Fonts correctly)
+	const imageUrl = await smartFlyerRef.value?.exportImage()
 	if (!imageUrl) {
 		converting.value = false
 		showToast('Erreur lors de la conversion du template', 'error')
@@ -872,6 +876,8 @@ const exportFlyer = async () => {
 						backgroundColor: smartOptions.value.backgroundColor,
 						accentColor: smartOptions.value.accentColor,
 						buttonColor: smartOptions.value.buttonColor,
+						footerIconColor: smartOptions.value.footerIconColor,
+						lostColor: smartOptions.value.lostColor,
 					})
 			} else {
 				showToast('Erreur lors de l\'export du flyer intelligent', 'error')
@@ -1392,7 +1398,8 @@ const previewFlyer = async () => {
 						:business-logo="currentBusinessLogo" :qr-code-url="currentQrCodeUrl"
 						:primary-color="smartOptions.backgroundColor" :accent-color="smartOptions.accentColor"
 						:button-color="smartOptions.buttonColor" :font-family="smartOptions.fontFamily"
-						:prizes="currentGame?.prizes" :conditions="smartOptions.conditions" />
+						:prizes="currentGame?.prizes" :conditions="smartOptions.conditions"
+						:footer-icon-color="smartOptions.footerIconColor" :lost-color="smartOptions.lostColor" />
 
 					<!-- Floating Smart Controls (Moved to Bottom) -->
 					<div
@@ -1467,17 +1474,36 @@ const previewFlyer = async () => {
 								</div>
 							</div>
 
-							<!-- Conditions -->
-							<div class="relative group" title="Mentions légales">
-								<div class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<Icon name="ph:scales-bold" size="16" class="text-slate-400" />
-									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_conditions') }}</span>
-								</div>
-								<div class="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-3 hidden group-hover:block z-50">
-									<textarea v-model="smartOptions.conditions" rows="3" placeholder="Ex: Jeu sans obligation d'achat. Voir conditions en magasin."
-										class="w-full text-xs border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"></textarea>
+							<!-- Footer Icon Color -->
+							<div class="relative group cursor-pointer" title="Couleur des icônes footer">
+								<div
+									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
+									<div
+										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
+										<input v-model="smartOptions.footerIconColor" type="color"
+											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
+										<div class="w-full h-full pointer-events-none"
+											:style="{ backgroundColor: smartOptions.footerIconColor }"></div>
+									</div>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">Icônes</span>
 								</div>
 							</div>
+
+							<!-- Lost Color -->
+							<div class="relative group cursor-pointer" title="Couleur des cases Perdu">
+								<div
+									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
+									<div
+										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
+										<input v-model="smartOptions.lostColor" type="color"
+											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
+										<div class="w-full h-full pointer-events-none"
+											:style="{ backgroundColor: smartOptions.lostColor }"></div>
+									</div>
+									<span class="text-[10px] font-bold text-slate-500 uppercase">Perdu</span>
+								</div>
+							</div>
+
 						</div>
 					</div>
 				</div><!-- Canvas Mode -->
