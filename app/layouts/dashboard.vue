@@ -13,7 +13,7 @@ const requiresSubscription = computed(() => {
 
 const handleVisibilityChange = () => {
 	if (document.visibilityState === 'visible') {
-		fetchSubscription(true)
+		fetchSubscription()
 	}
 }
 
@@ -101,7 +101,7 @@ const toggleTheme = () => {
 						class="w-7 h-7 rounded-md object-cover shrink-0" />
 					<div v-else
 						class="w-7 h-7 rounded-md bg-slate-800 dark:bg-slate-700 text-white flex items-center justify-center font-semibold text-xs shrink-0">
-						{{ user?.email?.charAt(0).toUpperCase() || 'U' }}
+						{{ user?.business?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U' }}
 					</div>
 					<div class="flex-1 min-w-0">
 						<p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ user?.business?.name || t('dashboard.my_account') }}</p>

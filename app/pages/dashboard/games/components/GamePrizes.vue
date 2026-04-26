@@ -23,7 +23,7 @@ interface Prize {
 const emojiCategories = computed(() => [
 	{
 		name: t('games.prizes.food_category'),
-		emojis: ['☕', '🍕', '🍔', '🍟', '🌮', '🌯', '🥗', '🍜', '🍣', '🍰', '🧁', '🍩', '🍪', '🍦', '🥤', '🍺', '🍷', '🥐', '🥖', '🍫']
+		emojis: ['☕', '🍕', '🍔', '🍟', '🌮', '🌯', '🥗', '🍜', '🍣', '🍰', '🧁', '🍩', '🍪', '🍦', '🥤', '🍺', '🍷', '🥐', '🥖', '🍫', '🍬']
 	},
 	{
 		name: t('games.prizes.discount_category'),
