@@ -23,6 +23,8 @@ const getAssetUrl = (url: string | null | undefined) => {
 }
 
 const isNew = route.params.id === 'new'
+const wizardMode = ref(route.params.id === 'new')
+const createdGameId = ref<string | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const initialTab = (route.query.tab as string) || 'content'
@@ -36,16 +38,34 @@ const wizardSteps = computed(() => [
 ])
 const currentWizardStep = ref(0)
 
+const googleReviewUrlValid = computed(() => {
+	if (!game.value.googleReviewUrl) return null
+	try {
+		const u = new URL(game.value.googleReviewUrl)
+		return u.protocol === 'http:' || u.protocol === 'https:'
+	} catch {
+		return false
+	}
+})
+
 const canGoNext = computed(() => {
 	if (currentWizardStep.value === 0) {
-		return !!(game.value.title && game.value.googleReviewUrl)
+		return !!(game.value.title && googleReviewUrlValid.value === true)
 	}
 	return true
 })
 
-const goToNextStep = () => {
+const goToNextStep = async () => {
 	if (currentWizardStep.value < wizardSteps.value.length - 1) {
-		currentWizardStep.value++
+		const nextStep = currentWizardStep.value + 1
+		if (wizardMode.value && nextStep === 2) {
+			try {
+				await syncGameToServer()
+			} catch {
+				return
+			}
+		}
+		currentWizardStep.value = nextStep
 		activeTab.value = wizardSteps.value[currentWizardStep.value].key
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
@@ -57,6 +77,31 @@ const goToPreviousStep = () => {
 		activeTab.value = wizardSteps.value[currentWizardStep.value].key
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
+}
+
+const syncGameToServer = async () => {
+	saving.value = true
+	try {
+		game.value.description = game.value.tagline
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
+		if (createdGameId.value) {
+			await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: payload })
+		} else {
+			const created = await $api<any>('/games', { method: 'POST', body: payload })
+			createdGameId.value = created.id
+			// No router.replace here — would remount component and destroy wizard state
+		}
+	} catch (e: any) {
+		showToast(e?.data?.message || e?.message || t('common.error'), 'error')
+		throw e
+	} finally {
+		saving.value = false
+	}
+}
+
+const finishWizard = () => {
+	wizardMode.value = false
+	router.push(`/dashboard/games/${createdGameId.value}`)
 }
 
 const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.length - 1)
@@ -646,7 +691,7 @@ const downloadFlyerPDF = async () => {
 				</div>
 
 				<!-- Wizard Steps for New Game -->
-				<div v-if="isNew" class="w-full">
+				<div v-if="wizardMode" class="w-full">
 					<div class="flex items-center justify-between mb-2">
 						<div class="flex items-center gap-4">
 							<template v-for="(step, index) in wizardSteps" :key="step.key">
@@ -829,6 +874,10 @@ const downloadFlyerPDF = async () => {
 									<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
 										{{ $t('games.detail.google_review_description') }}
 									</p>
+									<p v-if="googleReviewUrlValid === false" class="text-xs text-red-500 mt-1 flex items-center gap-1">
+										<Icon name="ph:warning-circle-bold" size="13" />
+										{{ $t('games.detail.google_review_invalid') }}
+									</p>
 								</div>
 							</div>
 
@@ -889,7 +938,7 @@ const downloadFlyerPDF = async () => {
 							<div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
 								<div>
 									<!-- Back button for wizard mode -->
-									<button v-if="isNew && currentWizardStep > 0" type="button"
+									<button v-if="wizardMode && currentWizardStep > 0" type="button"
 										@click="goToPreviousStep"
 										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
@@ -898,7 +947,7 @@ const downloadFlyerPDF = async () => {
 								</div>
 								<div class="flex gap-3">
 									<!-- Next button for wizard mode -->
-									<button v-if="isNew" type="button" @click="goToNextStep" :disabled="!canGoNext"
+									<button v-if="wizardMode" type="button" @click="goToNextStep" :disabled="!canGoNext || saving"
 										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
 										{{ $t('common.next') }}
 										<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
@@ -941,7 +990,7 @@ const downloadFlyerPDF = async () => {
 							<!-- Navigation buttons -->
 							<div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
 								<div>
-									<button v-if="isNew && currentWizardStep > 0" type="button"
+									<button v-if="wizardMode && currentWizardStep > 0" type="button"
 										@click="goToPreviousStep"
 										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
@@ -949,10 +998,13 @@ const downloadFlyerPDF = async () => {
 									</button>
 								</div>
 								<div class="flex gap-3">
-									<button v-if="isNew" type="button" @click="goToNextStep"
-										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
-										{{ $t('common.next') }}
-										<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
+									<button v-if="wizardMode" type="button" @click="goToNextStep" :disabled="saving"
+										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 text-sm disabled:opacity-50">
+										<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
+										<template v-else>
+											{{ $t('common.next') }}
+											<Icon name="ph:arrow-right-bold" size="16" class="rtl:rotate-180" />
+										</template>
 									</button>
 									<button v-else type="submit" :disabled="saving"
 										class="px-5 py-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium rounded-md transition-all flex items-center gap-2 disabled:opacity-50 text-sm">
@@ -965,34 +1017,27 @@ const downloadFlyerPDF = async () => {
 
 						<!-- TAB: PRIZES -->
 						<div v-show="activeTab === 'prizes'">
-							<div v-if="isNew" class="space-y-8">
+							<div v-if="wizardMode" class="space-y-6">
 								<div class="mb-5 pb-4 border-b border-slate-100 dark:border-slate-700">
 									<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}</h2>
-									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.prizes_subtitle') }}</p>
+									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.prizes_after_creation') }}</p>
 								</div>
 
-								<div
-									class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-5 text-center">
-									<div
-										class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-md flex items-center justify-center mx-auto mb-3 text-amber-600 dark:text-amber-400">
-										<Icon name="ph:info-bold" size="24" />
-									</div>
-									<h3 class="text-sm font-bold text-amber-900 dark:text-amber-200 mb-1">{{ $t('games.detail.prizes_info') }}</h3>
-									<p class="text-xs text-amber-700 dark:text-amber-300 mb-4">{{ $t('games.detail.prizes_info_message') }}</p>
+								<div v-if="saving" class="flex justify-center py-8">
+									<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="28" />
 								</div>
+								<GamePrizes v-else-if="createdGameId" :game-id="createdGameId" />
 
-								<!-- Navigation buttons for wizard -->
 								<div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
 									<button type="button" @click="goToPreviousStep"
 										class="px-5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-md transition-all flex items-center gap-2 text-sm">
 										<Icon name="ph:arrow-left-bold" size="16" class="rtl:rotate-180" />
 										{{ $t('common.previous') }}
 									</button>
-									<button type="button" @click="saveGame" :disabled="saving"
-										class="px-8 py-3 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-lg shadow-md shadow-[#007AFF]/20 transition-all flex items-center gap-2 text-sm">
-										<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" size="18" />
-										<Icon v-else name="ph:rocket-launch-bold" size="18" />
-										{{ saving ? $t('games.detail.creating') : $t('games.detail.create_game') }}
+									<button type="button" @click="finishWizard" :disabled="!createdGameId"
+										class="px-8 py-3 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-lg shadow-md shadow-[#007AFF]/20 transition-all flex items-center gap-2 text-sm disabled:opacity-50">
+										<Icon name="ph:check-bold" size="18" />
+										{{ $t('games.detail.finish_wizard') }}
 									</button>
 								</div>
 							</div>
@@ -1014,7 +1059,7 @@ const downloadFlyerPDF = async () => {
 
 						<!-- TAB: FLYERS -->
 						<div v-if="activeTab === 'flyers'">
-							<div v-if="isNew" class="text-center py-12">
+							<div v-if="wizardMode" class="text-center py-12">
 								<p class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ $t('games.detail.flyers_no_flyer') }}</p>
 							</div>
 							<div v-else class="space-y-4">
