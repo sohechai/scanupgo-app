@@ -149,7 +149,7 @@ const handleLogoUpload = async (event: Event) => {
 		})
 		if (response?.url) {
 			business.value.logo = response.url
-			useToast().show(t('profile.upload_success'), 'success')
+			await handleSave()
 		}
 	} catch (e: any) {
 		console.error(e)
