@@ -169,6 +169,28 @@ const converting = ref(false)
 const mode = ref<'canvas' | 'smart'>('canvas') // New: Mode for editor
 const smartFlyerRef = ref<any>(null) // New: Ref for SmartFlyer component
 
+// Confirmation modal before smart→canvas conversion
+const showConversionModal = ref(false)
+let conversionResolve: ((confirmed: boolean) => void) | null = null
+
+const requestConversionConfirm = (): Promise<boolean> =>
+	new Promise((resolve) => {
+		conversionResolve = resolve
+		showConversionModal.value = true
+	})
+
+const confirmConversion = () => {
+	showConversionModal.value = false
+	conversionResolve?.(true)
+	conversionResolve = null
+}
+
+const cancelConversion = () => {
+	showConversionModal.value = false
+	conversionResolve?.(false)
+	conversionResolve = null
+}
+
 // Static templates (special modes, not images)
 const staticTemplates = computed(() => [
 	{ id: 'blank', name: t('flyers.editor.template_blank'), description: t('flyers.editor.template_blank_desc'), icon: 'ph:file-dashed', image: null },
@@ -488,6 +510,10 @@ const loadTemplate = async (templateId: string) => {
 const convertSmartToCanvas = async (): Promise<boolean> => {
 	if (mode.value !== 'smart') return true
 
+	// Ask user to confirm before destroying smart mode controls
+	const confirmed = await requestConversionConfirm()
+	if (!confirmed) return false
+
 	converting.value = true
 	// Use server-side Puppeteer rendering (html2canvas fails to load Google Fonts correctly)
 	const imageUrl = await smartFlyerRef.value?.exportImage()
@@ -498,6 +524,7 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	}
 
 	const canvasToDispose = canvas.value
+	const savedSmartOptions = { ...smartOptions.value }
 	canvas.value = null
 	mode.value = 'canvas'
 	selectedBaseTemplate.value = 'blank'
@@ -510,7 +537,14 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	}
 
 	await initCanvas()
-	if (!canvas.value) return false
+	if (!canvas.value) {
+		// Rollback to smart mode
+		mode.value = 'smart'
+		smartOptions.value = savedSmartOptions
+		converting.value = false
+		showToast('Erreur lors de l\'initialisation du canvas', 'error')
+		return false
+	}
 
 	// Convert CDN URL to data URL via backend proxy to avoid CORS restrictions in Fabric canvas
 	let canvasImageUrl = imageUrl
@@ -533,28 +567,39 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 		}
 	}
 
-	const { FabricImage } = await import('fabric')
-	const img = await FabricImage.fromURL(canvasImageUrl, { crossOrigin: 'anonymous' })
-	const scaleX = CANVAS_WIDTH / (img.width || 1)
-	const scaleY = CANVAS_HEIGHT / (img.height || 1)
-	img.set({
-		left: CANVAS_WIDTH / 2,
-		top: CANVAS_HEIGHT / 2,
-		scaleX: Math.max(scaleX, scaleY),
-		scaleY: Math.max(scaleX, scaleY),
-		originX: 'center',
-		originY: 'center',
-		selectable: false,
-		evented: false,
-	})
-	canvas.value.add(img)
-	if (typeof canvas.value.sendToBack === 'function') canvas.value.sendToBack(img)
-	else canvas.value.moveObjectTo(img, 0)
-	canvas.value.renderAll()
-
-	converting.value = false
-	showToast('Template converti en canvas éditable', 'success')
-	return true
+	try {
+		const { FabricImage } = await import('fabric')
+		const img = await FabricImage.fromURL(canvasImageUrl, { crossOrigin: 'anonymous' })
+		if (!img.width || !img.height) throw new Error('Image failed to load')
+		const scaleX = CANVAS_WIDTH / img.width
+		const scaleY = CANVAS_HEIGHT / img.height
+		img.set({
+			left: CANVAS_WIDTH / 2,
+			top: CANVAS_HEIGHT / 2,
+			scaleX: Math.max(scaleX, scaleY),
+			scaleY: Math.max(scaleX, scaleY),
+			originX: 'center',
+			originY: 'center',
+			selectable: false,
+			evented: false,
+		})
+		canvas.value.add(img)
+		if (typeof canvas.value.sendToBack === 'function') canvas.value.sendToBack(img)
+		else canvas.value.moveObjectTo(img, 0)
+		canvas.value.renderAll()
+		converting.value = false
+		showToast('Template converti en canvas éditable', 'success')
+		return true
+	} catch (e) {
+		console.error('Failed to load converted image onto canvas:', e)
+		// Rollback to smart mode
+		mode.value = 'smart'
+		smartOptions.value = savedSmartOptions
+		converting.value = false
+		await nextTick()
+		showToast('Erreur lors du chargement de l\'image. Retour au mode intelligent.', 'error')
+		return false
+	}
 }
 
 // Add text to canvas
@@ -1645,6 +1690,76 @@ const previewFlyer = async () => {
 
 		<!-- Order Flyers Modal -->
 		<OrdersCreateOrderModal v-model="showOrderModal" :flyer-design-url="orderFlyerDesignUrl" @created="handleOrderCreated" />
+
+		<!-- Smart → Canvas Conversion Confirmation Modal -->
+		<Teleport to="body">
+			<Transition
+				enter-active-class="transition duration-150 ease-out"
+				enter-from-class="opacity-0"
+				enter-to-class="opacity-100"
+				leave-active-class="transition duration-100 ease-in"
+				leave-from-class="opacity-100"
+				leave-to-class="opacity-0"
+			>
+				<div v-if="showConversionModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+					<div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="cancelConversion" />
+					<Transition
+						enter-active-class="transition duration-150 ease-out"
+						enter-from-class="opacity-0 scale-95"
+						enter-to-class="opacity-100 scale-100"
+						leave-active-class="transition duration-100 ease-in"
+						leave-from-class="opacity-100 scale-100"
+						leave-to-class="opacity-0 scale-95"
+					>
+						<div v-if="showConversionModal"
+							class="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden"
+							role="dialog" aria-modal="true">
+
+							<!-- Top accent bar -->
+							<div class="h-0.5 w-full bg-indigo-500" />
+
+							<div class="p-5">
+								<!-- Icon + Text -->
+								<div class="flex items-start gap-4 mb-4">
+									<div class="w-9 h-9 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+										<Icon name="ph:magic-wand-bold" size="18" class="text-indigo-500" />
+									</div>
+									<div>
+										<h3 class="text-sm font-semibold text-slate-900 dark:text-white leading-snug">Convertir en canvas éditable</h3>
+										<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">Cette action est irréversible.</p>
+									</div>
+								</div>
+
+								<!-- Consequences -->
+								<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-3">
+									En convertissant, vous pourrez ajouter du texte, des logos et des éléments graphiques, mais la <span class="font-medium text-slate-700 dark:text-slate-300">modification des couleurs du template sera impossible</span>.
+								</p>
+
+								<!-- Warning -->
+								<div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20 px-3 py-2.5 mb-5">
+									<Icon name="ph:warning-bold" size="13" class="text-amber-500 shrink-0 mt-0.5" />
+									<p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+										Effectuez d'abord toutes vos <strong>modifications de couleurs</strong> dans la barre du bas, puis revenez ajouter vos éléments.
+									</p>
+								</div>
+
+								<!-- Actions -->
+								<div class="flex gap-2 justify-end">
+									<button @click="cancelConversion" type="button"
+										class="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+										Retour aux couleurs
+									</button>
+									<button @click="confirmConversion" type="button"
+										class="px-3.5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-md transition-colors shadow-sm">
+										Convertir quand même
+									</button>
+								</div>
+							</div>
+						</div>
+					</Transition>
+				</div>
+			</Transition>
+		</Teleport>
 	</div>
 </template>
 
