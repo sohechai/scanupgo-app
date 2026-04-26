@@ -523,7 +523,8 @@
       "pending": "En attente",
       "processing": "En cours",
       "shipped": "Expédiées",
-      "delivered": "Livrées"
+      "delivered": "Livrées",
+      "awaiting_payment": "En attente de paiement"
     },
     "table": {
       "order_number": "N° Commande",

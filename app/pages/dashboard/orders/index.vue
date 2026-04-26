@@ -50,6 +50,7 @@ const statusFilters = computed(() => [
 ])
 
 const statusDotColor: Record<string, string> = {
+	awaiting_payment: 'bg-orange-400',
 	pending:    'bg-amber-400',
 	processing: 'bg-blue-500',
 	shipped:    'bg-violet-500',
@@ -57,12 +58,19 @@ const statusDotColor: Record<string, string> = {
 	cancelled:  'bg-red-500',
 }
 const statusTextColor: Record<string, string> = {
+	awaiting_payment: 'text-orange-500',
 	pending:    'text-amber-600',
 	processing: 'text-blue-600',
 	shipped:    'text-violet-600',
 	delivered:  'text-emerald-600',
 	cancelled:  'text-red-600',
 }
+
+const getOrderDisplayKey = (order: Order) =>
+	order.paymentStatus === 'pending' ? 'awaiting_payment' : order.status
+
+const getOrderDisplayLabel = (order: Order) =>
+	order.paymentStatus === 'pending' ? t('orders.stats.awaiting_payment') : getStatusLabel(order.status)
 </script>
 
 <template>
@@ -149,7 +157,7 @@ const statusTextColor: Record<string, string> = {
 					class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
 					<!-- Status dot -->
 					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-						<span :class="[statusDotColor[order.status] || 'bg-slate-400', 'w-2 h-2 rounded-full']"></span>
+						<span :class="[statusDotColor[getOrderDisplayKey(order)] || 'bg-slate-400', 'w-2 h-2 rounded-full']"></span>
 					</div>
 					<!-- Info -->
 					<div class="flex-1 min-w-0">
@@ -161,9 +169,9 @@ const statusTextColor: Record<string, string> = {
 					</div>
 					<!-- Status + date -->
 					<div class="flex flex-col items-end gap-1 shrink-0">
-						<span class="inline-flex items-center gap-1.5 text-xs" :class="statusTextColor[order.status] || 'text-slate-500'">
-							<span :class="[statusDotColor[order.status] || 'bg-slate-400', 'w-1.5 h-1.5 rounded-full shrink-0']"></span>
-							{{ getStatusLabel(order.status) }}
+						<span class="inline-flex items-center gap-1.5 text-xs" :class="statusTextColor[getOrderDisplayKey(order)] || 'text-slate-500'">
+							<span :class="[statusDotColor[getOrderDisplayKey(order)] || 'bg-slate-400', 'w-1.5 h-1.5 rounded-full shrink-0']"></span>
+							{{ getOrderDisplayLabel(order) }}
 						</span>
 						<span class="text-xs text-slate-400">{{ formatDate(order.createdAt) }}</span>
 					</div>

@@ -522,7 +522,8 @@
       "pending": "قيد الانتظار",
       "processing": "قيد المعالجة",
       "shipped": "تم الشحن",
-      "delivered": "تم التسليم"
+      "delivered": "تم التسليم",
+      "awaiting_payment": "في انتظار الدفع"
     },
     "table": {
       "order_number": "رقم الطلب",

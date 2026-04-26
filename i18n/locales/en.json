@@ -522,7 +522,8 @@
       "pending": "Pending",
       "processing": "Processing",
       "shipped": "Shipped",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "awaiting_payment": "Awaiting payment"
     },
     "table": {
       "order_number": "Order #",
