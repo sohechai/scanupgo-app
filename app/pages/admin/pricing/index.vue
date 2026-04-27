@@ -53,6 +53,7 @@ const loadingFlyers = ref(true)
 const showFlyerModal = ref(false)
 const editingPricing = ref<FlyerPricing | null>(null)
 const flyerForm = ref({ productType: 'flyers', dimensions: 'A6', paperType: '135g_couche', minQuantity: 100, maxQuantity: null as number | null, unitPrice: 0, currency: 'MAD', active: true })
+const flyerError = ref<string | null>(null)
 
 const fetchPricings = async () => {
 	loadingFlyers.value = true
@@ -76,12 +77,14 @@ const groupedPricings = computed(() => {
 const openNewFlyerModal = () => {
 	editingPricing.value = null
 	flyerForm.value = { productType: 'flyers', dimensions: 'A6', paperType: '135g_couche', minQuantity: 100, maxQuantity: null, unitPrice: 0, currency: 'MAD', active: true }
+	flyerError.value = null
 	showFlyerModal.value = true
 }
 
 const openEditFlyerModal = (p: FlyerPricing) => {
 	editingPricing.value = p
 	flyerForm.value = { productType: p.productType, dimensions: p.dimensions, paperType: p.paperType, minQuantity: p.minQuantity, maxQuantity: p.maxQuantity, unitPrice: p.unitPrice, currency: p.currency, active: p.active }
+	flyerError.value = null
 	showFlyerModal.value = true
 }
 
@@ -91,7 +94,7 @@ const saveFlyer = async () => {
 		else { await $api('/flyer-pricing', { method: 'POST', body: flyerForm.value }); toast.show(t('admin.pricing.modal_create'), 'success') }
 		showFlyerModal.value = false
 		await fetchPricings()
-	} catch (e: any) { toast.show(e?.data?.message || e?.message || t('admin.pricing.modal_save'), 'error') }
+	} catch (e: any) { flyerError.value = e?.data?.message || e?.message || t('admin.pricing.modal_save') }
 }
 
 const deleteFlyer = async (p: FlyerPricing) => {
@@ -418,6 +421,9 @@ onMounted(() => { fetchPricings(); fetchCreditPacks() })
 								<p class="text-xs text-slate-500 mt-0.5">{{ flyerForm.active ? $t('admin.pricing.modal_active_visible') : $t('admin.pricing.modal_active_hidden') }}</p>
 							</div>
 						</label>
+					</div>
+					<div v-if="flyerError" class="mx-5 mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-md text-xs text-red-400">
+						{{ flyerError }}
 					</div>
 					<div class="px-5 py-4 border-t border-white/[0.06] flex justify-end gap-2">
 						<button @click="showFlyerModal = false" class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors">
