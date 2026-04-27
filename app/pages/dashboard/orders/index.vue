@@ -7,6 +7,7 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const router = useRouter()
 const { formatDate } = useLocaleDate()
 const { orders, stats, loading, fetchOrders, fetchStats, getStatusLabel, getStatusColor } = useOrders()
 const { hasActiveSubscription, fetchSubscription } = useSubscription()
@@ -175,7 +176,14 @@ const getOrderDisplayLabel = (order: Order) =>
 						</span>
 						<span class="text-xs text-slate-400">{{ formatDate(order.createdAt) }}</span>
 					</div>
-					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
+					<!-- Pay now button for pending orders -->
+					<button v-if="order.paymentStatus === 'pending'"
+						@click.stop="router.push(`/dashboard/orders/${order.id}/payment`)"
+						class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-[#635BFF] hover:bg-[#5248e0] text-white text-xs font-semibold rounded-md transition-colors">
+						<Icon name="ph:credit-card-bold" size="12" />
+						{{ $t('components.order_details.pay_now') }}
+					</button>
+					<Icon v-else name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</div>
 			</div>
 		</div>
