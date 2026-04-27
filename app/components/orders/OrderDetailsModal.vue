@@ -12,6 +12,7 @@ const emit = defineEmits<{
 
 const { downloadPdf, getStatusLabel, getStatusColor } = useOrders()
 const { t } = useI18n()
+const router = useRouter()
 
 const handleDownloadPdf = () => {
 	if (props.order) {
@@ -312,6 +313,16 @@ const getStatusClasses = (status: string) => {
 
 				<!-- Footer -->
 				<div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+					<!-- Pay CTA for pending payment orders -->
+					<div v-if="order.paymentStatus === 'pending'" class="mb-3 flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+						<Icon name="ph:warning-bold" size="15" class="text-amber-600 dark:text-amber-400 shrink-0" />
+						<p class="text-xs text-amber-700 dark:text-amber-300 flex-1">{{ $t('components.order_details.payment_pending_notice') }}</p>
+						<button @click="router.push(`/dashboard/orders/${order.id}/payment`)"
+							class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#635BFF] hover:bg-[#5248e0] text-white text-xs font-semibold rounded-md transition-colors">
+							<Icon name="ph:credit-card-bold" size="13" />
+							{{ $t('components.order_details.pay_now') }}
+						</button>
+					</div>
 					<div class="flex justify-between items-center">
 						<button v-if="order.pdfUrl" @click="handleDownloadPdf"
 							class="flex items-center gap-2 px-6 py-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-300 hover:border-slate-900 dark:hover:border-white transition-all">

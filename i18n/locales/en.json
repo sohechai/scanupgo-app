@@ -2275,7 +2275,9 @@
       "view_large": "View full size",
       "download_image": "Download image",
       "download_pdf": "Download order form",
-      "close": "Close"
+      "close": "Close",
+      "payment_pending_notice": "This order is awaiting payment.",
+      "pay_now": "Pay now"
     },
     "create_order": {
       "title": "New Order",

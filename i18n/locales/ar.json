@@ -2227,7 +2227,9 @@
       "view_large": "عرض بالكامل",
       "download_image": "تحميل الصورة",
       "download_pdf": "تحميل نموذج الطلب",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "payment_pending_notice": "هذا الطلب في انتظار الدفع.",
+      "pay_now": "ادفع الآن"
     },
     "create_order": {
       "title": "طلب جديد",

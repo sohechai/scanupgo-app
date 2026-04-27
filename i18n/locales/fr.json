@@ -2279,7 +2279,9 @@
       "view_large": "Voir en grand",
       "download_image": "Télécharger l'image",
       "download_pdf": "Télécharger le bon de commande",
-      "close": "Fermer"
+      "close": "Fermer",
+      "payment_pending_notice": "Cette commande est en attente de paiement.",
+      "pay_now": "Payer maintenant"
     },
     "create_order": {
       "title": "Nouvelle Commande",
