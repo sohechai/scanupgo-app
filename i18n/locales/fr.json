@@ -524,7 +524,8 @@
       "processing": "En cours",
       "shipped": "Expédiées",
       "delivered": "Livrées",
-      "awaiting_payment": "En attente de paiement"
+      "awaiting_payment": "En attente de paiement",
+      "refunded": "Remboursée"
     },
     "table": {
       "order_number": "N° Commande",

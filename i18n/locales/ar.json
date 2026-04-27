@@ -523,7 +523,8 @@
       "processing": "قيد المعالجة",
       "shipped": "تم الشحن",
       "delivered": "تم التسليم",
-      "awaiting_payment": "في انتظار الدفع"
+      "awaiting_payment": "في انتظار الدفع",
+      "refunded": "مسترجع"
     },
     "table": {
       "order_number": "رقم الطلب",

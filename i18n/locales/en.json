@@ -523,7 +523,8 @@
       "processing": "Processing",
       "shipped": "Shipped",
       "delivered": "Delivered",
-      "awaiting_payment": "Awaiting payment"
+      "awaiting_payment": "Awaiting payment",
+      "refunded": "Refunded"
     },
     "table": {
       "order_number": "Order #",

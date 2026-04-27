@@ -52,6 +52,7 @@ const statusFilters = computed(() => [
 
 const statusDotColor: Record<string, string> = {
 	awaiting_payment: 'bg-orange-400',
+	refunded:   'bg-rose-500',
 	pending:    'bg-amber-400',
 	processing: 'bg-blue-500',
 	shipped:    'bg-violet-500',
@@ -60,6 +61,7 @@ const statusDotColor: Record<string, string> = {
 }
 const statusTextColor: Record<string, string> = {
 	awaiting_payment: 'text-orange-500',
+	refunded:   'text-rose-500',
 	pending:    'text-amber-600',
 	processing: 'text-blue-600',
 	shipped:    'text-violet-600',
@@ -67,11 +69,17 @@ const statusTextColor: Record<string, string> = {
 	cancelled:  'text-red-600',
 }
 
-const getOrderDisplayKey = (order: Order) =>
-	order.paymentStatus === 'pending' ? 'awaiting_payment' : order.status
+const getOrderDisplayKey = (order: Order) => {
+	if (order.paymentStatus === 'refunded') return 'refunded'
+	if (order.paymentStatus === 'pending') return 'awaiting_payment'
+	return order.status
+}
 
-const getOrderDisplayLabel = (order: Order) =>
-	order.paymentStatus === 'pending' ? t('orders.stats.awaiting_payment') : getStatusLabel(order.status)
+const getOrderDisplayLabel = (order: Order) => {
+	if (order.paymentStatus === 'refunded') return t('orders.stats.refunded')
+	if (order.paymentStatus === 'pending') return t('orders.stats.awaiting_payment')
+	return getStatusLabel(order.status)
+}
 </script>
 
 <template>

@@ -365,7 +365,12 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 								<p v-if="order.totalPrice" class="text-sm font-medium text-white">
 									{{ Number(order.totalPrice).toFixed(0) }} {{ order.currency || 'MAD' }}
 								</p>
-								<p class="text-xs" :class="order.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-slate-500'">
+								<p class="text-xs" :class="{
+									'text-emerald-400': order.paymentStatus === 'paid',
+									'text-rose-400': order.paymentStatus === 'refunded',
+									'text-orange-400': order.paymentStatus === 'pending',
+									'text-slate-500': !['paid','refunded','pending'].includes(order.paymentStatus || ''),
+								}">
 									{{ getPaymentStatusLabel(order.paymentStatus) }}
 								</p>
 							</td>
