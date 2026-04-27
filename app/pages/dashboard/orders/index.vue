@@ -52,7 +52,7 @@ const statusFilters = computed(() => [
 
 const statusDotColor: Record<string, string> = {
 	awaiting_payment: 'bg-orange-400',
-	refunded:   'bg-rose-500',
+	refunded:   'bg-purple-400',
 	pending:    'bg-amber-400',
 	processing: 'bg-blue-500',
 	shipped:    'bg-violet-500',
@@ -61,7 +61,7 @@ const statusDotColor: Record<string, string> = {
 }
 const statusTextColor: Record<string, string> = {
 	awaiting_payment: 'text-orange-500',
-	refunded:   'text-rose-500',
+	refunded:   'text-purple-500',
 	pending:    'text-amber-600',
 	processing: 'text-blue-600',
 	shipped:    'text-violet-600',
