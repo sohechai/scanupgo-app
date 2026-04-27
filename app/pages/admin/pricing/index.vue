@@ -91,7 +91,7 @@ const saveFlyer = async () => {
 		else { await $api('/flyer-pricing', { method: 'POST', body: flyerForm.value }); toast.show(t('admin.pricing.modal_create'), 'success') }
 		showFlyerModal.value = false
 		await fetchPricings()
-	} catch { toast.show(t('admin.pricing.modal_save'), 'error') }
+	} catch (e: any) { toast.show(e?.data?.message || e?.message || t('admin.pricing.modal_save'), 'error') }
 }
 
 const deleteFlyer = async (p: FlyerPricing) => {
