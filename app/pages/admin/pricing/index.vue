@@ -94,7 +94,10 @@ const saveFlyer = async () => {
 		else { await $api('/flyer-pricing', { method: 'POST', body: flyerForm.value }); toast.show(t('admin.pricing.modal_create'), 'success') }
 		showFlyerModal.value = false
 		await fetchPricings()
-	} catch (e: any) { flyerError.value = e?.data?.message || e?.message || t('admin.pricing.modal_save') }
+	} catch (e: any) {
+		const msg = e?.data?.message || e?.message
+		flyerError.value = Array.isArray(msg) ? msg.join(' — ') : (msg || t('admin.pricing.modal_save'))
+	}
 }
 
 const deleteFlyer = async (p: FlyerPricing) => {
