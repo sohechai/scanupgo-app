@@ -71,10 +71,7 @@ watch(() => route.path, () => {
 
 			<!-- Logo -->
 			<div class="h-14 flex items-center px-5 border-b border-white/[0.06]">
-				<div class="flex items-center gap-2.5">
-					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-8" />
-					<p class="text-[10px] text-slate-500 mt-0.5">Admin</p>
-				</div>
+				<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-7" />
 			</div>
 
 			<!-- Navigation -->

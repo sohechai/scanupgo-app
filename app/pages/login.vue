@@ -243,7 +243,7 @@ const handleAdminLogin = async () => {
 			<div class="absolute inset-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'1\'/%3E%3C/g%3E%3C/svg%3E')"></div>
 
 			<div class="relative z-10">
-				<img src="/images/logo-dark.svg" alt="ScanUpGo" class="h-9" />
+				<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-11" />
 			</div>
 
 			<div class="relative z-10 max-w-lg">

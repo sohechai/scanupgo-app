@@ -68,7 +68,6 @@ export default defineNuxtConfig({
 	app: {
 		pageTransition: { name: 'page' },
 		head: {
-			titleTemplate: '%s — ScanUpGo',
 			title: 'ScanUpGo',
 			link: [
 				{ rel: 'icon', type: 'image/png', href: '/images/scanupgo-icon.png' },
