@@ -319,8 +319,8 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_order') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_client') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_product') }}</th>
-							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_total') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_status') }}</th>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.orders.table_header_total') }}</th>
 							<th class="px-4 py-3"></th>
 						</tr>
 					</thead>
@@ -362,20 +362,6 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 							</td>
 
 							<td class="px-4 py-3">
-								<p v-if="order.totalPrice" class="text-sm font-medium text-white">
-									{{ Number(order.totalPrice).toFixed(0) }} {{ order.currency || 'MAD' }}
-								</p>
-								<p class="text-xs" :class="{
-									'text-emerald-400': order.paymentStatus === 'paid',
-									'text-rose-400': order.paymentStatus === 'refunded',
-									'text-orange-400': order.paymentStatus === 'pending',
-									'text-slate-500': !['paid','refunded','pending'].includes(order.paymentStatus || ''),
-								}">
-									{{ getPaymentStatusLabel(order.paymentStatus) }}
-								</p>
-							</td>
-
-							<td class="px-4 py-3">
 								<div class="relative status-dropdown">
 									<div v-if="updatingStatusId === order.id" class="flex items-center gap-1.5 text-xs text-slate-500">
 										<Icon name="svg-spinners:ring-resize" size="13" />
@@ -387,6 +373,20 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 										<Icon name="ph:caret-down-bold" size="9" class="opacity-50" />
 									</button>
 								</div>
+							</td>
+
+							<td class="px-4 py-3">
+								<p v-if="order.totalPrice" class="text-sm font-medium text-white">
+									{{ Number(order.totalPrice).toFixed(0) }} {{ order.currency || 'MAD' }}
+								</p>
+								<p class="text-xs" :class="{
+									'text-emerald-400': order.paymentStatus === 'paid',
+									'text-rose-400': order.paymentStatus === 'refunded',
+									'text-orange-400': order.paymentStatus === 'pending',
+									'text-slate-500': !['paid','refunded','pending'].includes(order.paymentStatus || ''),
+								}">
+									{{ getPaymentStatusLabel(order.paymentStatus) }}
+								</p>
 							</td>
 
 							<td class="px-4 py-3 text-right rtl:text-left">
