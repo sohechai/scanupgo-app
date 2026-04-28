@@ -74,12 +74,12 @@ onMounted(async () => {
 		} else if (route.query.canceled === 'true') {
 			cleanUrlParams()
 		}
-		const [subscription, rawPlans, trial] = await Promise.all([
+		const [, rawPlans, trial] = await Promise.all([
 			refreshSharedSubscription(true),
 			$api<any[]>('/subscriptions/plans'),
 			$api<{ eligible: boolean; days: number }>('/subscriptions/trial-info'),
 		])
-		currentSubscription.value = subscription
+		currentSubscription.value = sharedSubscription.value
 		plans.value = rawPlans || []
 		trialInfo.value = trial || { eligible: false, days: 0 }
 	} catch (error) {
