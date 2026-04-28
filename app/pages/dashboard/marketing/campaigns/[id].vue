@@ -21,16 +21,16 @@ const loading = ref(true)
 const sending = ref(false)
 const saving = ref(false)
 
-const emailUsage = ref<{ used: number; limit: number | null } | null>(null)
+const emailUsage = ref<{ used: number; limit: number | null; optInPlayers: number } | null>(null)
 
 const fetchEmailUsage = async () => {
 	await fetchSubscription()
 	const limit = getPlanLimit('email_credits_per_month')
 	try {
-		const stats = await $api<{ sentThisMonth: number }>('/marketing/email-usage')
-		emailUsage.value = { used: stats.sentThisMonth, limit }
+		const stats = await $api<{ sentThisMonth: number; optInPlayers: number }>('/marketing/email-usage')
+		emailUsage.value = { used: stats.sentThisMonth, limit, optInPlayers: stats.optInPlayers }
 	} catch {
-		emailUsage.value = { used: 0, limit }
+		emailUsage.value = { used: 0, limit, optInPlayers: 0 }
 	}
 }
 
@@ -180,15 +180,12 @@ onMounted(async () => {
 						{{ editing ? $t('marketing.campaign_detail.cancel_edit') : $t('marketing.campaign_detail.edit') }}
 					</button>
 
-					<!-- Email usage -->
-					<div v-if="emailUsage?.limit" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
-						<Icon name="ph:envelope-simple-bold" size="13" class="text-slate-400" />
-						<span :class="['text-xs', emailUsagePercent >= 90 ? 'text-red-600 font-medium' : emailUsagePercent >= 70 ? 'text-amber-600 font-medium' : 'text-slate-500 dark:text-slate-400']">
-							{{ emailUsage.used }}/{{ emailUsage.limit }}
+					<!-- Opt-in recipients -->
+					<div v-if="emailUsage !== null" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
+						<Icon name="ph:users-bold" size="13" class="text-slate-400" />
+						<span class="text-xs text-slate-500 dark:text-slate-400">
+							{{ emailUsage.optInPlayers }} {{ $t('marketing.campaign_detail.recipients') }}
 						</span>
-						<div class="w-14 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-							<div class="h-full rounded-full transition-all" :class="emailUsageColor" :style="{ width: emailUsagePercent + '%' }" />
-						</div>
 					</div>
 
 					<button @click="sendCampaign" :disabled="sending || (emailUsage?.limit !== null && emailUsage?.used >= (emailUsage?.limit ?? Infinity))"
