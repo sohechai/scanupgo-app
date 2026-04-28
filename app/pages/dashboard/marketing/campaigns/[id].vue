@@ -181,10 +181,10 @@ onMounted(async () => {
 					</button>
 
 					<!-- Opt-in recipients -->
-					<div v-if="emailUsage !== null" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
+					<div v-if="emailUsage !== null" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
 						<Icon name="ph:users-bold" size="13" class="text-slate-400" />
 						<span class="text-xs text-slate-500 dark:text-slate-400">
-							{{ emailUsage.optInPlayers }} {{ $t('marketing.campaign_detail.recipients') }}
+							{{ emailUsage.used }}/{{ emailUsage.optInPlayers }}
 						</span>
 					</div>
 
