@@ -3,6 +3,7 @@ definePageMeta({
 	middleware: 'auth',
 	layout: 'dashboard'
 })
+useHead({ title: 'Nouvelle campagne' })
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

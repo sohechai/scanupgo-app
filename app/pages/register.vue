@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Inscription' })
 const { t } = useI18n()
 const { signUp } = useAuth()
 const config = useRuntimeConfig()

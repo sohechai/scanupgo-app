@@ -5,6 +5,7 @@ definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth'
 })
+useHead({ title: 'Commandes' })
 
 const { t } = useI18n()
 const router = useRouter()

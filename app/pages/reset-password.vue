@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Réinitialisation du mot de passe' })
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

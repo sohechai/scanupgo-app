@@ -3,6 +3,7 @@ definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth'
 })
+useHead({ title: 'Mon compte' })
 
 const { t, locale, setLocale } = useI18n()
 const { user, signOut } = useAuth()

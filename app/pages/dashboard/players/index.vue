@@ -3,6 +3,7 @@ definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth'
 })
+useHead({ title: 'Joueurs' })
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

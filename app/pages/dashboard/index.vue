@@ -5,6 +5,7 @@ definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth'
 })
+useHead({ title: 'Tableau de bord' })
 
 const { t } = useI18n()
 const { formatDate, formatNumber } = useLocaleDate()

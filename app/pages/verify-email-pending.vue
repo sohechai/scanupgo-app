@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Vérification de l\'email' })
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

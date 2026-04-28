@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: []
 })
 
+useHead({ title: 'Connexion' })
+
 const { t } = useI18n()
 const { signIn } = useAuth()
 const { $api } = useNuxtApp()

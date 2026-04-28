@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Mot de passe oublié' })
 
 const { t } = useI18n()
 const { $api } = useNuxtApp()

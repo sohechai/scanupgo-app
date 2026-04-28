@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Vérification de l\'email' })
 
 const route = useRoute()
 const authStore = useAuthStore()

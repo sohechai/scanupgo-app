@@ -3,6 +3,7 @@ definePageMeta({
 	middleware: 'auth',
 	layout: false
 })
+useHead({ title: 'Configuration' })
 
 const { $api } = useNuxtApp()
 const authStore = useAuthStore()

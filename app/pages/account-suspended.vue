@@ -2,6 +2,7 @@
 definePageMeta({
 	layout: 'auth'
 })
+useHead({ title: 'Compte suspendu' })
 
 const { $api } = useNuxtApp()
 const authStore = useAuthStore()

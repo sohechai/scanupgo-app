@@ -3,6 +3,7 @@ import CurrentSubscription from '~/components/subscription/CurrentSubscription.v
 import PlanCard from '~/components/subscription/PlanCard.vue'
 import CancelModal from '~/components/subscription/CancelModal.vue'
 
+useHead({ title: 'Abonnement' })
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const toast = useToast()

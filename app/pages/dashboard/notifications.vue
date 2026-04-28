@@ -3,6 +3,7 @@ definePageMeta({
 	layout: 'dashboard',
 	middleware: 'auth',
 })
+useHead({ title: 'Notifications' })
 
 const { t } = useI18n()
 const router = useRouter()
