@@ -7,6 +7,8 @@ definePageMeta({
 	layout: 'dashboard'
 })
 
+useHead({ title: 'Jeu' })
+
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()

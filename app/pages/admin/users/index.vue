@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: ['admin']
 })
 
+useHead({ title: 'Utilisateurs' })
+
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
 const { $api } = useNuxtApp()

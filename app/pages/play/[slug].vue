@@ -11,6 +11,8 @@ definePageMeta({
 	layout: 'public'
 })
 
+useHead({ title: 'Jouer' })
+
 // Mobile detection - block desktop users (disabled in dev mode)
 const isDev = import.meta.dev
 const isMobile = ref(true) // Default to true for SSR

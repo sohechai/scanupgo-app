@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: ['admin']
 })
 
+useHead({ title: 'Paramètres' })
+
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const toast = useToast()

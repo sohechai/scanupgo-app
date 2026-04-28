@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: ['admin']
 })
 
+useHead({ title: 'Commerces' })
+
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const { formatDate, formatNumber } = useLocaleDate()

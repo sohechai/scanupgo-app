@@ -6,6 +6,8 @@ definePageMeta({
 	middleware: 'auth',
 })
 
+useHead({ title: 'Commande confirmée' })
+
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()

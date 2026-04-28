@@ -6,6 +6,8 @@ definePageMeta({
 	middleware: ['auth', 'admin']
 })
 
+useHead({ title: 'Commandes' })
+
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
 const { orders, stats, loading, fetchOrders, fetchStats, updateOrderStatus: updateStatus, getStatusLabel, getStatusColor, getPaymentStatusLabel, getPaymentStatusColor, downloadPdf, downloadBulkForPrinting, downloadOrderForPrinting } = useOrders()

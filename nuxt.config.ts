@@ -66,9 +66,9 @@ export default defineNuxtConfig({
 		}
 	},
 	app: {
-		pageTransition: { name: 'page' },
+		pageTransition: { name: 'page', mode: 'out-in' },
 		head: {
-			title: 'ScanUpGo',
+			titleTemplate: '%s',
 			link: [
 				{ rel: 'icon', type: 'image/png', href: '/images/scanupgo-icon.png' },
 				{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },

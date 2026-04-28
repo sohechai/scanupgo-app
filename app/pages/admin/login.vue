@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: []
 })
 
+useHead({ title: 'Connexion Admin' })
+
 // On admin subdomain, this route doesn't exist — canonical login is /login
 // On localhost (dev), keep this page functional
 if (import.meta.client) {

@@ -6,6 +6,8 @@ definePageMeta({
 	middleware: ['admin']
 })
 
+useHead({ title: 'Dashboard Admin' })
+
 const { t } = useI18n()
 const { $api } = useNuxtApp()
 const { formatNumber, formatDate } = useLocaleDate()

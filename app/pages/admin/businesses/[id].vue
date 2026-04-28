@@ -4,6 +4,8 @@ definePageMeta({
 	middleware: ['admin']
 })
 
+useHead({ title: 'Commerce' })
+
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()

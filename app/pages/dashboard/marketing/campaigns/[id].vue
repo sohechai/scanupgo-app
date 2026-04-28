@@ -4,6 +4,8 @@ definePageMeta({
 	layout: 'dashboard'
 })
 
+useHead({ title: 'Campagne' })
+
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
 const route = useRoute()

@@ -6,6 +6,8 @@ definePageMeta({
 	middleware: 'auth',
 })
 
+useHead({ title: 'Paiement' })
+
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()

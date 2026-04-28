@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin', middleware: ['admin'] })
 
+useHead({ title: 'Paiements' })
+
 const { t } = useI18n()
 const { formatDate, formatNumber } = useLocaleDate()
 const { $api } = useNuxtApp()
