@@ -222,12 +222,12 @@ export const useOrders = () => {
 
 	const getPaymentStatusLabel = (status?: string): string => {
 		const labels: Record<string, string> = {
-			pending: 'En attente',
+			pending: 'En attente de paiement',
 			paid: 'Payé',
 			failed: 'Échoué',
 			refunded: 'Remboursé',
 		}
-		return labels[status || 'pending'] || status || 'En attente'
+		return labels[status || 'pending'] || status || 'En attente de paiement'
 	}
 
 	const getPaymentStatusColor = (status?: string): string => {
