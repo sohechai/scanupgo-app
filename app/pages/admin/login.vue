@@ -76,11 +76,8 @@ const handleLogin = async () => {
 
 		<div class="relative w-full max-w-md">
 			<div class="text-center mb-8">
-				<div class="inline-flex items-center gap-3 mb-3">
-					<div class="w-12 h-12 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl flex items-center justify-center shadow-xl shadow-brand-500/20">
-						<span class="text-white font-bold text-xl">B.</span>
-					</div>
-					<h1 class="text-2xl font-bold text-white">ScanUpGo</h1>
+				<div class="inline-flex items-center mb-3">
+					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-11" />
 				</div>
 				<p class="text-sm text-slate-400">{{ $t('admin.administration') }}</p>
 			</div>

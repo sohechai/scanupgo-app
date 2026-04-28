@@ -69,6 +69,7 @@ export default defineNuxtConfig({
 		pageTransition: { name: 'page' },
 		head: {
 			link: [
+				{ rel: 'icon', type: 'image/png', href: '/images/scanupgo-icon.png' },
 				{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },
 				{ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
 				{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Anton&family=Bangers&family=Luckiest+Guy&family=Righteous&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap' }

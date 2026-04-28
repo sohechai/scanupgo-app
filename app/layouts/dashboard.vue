@@ -72,11 +72,9 @@ const toggleTheme = () => {
 
 			<!-- Brand -->
 			<div class="h-14 flex items-center px-4">
-				<div class="flex items-center gap-2.5">
-					<div class="w-7 h-7 bg-slate-900 dark:bg-white rounded-md flex items-center justify-center text-white dark:text-slate-900 font-bold text-xs">
-						B.
-					</div>
-					<span class="font-semibold text-slate-800 dark:text-white text-sm tracking-tight">ScanUpGo</span>
+				<div class="flex items-center">
+					<img src="/images/scanupgo-logo-transparent-clair.png" alt="ScanUpGo" class="h-8 dark:hidden" />
+					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-8 hidden dark:block" />
 				</div>
 			</div>
 
