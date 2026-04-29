@@ -98,7 +98,9 @@ const backToLogin = () => {
 
 const loginWithGoogle = () => {
 	const apiBase = config.public.apiUrl || 'http://localhost:4000'
-	window.location.href = `${apiBase}/auth/google`
+	const host = window.location.hostname
+	const isAdminSubdomain = host.startsWith('admin.')
+	window.location.href = `${apiBase}/auth/google${isAdminSubdomain ? '/admin' : ''}`
 }
 
 // Admin login
