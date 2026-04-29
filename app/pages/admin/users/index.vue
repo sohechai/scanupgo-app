@@ -20,6 +20,8 @@ const users = ref<any[]>([])
 const confirmModal = ref<{ type: 'delete'; user: any } | null>(null)
 const actionLoading = ref(false)
 
+const closeMenu = () => { menuState.value = null; menuUser.value = null }
+
 onMounted(async () => {
 	try {
 		const data = await $api<any[]>('/admin/users')
@@ -30,7 +32,11 @@ onMounted(async () => {
 		loading.value = false
 	}
 
-	document.addEventListener('click', () => { menuState.value = null; menuUser.value = null })
+	document.addEventListener('click', closeMenu)
+})
+
+onUnmounted(() => {
+	document.removeEventListener('click', closeMenu)
 })
 
 const filteredUsers = computed(() => {
