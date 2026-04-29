@@ -84,6 +84,14 @@ const stats = computed(() => ({
 	admins: users.value.filter(u => u.role === 'ADMINISTRATOR').length,
 	superAdmins: users.value.filter(u => u.role === 'SUPER_ADMIN').length,
 }))
+
+const superAdminUsers = computed(() =>
+	filteredUsers.value.filter(u => u.role === 'SUPER_ADMIN')
+)
+
+const regularUsers = computed(() =>
+	filteredUsers.value.filter(u => u.role !== 'SUPER_ADMIN')
+)
 </script>
 
 <template>
@@ -191,7 +199,41 @@ const stats = computed(() => ({
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-white/[0.04]">
-						<tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-white/[0.02] transition-colors group">
+						<!-- SUPER_ADMIN rows -->
+						<tr v-for="user in superAdminUsers" :key="user.id" class="bg-purple-500/[0.06] hover:bg-purple-500/[0.1] transition-colors group">
+							<td class="px-4 py-3">
+								<div class="flex items-center gap-3">
+									<div class="w-8 h-8 rounded-md bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-xs font-semibold text-purple-300 shrink-0">
+										{{ getUserInitials(user) }}
+									</div>
+									<div>
+										<p class="text-sm font-medium text-white">{{ getUserName(user) }}</p>
+										<p class="text-xs text-slate-500">{{ user.email }}</p>
+									</div>
+								</div>
+							</td>
+							<td class="px-4 py-3">
+								<span class="inline-flex items-center gap-1.5 text-xs font-medium text-purple-400">
+									<span class="w-1.5 h-1.5 rounded-full shrink-0 bg-purple-400"></span>
+									{{ getRoleLabel(user.role) }}
+								</span>
+							</td>
+							<td class="px-4 py-3"><span class="text-sm text-slate-300">{{ user.businessName || '—' }}</span></td>
+							<td class="px-4 py-3"><span class="text-sm text-slate-400">{{ formatDate(user.createdAt) }}</span></td>
+							<td class="px-4 py-3 text-right rtl:text-left">
+								<button class="p-1.5 text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-md transition-colors opacity-0 group-hover:opacity-100">
+									<Icon name="ph:pencil-simple-bold" size="14" />
+								</button>
+							</td>
+						</tr>
+						<!-- Separator if both sections have items -->
+						<tr v-if="superAdminUsers.length > 0 && regularUsers.length > 0">
+							<td colspan="5" class="px-4 py-1.5 bg-white/[0.02]">
+								<span class="text-xs text-slate-600">{{ $t('admin.users.role_filter_commercant') }}</span>
+							</td>
+						</tr>
+						<!-- Regular users -->
+						<tr v-for="user in regularUsers" :key="user.id" class="hover:bg-white/[0.02] transition-colors group">
 							<td class="px-4 py-3">
 								<div class="flex items-center gap-3">
 									<div class="w-8 h-8 rounded-md bg-white/[0.06] border border-white/[0.06] flex items-center justify-center text-xs font-semibold text-slate-300 shrink-0">
@@ -209,12 +251,8 @@ const stats = computed(() => ({
 									{{ getRoleLabel(user.role) }}
 								</span>
 							</td>
-							<td class="px-4 py-3">
-								<span class="text-sm text-slate-300">{{ user.businessName || '—' }}</span>
-							</td>
-							<td class="px-4 py-3">
-								<span class="text-sm text-slate-400">{{ formatDate(user.createdAt) }}</span>
-							</td>
+							<td class="px-4 py-3"><span class="text-sm text-slate-300">{{ user.businessName || '—' }}</span></td>
+							<td class="px-4 py-3"><span class="text-sm text-slate-400">{{ formatDate(user.createdAt) }}</span></td>
 							<td class="px-4 py-3 text-right rtl:text-left">
 								<button class="p-1.5 text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-md transition-colors opacity-0 group-hover:opacity-100">
 									<Icon name="ph:pencil-simple-bold" size="14" />
