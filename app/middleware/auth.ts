@@ -77,15 +77,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		localeCookie.value = user.preferredLanguage
 	}
 
-	// Role guard: SUPER_ADMIN must not land on the merchant dashboard
-	// (happens in dev when both share the same origin and the admin login overwrites the merchant cookie)
-	if (user.role === 'SUPER_ADMIN' && !isAdminSubdomain) {
-		authCache.value = { user: null, checkedAt: 0 }
-		authStore.user = null
-		authStore._saveState()
-		return navigateTo('/login')
-	}
-
 	// Block access if account is suspended
 	if (user.status === 'suspended' && to.path !== '/account-suspended') {
 		return navigateTo('/account-suspended')
