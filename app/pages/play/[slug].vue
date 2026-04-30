@@ -81,6 +81,7 @@ const isWin = ref(false)
 const wonPrize = ref<any>(null)
 const rateLimitError = ref(false)
 const qrCodeDataUrl = ref<string | null>(null)
+const showRules = ref(false)
 
 
 // Wheel State
@@ -141,7 +142,7 @@ const trackEvent = (eventType: string) => {
 			gameId: game.value.id,
 			eventType
 		}
-	}).catch(() => {}) // silent fail
+	}).catch(() => { }) // silent fail
 }
 
 // Track page visit on mount
@@ -208,7 +209,7 @@ const submitForm = async () => {
 			wonPrize.value = response.prize
 
 			if (isWin.value && wonPrize.value) {
-	const index = game.value.prizes.findIndex((p: any) => p.id === wonPrize.value.id)
+				const index = game.value.prizes.findIndex((p: any) => p.id === wonPrize.value.id)
 				if (index !== -1) {
 					targetPrizeIndex.value = index
 				} else {
@@ -351,13 +352,9 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 
 		<!-- Language Selector -->
 		<div class="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
-			<button
-				v-for="lang in playerLocales"
-				:key="lang.code"
-				@click="switchLocale(lang.code)"
+			<button v-for="lang in playerLocales" :key="lang.code" @click="switchLocale(lang.code)"
 				class="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all"
-				:class="locale === lang.code ? 'bg-white/40 shadow-md scale-110' : 'bg-white/10 hover:bg-white/25 opacity-60 hover:opacity-100'"
-			>
+				:class="locale === lang.code ? 'bg-white/40 shadow-md scale-110' : 'bg-white/10 hover:bg-white/25 opacity-60 hover:opacity-100'">
 				{{ lang.flag }}
 			</button>
 		</div>
@@ -379,38 +376,59 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 			</div>
 
 			<!-- ÉTAPE 1: INTRO -->
-			<div v-else-if="step === 'intro'"
-				class="flex flex-col items-center min-h-[90vh] animate-fade-in-up w-full pt-14 pb-6 gap-5">
-				<!-- Logo + Titre -->
-				<div class="flex flex-col items-center space-y-3">
-					<div v-if="business?.logo"
-						class="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl p-2.5 shadow-xl flex items-center justify-center overflow-hidden border border-white/20">
-						<img :src="business.logo" class="w-full h-full object-contain" />
+			<div v-else-if="step === 'intro'" class="fixed inset-0 flex flex-col overflow-hidden text-white"
+				:style="{ backgroundColor: primaryColor }">
+
+				<!-- Content -->
+				<div class="relative z-10 w-full h-full flex flex-col pt-12">
+					<!-- Logo -->
+					<div class="flex justify-center px-8 shrink-0">
+						<img v-if="business?.logo" :src="business.logo"
+							class="h-20 max-w-[280px] object-contain drop-shadow-2xl" />
+						<h1 v-else class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
 					</div>
-					<div class="space-y-1 text-center">
-						<h1 class="text-3xl font-black tracking-tight">{{ game.title }}</h1>
-						<p class="text-sm uppercase tracking-wide opacity-90 font-medium px-4">{{ game.tagline }}</p>
+
+					<!-- Tagline Box -->
+					<div class="px-5 mt-6 shrink-0 w-full max-w-sm mx-auto">
+						<div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
+							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							<p class="text-[22px] uppercase leading-[1.1]"
+								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.5px;">
+								<template v-if="game.tagline">{{ game.tagline }}</template>
+								<template v-else>PARTICIPEZ À NOTRE JEU ET<br>TENTEZ DE GAGNER UN CADEAU !</template>
+							</p>
+						</div>
 					</div>
+
+					<!-- Bouton Jouer -->
+					<div class="w-full flex justify-end px-5 mt-6 shrink-0 z-20">
+						<button @click="goToSteps"
+							class="bg-white text-black text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz"
+							style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);">
+							{{ $t('play.intro.play_button') }}
+						</button>
+					</div>
+
+					<!-- Roue (débordant à gauche) -->
+					<div class="absolute top-1/2 -translate-y-1/2 -left-[150px] md:-left-[210px] z-10 w-[380px] md:w-[500px] aspect-square">
+						<FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
+							:is-spinning="false" :preview-mode="true" pointer-position="right" />
+					</div>
+
 				</div>
 
-				<!-- Roue centrée -->
-				<div class="w-full flex justify-center cursor-pointer" @click="goToSteps">
-					<FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
-						:is-spinning="false" :has-lost="false" :preview-mode="true" />
-				</div>
-
-				<!-- Bouton sous la roue -->
-				<div class="w-full px-4">
-					<button @click="goToSteps"
-						class="w-full py-4 text-lg font-black uppercase tracking-wider rounded-full shadow-lg transform transition active:scale-95 hover:shadow-2xl bg-slate-900 text-white">
-						{{ $t('play.intro.play_button') }}
+				<!-- Footer fixe -->
+				<div
+					class="absolute bottom-0 left-0 right-0 h-[60px] bg-[#2a2a2a] flex justify-between items-center px-10 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.4)]">
+					<button @click="showRules = true"
+						class="text-[15px] font-extrabold text-white underline underline-offset-[5px] decoration-2 tracking-wide opacity-90 hover:opacity-100 transition">
+						{{ $t('play.intro.rules') }}
 					</button>
+					<a href="https://scanupgo.com/contact" target="_blank"
+						class="text-[15px] font-extrabold text-white underline underline-offset-[5px] decoration-2 tracking-wide opacity-90 hover:opacity-100 transition">
+						{{ $t('play.intro.contact') }}
+					</a>
 				</div>
-
-				<!-- Footer -->
-				<p class="text-[10px] uppercase tracking-widest opacity-40 text-center mt-auto">
-					{{ $t('play.intro.powered_by') }}
-				</p>
 			</div>
 
 			<!-- ÉTAPE 2: DESCRIPTION DES ÉTAPES + BOUTON GOOGLE REVIEW -->
@@ -466,12 +484,14 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 			</div>
 
 			<!-- ÉTAPE 2b: TIMER AVIS GOOGLE -->
-			<div v-else-if="step === 'review_timer'" class="w-full flex flex-col items-center gap-8 animate-fade-in-up py-6">
+			<div v-else-if="step === 'review_timer'"
+				class="w-full flex flex-col items-center gap-8 animate-fade-in-up py-6">
 
 				<!-- Icône Google animée -->
 				<div class="relative">
 					<div class="absolute inset-0 bg-white/20 blur-2xl rounded-full animate-pulse"></div>
-					<div class="relative w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25 shadow-xl">
+					<div
+						class="relative w-20 h-20 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/25 shadow-xl">
 						<Icon name="ph:google-logo-fill" size="44" class="text-white" />
 					</div>
 				</div>
@@ -479,7 +499,8 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 				<!-- Texte -->
 				<div class="text-center space-y-2">
 					<h2 class="text-2xl font-black">{{ $t('play.review_timer.title') }}</h2>
-					<p class="text-sm opacity-80 leading-relaxed px-4" style="white-space: pre-line">{{ $t('play.review_timer.subtitle') }}</p>
+					<p class="text-sm opacity-80 leading-relaxed px-4" style="white-space: pre-line">{{
+						$t('play.review_timer.subtitle') }}</p>
 				</div>
 
 				<!-- Cercle de progression -->
@@ -489,14 +510,14 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 						<circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="8" />
 						<!-- Progress -->
 						<circle cx="60" cy="60" r="50" fill="none" stroke="white" stroke-width="8"
-							stroke-linecap="round"
-							:stroke-dasharray="`${2 * Math.PI * 50}`"
+							stroke-linecap="round" :stroke-dasharray="`${2 * Math.PI * 50}`"
 							:stroke-dashoffset="`${2 * Math.PI * 50 * (1 - timerSeconds / REVIEW_TIMER_SECONDS)}`"
 							style="transition: stroke-dashoffset 1s linear" />
 					</svg>
 					<div class="absolute inset-0 flex flex-col items-center justify-center">
 						<span class="text-3xl font-black tabular-nums">{{ timerSeconds }}</span>
-						<span class="text-xs opacity-70 uppercase tracking-wide">{{ $t('play.review_timer.seconds') }}</span>
+						<span class="text-xs opacity-70 uppercase tracking-wide">{{ $t('play.review_timer.seconds')
+						}}</span>
 					</div>
 				</div>
 
@@ -584,7 +605,8 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 				<div class="text-center mb-6 animate-fade-in-up">
 					<p class="text-sm uppercase tracking-widest opacity-60 mb-1">{{ $t('play.playing.spinning') }}</p>
 					<h2 class="text-3xl md:text-4xl font-black drop-shadow-lg">
-						{{ $t('play.playing.good_luck_prefix') }}<span class="text-yellow-300">{{ form.first_name }}</span>{{ $t('play.playing.good_luck_suffix') }}
+						{{ $t('play.playing.good_luck_prefix') }}<span class="text-yellow-300">{{ form.first_name
+						}}</span>{{ $t('play.playing.good_luck_suffix') }}
 					</h2>
 				</div>
 
@@ -621,7 +643,8 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 					</p>
 
 					<div v-if="qrCodeDataUrl" class="mt-6 pt-6 border-t border-slate-100">
-						<p class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-3">{{ $t('play.result.win.qr_instruction') }}</p>
+						<p class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-3">{{
+							$t('play.result.win.qr_instruction') }}</p>
 						<div class="flex justify-center mb-4">
 							<img :src="qrCodeDataUrl" alt="QR Code"
 								class="w-48 h-48 border-4 border-slate-200 rounded-lg shadow-md" />
@@ -629,7 +652,8 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 					</div>
 
 					<div class="mt-4 pt-4 border-t border-slate-100">
-						<p class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">{{ $t('play.result.win.code_instruction') }}</p>
+						<p class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">{{
+							$t('play.result.win.code_instruction') }}</p>
 						<p class="font-mono text-2xl font-bold tracking-widest bg-slate-50 py-3 rounded-lg select-all">
 							{{ wonPrize?.redemptionCode || 'N/A' }}
 						</p>
@@ -673,6 +697,151 @@ const textColor = computed(() => getContrastColor(primaryColor.value))
 			{{ $t('play.powered_by') }}
 		</div>
 	</div>
+
+	<!-- Modal Règlement -->
+	<Teleport to="body">
+		<Transition name="modal">
+			<div v-if="showRules" class="fixed inset-0 z-[200] flex items-end justify-center"
+				@click.self="showRules = false">
+				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showRules = false"></div>
+				<div class="relative bg-white rounded-t-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+					<!-- Header -->
+					<div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+						<h2 class="text-base font-black text-slate-900 uppercase tracking-wide">Règlement du jeu</h2>
+						<button @click="showRules = false"
+							class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition">
+							<Icon name="ph:x-bold" size="15" />
+						</button>
+					</div>
+					<!-- Content -->
+					<div class="overflow-y-auto px-6 py-5 text-sm text-slate-700 space-y-5 leading-relaxed">
+						<p class="text-xs text-slate-400 uppercase tracking-widest font-semibold">En vigueur pendant
+							toute la durée d'activation du jeu</p>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 1 — Organisateurs</h3>
+							<p>Le jeu-concours sans obligation d'achat est organisé par :</p>
+							<ul class="list-disc list-inside mt-1 space-y-1">
+								<li><strong>{{ business?.name || 'Le commerçant' }}</strong> (ci-après « l'Organisateur
+									»), établissement situé au Royaume du Maroc, responsable de l'opération commerciale
+									et des lots ;</li>
+								<li><strong>ScanUpGo</strong>, auto-entreprise de droit français (ci-après « la
+									Plateforme »), intervenant exclusivement en qualité de prestataire technique pour la
+									mise en œuvre numérique du jeu.</li>
+							</ul>
+							<p class="mt-1">Toute réclamation relative aux lots doit être adressée directement à
+								l'Organisateur. ScanUpGo ne peut être tenu responsable des engagements commerciaux de
+								l'Organisateur.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 2 — Objet et durée</h3>
+							<p>Le présent règlement régit le jeu-concours intitulé <strong>« {{ game?.title }}
+									»</strong>, proposé par l'Organisateur à titre promotionnel, sans obligation d'achat
+								ni contrepartie financière d'aucune sorte. Le jeu est actif pendant la période définie
+								par l'Organisateur sur la Plateforme ; il peut être suspendu ou arrêté à tout moment par
+								l'Organisateur.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 3 — Conditions de participation</h3>
+							<p>Le jeu est ouvert à toute personne physique majeure (18 ans ou plus), résidant au Royaume
+								du Maroc, à l'exclusion :</p>
+							<ul class="list-disc list-inside mt-1 space-y-0.5">
+								<li>des salariés, collaborateurs et gérants de l'Organisateur ;</li>
+								<li>des membres de leur famille directe (conjoint, ascendants, descendants) ;</li>
+								<li>des collaborateurs de ScanUpGo.</li>
+							</ul>
+							<p class="mt-1">La participation est limitée à <strong>une (1) tentative par
+									personne</strong> sur la durée du jeu. Toute tentative multiple détectée sera
+								automatiquement invalidée sans recours possible.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 4 — Modalités de participation</h3>
+							<p>Pour participer, le joueur doit :</p>
+							<ol class="list-decimal list-inside mt-1 space-y-1">
+								<li>Scanner le QR code mis à disposition par l'Organisateur ;</li>
+								<li>Laisser un avis sur Google (étape facultative — aucune note minimale n'est imposée ;
+									le joueur peut passer cette étape) ;</li>
+								<li>Renseigner les informations demandées (prénom, e-mail ou numéro de téléphone) ;</li>
+								<li>Faire tourner la roue de la fortune pour découvrir son résultat.</li>
+							</ol>
+							<p class="mt-1">Le résultat est déterminé de façon aléatoire par la Plateforme selon les
+								probabilités configurées par l'Organisateur. ScanUpGo ne peut être tenu responsable de
+								la politique de gains retenue par l'Organisateur.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 5 — Dotations</h3>
+							<p>Les lots sont définis, fournis et remis exclusivement par l'Organisateur. La liste et la
+								valeur indicative des lots sont disponibles sur demande auprès de l'Organisateur.
+								ScanUpGo n'assume aucune responsabilité quant à la nature, la qualité, la disponibilité
+								ou la remise des lots. Les lots sont strictement personnels : ils ne sont ni
+								échangeables, ni remboursables, ni cessibles à un tiers.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 6 — Remise des lots</h3>
+							<p>En cas de gain, un code unique ou un QR code est remis au joueur via la Plateforme. Ce
+								justificatif doit être présenté à l'Organisateur dans les délais affichés sur la page de
+								résultat. Passé ce délai, le gain est définitivement perdu et ne pourra faire l'objet
+								d'aucune réclamation. L'Organisateur se réserve le droit de vérifier l'identité du
+								gagnant avant toute remise de lot.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 7 — Responsabilité</h3>
+							<p>L'Organisateur et ScanUpGo ne sauraient être tenus responsables de tout incident lié à
+								une connexion internet défaillante, à un appareil incompatible, ou à toute circonstance
+								indépendante de leur volonté. ScanUpGo se réserve le droit de suspendre, modifier ou
+								annuler le jeu en cas de fraude avérée, d'abus, de force majeure ou de problème
+								technique majeur, sans qu'aucune indemnité ne soit due aux participants.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 8 — Protection des données personnelles
+							</h3>
+							<p>Les données collectées (prénom, e-mail, téléphone) sont traitées par l'Organisateur en
+								qualité de responsable de traitement, aux fins de gestion du jeu et, sous réserve du
+								consentement explicite du participant, à des fins de communication commerciale.</p>
+							<p class="mt-1">Conformément à la <strong>loi n° 09-08 relative à la protection des
+									personnes physiques à l'égard du traitement des données à caractère
+									personnel</strong> (Maroc / CNDP), le participant dispose d'un droit d'accès, de
+								rectification et de suppression de ses données en contactant directement l'Organisateur.
+							</p>
+							<p class="mt-1">ScanUpGo, en tant qu'entité de droit français traitant des données pour le
+								compte de l'Organisateur, intervient en qualité de sous-traitant au sens de l'article 28
+								du <strong>Règlement Général sur la Protection des Données (RGPD)</strong> et s'engage à
+								traiter les données conformément aux instructions de l'Organisateur.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 9 — Litiges et droit applicable</h3>
+							<p>Tout litige relatif aux lots ou à l'opération commerciale est soumis au droit marocain et
+								relève de la compétence des juridictions du lieu du siège de l'Organisateur au Maroc.
+							</p>
+							<p class="mt-1">Tout litige relatif à la Plateforme ScanUpGo est soumis au droit français et
+								relève de la compétence des juridictions françaises.</p>
+							<p class="mt-1">Toute réclamation doit être adressée par écrit à l'Organisateur dans un
+								délai de <strong>30 jours</strong> suivant la fin du jeu.</p>
+						</section>
+
+						<section>
+							<h3 class="font-black text-slate-900 mb-1">Article 10 — Contact</h3>
+							<p>Pour toute question relative à ce jeu, contactez l'Organisateur directement en
+								établissement ou ScanUpGo via <a href="https://scanupgo.com/contact" target="_blank"
+									class="text-blue-600 underline">scanupgo.com/contact</a>.</p>
+						</section>
+
+						<p class="text-xs text-slate-400 pt-2 border-t border-slate-100">Plateforme technique fournie
+							par ScanUpGo (auto-entreprise, France) — <a href="https://scanupgo.com" target="_blank"
+								class="underline">scanupgo.com</a></p>
+					</div>
+				</div>
+			</div>
+		</Transition>
+	</Teleport>
 </template>
 
 <style scoped>

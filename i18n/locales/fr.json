@@ -2367,7 +2367,10 @@
     "loading": "Chargement du jeu...",
     "intro": {
       "play_button": "Jouer la partie",
-      "powered_by": "Propulsé par ScanUpGo"
+      "powered_by": "Propulsé par ScanUpGo",
+      "default_tagline": "Tentez votre chance et gagnez un cadeau !",
+      "rules": "Règlement",
+      "contact": "Contact"
     },
     "steps": {
       "heading": "Suivez les étapes :",

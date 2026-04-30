@@ -70,6 +70,8 @@ export default <Config>{
 				'fade-in': 'fadeIn 1s ease-out forwards',
 				'shine': 'shine 1.5s ease-in-out infinite',
 				'shine-once': 'shine 1.5s ease-in-out forwards',
+				'breathe': 'breathe 2s ease-in-out infinite',
+				'wizz': 'wizz 3s ease-in-out infinite',
 			},
 			keyframes: {
 				'spin-reverse': {
@@ -110,6 +112,18 @@ export default <Config>{
 				},
 				shine: {
 					'100%': { left: '125%' },
+				},
+				breathe: {
+					'0%, 100%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.05)' },
+				},
+				wizz: {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'5%': { transform: 'rotate(-5deg) scale(1.05)' },
+					'10%': { transform: 'rotate(5deg) scale(1.05)' },
+					'15%': { transform: 'rotate(-5deg) scale(1.05)' },
+					'20%': { transform: 'rotate(5deg) scale(1.05)' },
+					'25%': { transform: 'rotate(0deg) scale(1)' },
 				},
 			},
 		},

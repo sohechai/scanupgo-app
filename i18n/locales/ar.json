@@ -2315,7 +2315,10 @@
     "loading": "جاري تحميل اللعبة...",
     "intro": {
       "play_button": "العب الآن",
-      "powered_by": "مدعوم من ScanUpGo"
+      "powered_by": "مدعوم من ScanUpGo",
+      "default_tagline": "جرب حظك واربح هدية!",
+      "rules": "القانون الأساسي",
+      "contact": "اتصل بنا"
     },
     "steps": {
       "heading": "اتبع الخطوات:",

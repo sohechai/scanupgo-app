@@ -2363,7 +2363,10 @@
     "loading": "Loading game...",
     "intro": {
       "play_button": "Play",
-      "powered_by": "Powered by ScanUpGo"
+      "powered_by": "Powered by ScanUpGo",
+      "default_tagline": "Try your luck and win a gift!",
+      "rules": "Rules",
+      "contact": "Contact"
     },
     "steps": {
       "heading": "Follow the steps:",

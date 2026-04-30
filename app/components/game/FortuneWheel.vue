@@ -8,12 +8,13 @@ const props = defineProps<{
 	isSpinning: boolean
 	hasLost?: boolean // New prop to indicate if player lost
 	previewMode?: boolean // Static display mode for intro page
+	pointerPosition?: 'top' | 'right' // Pointer position
 }>()
 
 const emit = defineEmits(['spin-end'])
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const currentRotation = ref(0)
+const currentRotation = ref(-Math.PI / 16) // Slight rotation for a more natural resting position
 const spinVelocity = ref(0)
 const isDecelerating = ref(false)
 const animationId = ref<number | null>(null)
@@ -30,24 +31,23 @@ const wheelSegments = computed(() => {
 
 	for (let i = 0; i < TOTAL_SEGMENTS; i++) {
 		if (i % 2 === 0) {
-			// Lost segment (dark)
+			// Lost segment (white)
 			segments.push({
 				type: 'lost',
 				name: t('play.wheel.lost'),
-				color: '#1e293b', // Dark slate
-				textColor: '#94a3b8' // Light gray text
+				color: '#3f3f46', // Dark grey (zinc-700)
+				textColor: '#ffffff' // White text
 			})
 		} else {
-			// Gift/Prize segment (cream/beige)
-			// Map to actual prize if available
+			// Gift/Prize segment
 			const prizeIndex = Math.floor(i / 2)
 			const prize = props.prizes[prizeIndex % props.prizes.length]
 			segments.push({
 				type: 'prize',
 				name: prize?.name || t('play.wheel.gift'),
 				data: prize,
-				color: '#fef3c7', // Amber-100 (warm cream)
-				textColor: '#92400e', // Amber-800
+				color: '#3f3f46', // Dark grey (zinc-700)
+				textColor: '#ffffff', // White text
 				hasGiftImage: true
 			})
 		}
@@ -72,10 +72,8 @@ onMounted(() => {
 	// Draw wheel initially (without image)
 	drawWheel()
 
-	// Don't animate lights in preview mode
-	if (!props.previewMode) {
-		startLightsAnimation()
-	}
+	// Start idle animation loop (for gifts zoom, and optionally lights)
+	startIdleAnimation()
 })
 
 onUnmounted(() => {
@@ -110,13 +108,12 @@ watch(() => [props.targetPrizeIndex, props.hasLost], ([newIndex, hasLost]) => {
 	}
 }, { deep: true })
 
-function startLightsAnimation() {
+function startIdleAnimation() {
 	const animate = () => {
-		lightPhase.value += 0.1
+		if (!props.previewMode) {
+			lightPhase.value += 0.1
+		}
 		// Only redraw if not spinning fast (performance optimization)
-		// Or if spinning, we include light drawing in the main loop, but here we keep it separate visually or merged
-		// Actually, let's just make the lights animate via CSS or redraw.
-		// Since we redraw the whole canvas on spin, this is only needed when NOT spinning.
 		if (!props.isSpinning) {
 			drawWheel()
 		}
@@ -136,8 +133,8 @@ function drawWheel() {
 	const centerX = width / 2
 	const centerY = height / 2
 	
-	// Config
-	const wheelRadius = width / 2 - 10
+	// Leave enough padding for the very thick 28px outer rim (needs at least 14px)
+	const wheelRadius = width / 2 - 20
 
 	ctx.clearRect(0, 0, width, height)
 
@@ -160,13 +157,13 @@ function drawWheel() {
 		ctx.arc(0, 0, wheelRadius, startAngle, endAngle)
 		ctx.closePath()
 
-		// Solid vibrant color (no gradient for cleaner look)
+		// Fill segment
 		ctx.fillStyle = segment.color
 		ctx.fill()
 
-		// Segment Border - white for separation
-		ctx.strokeStyle = '#475569'
-		ctx.lineWidth = 2
+		// Draw thick border
+		ctx.lineWidth = 10
+		ctx.strokeStyle = '#ffffff'
 		ctx.stroke()
 
 		// Draw content (text or image)
@@ -175,30 +172,38 @@ function drawWheel() {
 		ctx.rotate(segmentAngle)
 
 		if (segment.hasGiftImage && giftImage.value) {
-			// Draw gift image for prize segments - counter-rotate to keep upright
-			const imgSize = 80
-			const imgDistance = wheelRadius * 0.68
+			// Draw gift image for prize segments
+			let imgSize = 130
+			const imgDistance = wheelRadius * 0.65
+
+			// Periodic quick zoom animation every 7 seconds (when not spinning)
+			if (!props.isSpinning) {
+				const cycle = Date.now() % 7000
+				if (cycle < 600) {
+					const progress = cycle / 600
+					// Sine wave for smooth bounce up and down: max +25% scale
+					imgSize *= 1 + Math.sin(progress * Math.PI) * 0.25
+				}
+			}
 
 			ctx.save()
 			ctx.translate(imgDistance, 0)
-			// Counter-rotate by the total rotation (wheel rotation + segment angle)
-			ctx.rotate(-(currentRotation.value + segmentAngle))
+			// Rotate 90 degrees so the bottom faces the center
+			ctx.rotate(Math.PI / 2)
 			ctx.drawImage(giftImage.value, -imgSize / 2, -imgSize / 2, imgSize, imgSize)
 			ctx.restore()
 		} else {
-			// Draw text for lost segments
-			ctx.textAlign = 'right'
+			// Draw text for lost segments, reading from center outwards
+			ctx.textAlign = 'left'
+			ctx.textBaseline = 'middle'
 			ctx.fillStyle = segment.textColor
-			ctx.font = 'bold 24px Arial'
+			ctx.font = '900 36px "Montserrat", sans-serif'
 			ctx.shadowBlur = 0
 			ctx.shadowOffsetX = 0
 			ctx.shadowOffsetY = 0
 
-			// Rotate text to be readable
 			ctx.save()
-			ctx.translate(wheelRadius * 0.6, 0)
-			ctx.rotate(Math.PI / 2)
-			ctx.textAlign = 'center'
+			ctx.translate(wheelRadius * 0.45, 0)
 			ctx.fillText(segment.name, 0, 0)
 			ctx.restore()
 		}
@@ -207,40 +212,47 @@ function drawWheel() {
 	}
 	ctx.restore() // Restore from wheel rotation
 
-	// --- 5. Draw Center Hub ---
-	// Outer gold ring
-	const hubRadius = 50
+	// --- 5. Draw Outer Rim ---
+	ctx.beginPath()
+	ctx.arc(centerX, centerY, wheelRadius, 0, 2 * Math.PI)
+	ctx.lineWidth = 28
+	ctx.strokeStyle = '#ffffff'
+	ctx.stroke()
+
+	// --- 6. Draw Center Hub ---
+	const hubRadius = 45
+	
+	// Base circle with very subtle radial gradient for the "flat" middle
 	ctx.beginPath()
 	ctx.arc(centerX, centerY, hubRadius, 0, 2 * Math.PI)
 	const goldGradient = ctx.createRadialGradient(centerX - 10, centerY - 10, 0, centerX, centerY, hubRadius)
-	goldGradient.addColorStop(0, '#fef08a') // yellow-200
-	goldGradient.addColorStop(0.5, '#eab308') // yellow-500
-	goldGradient.addColorStop(1, '#ca8a04') // yellow-600
+	goldGradient.addColorStop(0, '#fef9c3') // Soft highlight
+	goldGradient.addColorStop(0.5, '#fde047') // Flat light gold main area
+	goldGradient.addColorStop(1, '#eab308') // Slight darkening at the very edge
 	ctx.fillStyle = goldGradient
 	ctx.fill()
-	ctx.strokeStyle = '#854d0e' // yellow-800
-	ctx.lineWidth = 3
-	ctx.stroke()
-
-	// Inner circle with primary color
-	const innerHubRadius = 38
+	
+	// Outer Bevel Rim
 	ctx.beginPath()
-	ctx.arc(centerX, centerY, innerHubRadius, 0, 2 * Math.PI)
-	ctx.fillStyle = props.primaryColor
-	ctx.fill()
-	ctx.strokeStyle = '#ffffff'
-	ctx.lineWidth = 2
+	ctx.arc(centerX, centerY, hubRadius, 0, 2 * Math.PI)
+	ctx.lineWidth = 4
+	const rimGradientOut = ctx.createLinearGradient(centerX - hubRadius, centerY - hubRadius, centerX + hubRadius, centerY + hubRadius)
+	rimGradientOut.addColorStop(0, '#fef9c3') // Light top-left
+	rimGradientOut.addColorStop(0.5, '#f59e0b') // Mid gold
+	rimGradientOut.addColorStop(1, '#92400e') // Dark bottom-right
+	ctx.strokeStyle = rimGradientOut
 	ctx.stroke()
-
-	// Center icon/emoji
-	ctx.font = 'bold 28px Arial'
-	ctx.textAlign = 'center'
-	ctx.textBaseline = 'middle'
-	ctx.fillStyle = '#ffffff'
-	ctx.shadowColor = 'rgba(0,0,0,0.3)'
-	ctx.shadowBlur = 4
-	ctx.fillText('🎁', centerX, centerY)
-	ctx.shadowBlur = 0
+	
+	// Inner Bevel Rim
+	ctx.beginPath()
+	ctx.arc(centerX, centerY, hubRadius - 2, 0, 2 * Math.PI)
+	ctx.lineWidth = 2
+	const rimGradientIn = ctx.createLinearGradient(centerX - hubRadius, centerY - hubRadius, centerX + hubRadius, centerY + hubRadius)
+	rimGradientIn.addColorStop(0, '#92400e') // Dark top-left
+	rimGradientIn.addColorStop(0.5, '#f59e0b') // Mid gold
+	rimGradientIn.addColorStop(1, '#fef9c3') // Light bottom-right
+	ctx.strokeStyle = rimGradientIn
+	ctx.stroke()
 }
 
 // Helper to lighten hex color (very basic implementation)
@@ -289,7 +301,7 @@ function startDeceleration(targetIndex: number) {
 	const anglePerSegment = (2 * Math.PI) / numSegments
 
 	const segmentCenter = targetIndex * anglePerSegment + anglePerSegment / 2
-	const pointerAngle = (3 * Math.PI) / 2
+	const pointerAngle = props.pointerPosition === 'right' ? 0 : (3 * Math.PI) / 2
 
 	let targetRotation = pointerAngle - segmentCenter
 
@@ -329,7 +341,7 @@ function startDeceleration(targetIndex: number) {
 </script>
 
 <template>
-	<div class="relative w-[320px] h-[320px] md:w-[480px] md:h-[480px] mx-auto filter drop-shadow-2xl">
+	<div class="relative w-full aspect-square mx-auto filter">
 		<!-- Canvas Wheel -->
 		<canvas
 			ref="canvasRef"
@@ -338,22 +350,24 @@ function startDeceleration(targetIndex: number) {
 			class="w-full h-full transform"
 		></canvas>
 
-		<!-- Improved Pointer -->
-		<div class="absolute -top-6 left-1/2 -translate-x-1/2 z-20 pointer-container">
-			<div class="relative drop-shadow-lg" :class="{ 'animate-wobble': isSpinning }">
-				<svg width="60" height="70" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<!-- Metal Cap -->
-					<circle cx="30" cy="15" r="10" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
-					<!-- Tick -->
-					<path d="M30 65L15 20H45L30 65Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
-					<path d="M30 65L20 20H40L30 65Z" fill="url(#shine)" opacity="0.4"/>
-					<defs>
-						<linearGradient id="shine" x1="15" y1="20" x2="45" y2="20" gradientUnits="userSpaceOnUse">
-							<stop stop-color="white"/>
-							<stop offset="1" stop-color="white" stop-opacity="0"/>
-						</linearGradient>
-					</defs>
-				</svg>
+		<!-- Improved Pointer (User's SVG Map Pin with Gold Effect) -->
+		<div class="absolute z-20 pointer-container"
+			:class="pointerPosition === 'right' ? 'top-1/2 -right-[26px] -translate-y-1/2 rotate-90' : '-top-[50px] left-1/2 -translate-x-1/2'">
+			<div class="relative drop-shadow-xl" :class="{ 'animate-wobble': isSpinning }">
+                <svg width="32" height="45" viewBox="0 0 80 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Smooth light gold gradient -->
+                        <linearGradient id="goldArrowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef9c3" />
+                            <stop offset="50%" stop-color="#fde047" />
+                            <stop offset="100%" stop-color="#eab308" />
+                        </linearGradient>
+                    </defs>
+                    <g>
+                        <path fill="url(#goldArrowGradient)" d="M40,0C17.9,0,0,17.7,0,39.4S40,115,40,115s40-53.9,40-75.6S62.1,0,40,0z M40,52.5c-7,0-12.6-5.6-12.6-12.4 S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
+                        <path fill="rgba(0, 0, 0, 0.3)" d="M40,19.2c-11.7,0-21.2,9.3-21.2,20.8S28.3,60.8,40,60.8S61.2,51.5,61.2,40S51.7,19.2,40,19.2z M40,52.5 c-7,0-12.6-5.6-12.6-12.4S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
+                    </g>
+                </svg>
 			</div>
 		</div>
 
@@ -376,4 +390,3 @@ function startDeceleration(targetIndex: number) {
 	50% { transform: rotate(5deg); }
 }
 </style>
-
