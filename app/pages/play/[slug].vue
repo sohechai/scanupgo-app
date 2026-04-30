@@ -8,7 +8,8 @@ const { t, locale, setLocale } = useI18n()
 
 // Page Meta
 definePageMeta({
-	layout: 'public'
+	layout: 'public',
+	pageTransition: false
 })
 
 useHead({ title: 'Jouer' })
