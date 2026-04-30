@@ -2404,7 +2404,9 @@
       "spinning": "La roue tourne...",
       "good_luck_prefix": "Bonne chance ",
       "good_luck_suffix": " !",
-      "fingers_crossed": "Croisons les doigts..."
+      "fingers_crossed": "Croisons les doigts...",
+      "merci": "MERCI !",
+      "bonne_chance": "BONNE CHANCE !"
     },
     "result": {
       "win": {

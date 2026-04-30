@@ -2400,7 +2400,9 @@
       "spinning": "The wheel is spinning...",
       "good_luck_prefix": "Good luck ",
       "good_luck_suffix": "!",
-      "fingers_crossed": "Fingers crossed..."
+      "fingers_crossed": "Fingers crossed...",
+      "merci": "THANK YOU!",
+      "bonne_chance": "GOOD LUCK!"
     },
     "result": {
       "win": {

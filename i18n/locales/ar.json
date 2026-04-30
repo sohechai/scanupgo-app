@@ -2352,7 +2352,9 @@
       "spinning": "العجلة تدور...",
       "good_luck_prefix": "حظاً سعيداً ",
       "good_luck_suffix": "!",
-      "fingers_crossed": "أصابعنا مشبوكة..."
+      "fingers_crossed": "أصابعنا مشبوكة...",
+      "merci": "شكراً لك!",
+      "bonne_chance": "حظاً موفقاً!"
     },
     "result": {
       "win": {
