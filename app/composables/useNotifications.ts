@@ -91,6 +91,18 @@ export const useNotifications = () => {
 	}
 
 	/**
+	 * Reset all state (call on logout)
+	 */
+	const reset = () => {
+		stopPolling()
+		notifications.value = []
+		unreadCount.value = 0
+		loading.value = false
+		isDropdownOpen.value = false
+		lastFetchTime.value = 0
+	}
+
+	/**
 	 * Mark notification as read
 	 */
 	const markAsRead = async (notificationId: string) => {
@@ -236,6 +248,7 @@ export const useNotifications = () => {
 		fetchUnreadCount,
 		startPolling,
 		stopPolling,
+		reset,
 		markAsRead,
 		markAllAsRead,
 		deleteNotification,

@@ -3,6 +3,7 @@ import type { Order } from '~/composables/useOrders'
 
 definePageMeta({
 	layout: 'dashboard',
+	pageTransition: false,
 	middleware: 'auth',
 })
 

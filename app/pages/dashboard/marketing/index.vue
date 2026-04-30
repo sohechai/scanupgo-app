@@ -1,7 +1,8 @@
 <script setup lang="ts">
 definePageMeta({
 	middleware: 'auth',
-	layout: 'dashboard'
+	layout: 'dashboard',
+	pageTransition: false
 })
 useHead({ title: 'Marketing' })
 

@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 
 definePageMeta({
 	layout: 'dashboard',
+	pageTransition: false,
 	middleware: 'auth'
 })
 useHead({ title: 'Tableau de bord' })

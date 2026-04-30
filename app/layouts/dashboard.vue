@@ -2,7 +2,7 @@
 const { user, signOut } = useAuth()
 const { t } = useI18n()
 const route = useRoute()
-const { startPolling, stopPolling } = useNotifications()
+const { startPolling, stopPolling, reset: resetNotifications } = useNotifications()
 const { fetchSubscription, hasActiveSubscription, isAdmin } = useSubscription()
 
 const freeRoutes = ['/dashboard/subscription', '/dashboard/account', '/dashboard/profile', '/dashboard/onboarding']
@@ -10,6 +10,11 @@ const requiresSubscription = computed(() => {
 	if (route.path === '/dashboard') return false
 	return !freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
 })
+
+const handleLogout = async () => {
+	resetNotifications()
+	await signOut()
+}
 
 const handleVisibilityChange = () => {
 	if (document.visibilityState === 'visible') {
@@ -108,7 +113,7 @@ const toggleTheme = () => {
 					<Icon name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</NuxtLink>
 
-				<button @click="signOut"
+				<button @click="handleLogout"
 					class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-500 dark:hover:text-red-400 transition-colors">
 					<Icon name="ph:sign-out-bold" size="15" class="shrink-0" />
 					<span class="text-xs font-medium">{{ $t('dashboard.logout') }}</span>

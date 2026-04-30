@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
 	layout: 'dashboard',
+	pageTransition: false,
 	middleware: 'auth'
 })
 useHead({ title: 'Factures' })

@@ -4,7 +4,8 @@ import FlyerEditor from '~/components/flyers/FlyerEditor.vue'
 
 definePageMeta({
 	middleware: 'auth',
-	layout: 'dashboard'
+	layout: 'dashboard',
+	pageTransition: false
 })
 
 useHead({ title: 'Jeu' })

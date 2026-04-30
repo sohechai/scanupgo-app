@@ -11,6 +11,7 @@ const { fetchSubscription: refreshSharedSubscription, subscription: sharedSubscr
 
 definePageMeta({
 	layout: 'dashboard',
+	pageTransition: false,
 	middleware: 'auth'
 })
 
