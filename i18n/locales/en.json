@@ -2384,7 +2384,8 @@
       "step_opened": "Google opened in a new tab",
       "step_review": "Leave your review ⭐⭐⭐⭐⭐",
       "step_return": "Come back here to play",
-      "already_reviewed": "I already left my review →"
+      "already_reviewed": "I already left my review →",
+      "verifying_action": "Thank you! Your participation is being verified…"
     },
     "form": {
       "heading": "Claim your prize",
@@ -2402,7 +2403,8 @@
       "good_luck_suffix": "!",
       "fingers_crossed": "Fingers crossed...",
       "merci": "THANK YOU!",
-      "bonne_chance": "GOOD LUCK!"
+      "bonne_chance": "GOOD LUCK!",
+      "spin_button": "Spin the wheel"
     },
     "result": {
       "win": {

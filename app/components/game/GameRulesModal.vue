@@ -13,7 +13,7 @@ const emit = defineEmits<{ close: [] }>()
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-[200] flex items-end justify-center" @click.self="emit('close')">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="emit('close')"></div>
-        <div class="relative bg-white rounded-t-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+        <div class="relative bg-white rounded-t-3xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl border-t-2 border-x-2 border-black">
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
             <h2 class="text-base font-black text-slate-900 uppercase tracking-wide">Règlement du jeu</h2>
             <button @click="emit('close')" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition">

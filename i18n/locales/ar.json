@@ -2336,7 +2336,8 @@
       "step_opened": "تم فتح Google في علامة تبويب جديدة",
       "step_review": "اترك تقييمك ⭐⭐⭐⭐⭐",
       "step_return": "عد إلى هنا للعب",
-      "already_reviewed": "لقد تركت تقييمي بالفعل ←"
+      "already_reviewed": "لقد تركت تقييمي بالفعل ←",
+      "verifying_action": "شكراً! جارٍ التحقق من مشاركتك…"
     },
     "form": {
       "heading": "احصل على جائزتك",
@@ -2354,7 +2355,8 @@
       "good_luck_suffix": "!",
       "fingers_crossed": "أصابعنا مشبوكة...",
       "merci": "شكراً لك!",
-      "bonne_chance": "حظاً موفقاً!"
+      "bonne_chance": "حظاً موفقاً!",
+      "spin_button": "أدر العجلة"
     },
     "result": {
       "win": {

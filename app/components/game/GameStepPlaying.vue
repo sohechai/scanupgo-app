@@ -46,7 +46,7 @@ const emit = defineEmits<{
           <span v-if="isLoadingResult" class="flex items-center gap-2">
             <Icon name="ph:spinner-gap-bold" class="animate-spin" size="20" />
           </span>
-          <span v-else>{{ $t('play.intro.play_button') }}</span>
+          <span v-else>{{ $t('play.playing.spin_button') }}</span>
         </button>
       </div>
 

@@ -17,7 +17,11 @@ const checkMobile = () => {
   const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i
   isMobile.value = mobileRegex.test(navigator.userAgent) || window.innerWidth <= 768
 }
-onMounted(() => { checkMobile(); window.addEventListener('resize', checkMobile) })
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  setTimeout(() => { showSplash.value = false }, 1400)
+})
 onUnmounted(() => { if (import.meta.client) window.removeEventListener('resize', checkMobile) })
 
 // Data
@@ -30,6 +34,7 @@ type GameStep = 'intro' | 'form' | 'playing' | 'result'
 const step = ref<GameStep>('intro')
 const showStepsModal = ref(false)
 const showRules = ref(false)
+const showSplash = ref(true)
 
 // Game state
 const isWin = ref(false)
@@ -40,6 +45,7 @@ const isLoadingResult = ref(false)
 const targetPrizeIndex = ref<number | null>(null)
 const hasLost = ref(false)
 const rateLimitError = ref(false)
+const sessionId = ref<string | null>(null)
 
 // Fetch
 const { data: gameData, error: fetchError } = await useAsyncData(`game-${slug}`, async () => {
@@ -119,6 +125,7 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
     })
 
     if (response.success) {
+      sessionId.value = response.session?.id || null
       isWin.value = response.won
       wonPrize.value = response.prize
       if (isWin.value && wonPrize.value) {
@@ -149,7 +156,13 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
 }
 
 const startSpin = () => { isSpinning.value = true }
-const onSpinEnd = () => { isSpinning.value = false; step.value = 'result' }
+const onSpinEnd = () => {
+  isSpinning.value = false
+  step.value = 'result'
+  if (isWin.value && sessionId.value) {
+    $api('/gameplay/notify', { method: 'POST', body: { sessionId: sessionId.value } }).catch(() => {})
+  }
+}
 </script>
 
 <template>
@@ -251,4 +264,24 @@ const onSpinEnd = () => { isSpinning.value = false; step.value = 'result' }
 
   <GameRulesModal :show="showRules" :game="game" :business="business"
     @close="showRules = false" />
+
+  <!-- Splash screen -->
+  <Transition name="splash">
+    <div v-if="showSplash" class="fixed inset-0 z-[500] flex items-center justify-center" style="background: rgba(255,255,255,0.94);">
+      <img v-if="business?.logo" :src="business.logo" class="h-32 max-w-[260px] object-contain logo-spin drop-shadow-2xl" />
+      <div v-else class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
+    </div>
+  </Transition>
 </template>
+
+<style scoped>
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.logo-spin {
+  animation: spin-once 1s ease-in-out 1 forwards;
+}
+.splash-leave-active { transition: opacity 0.5s ease; }
+.splash-leave-to { opacity: 0; }
+</style>

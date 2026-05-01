@@ -2383,7 +2383,7 @@
     },
     "review_timer": {
       "not_done": "Pas encore fait ?",
-      "verifying_action": "Nous vérifions actuellement votre action...",
+      "verifying_action": "Merci ! Votre participation est en cours de vérification…",
       "title": "Laissez votre avis ⭐",
       "subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
       "seconds": "sec",
@@ -2408,7 +2408,8 @@
       "good_luck_suffix": " !",
       "fingers_crossed": "Croisons les doigts...",
       "merci": "MERCI",
-      "bonne_chance": "BONNE CHANCE !"
+      "bonne_chance": "BONNE CHANCE !",
+      "spin_button": "Lancer la roue"
     },
     "result": {
       "win": {
