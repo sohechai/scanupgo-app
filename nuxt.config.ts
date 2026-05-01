@@ -66,7 +66,7 @@ export default defineNuxtConfig({
 		}
 	},
 	app: {
-		pageTransition: { name: 'page' },
+		pageTransition: false,
 		head: {
 			titleTemplate: '%s — ScanUpGo',
 			title: 'ScanUpGo',
