@@ -193,8 +193,8 @@ const cancelConversion = () => {
 
 // Static templates (special modes, not images)
 const staticTemplates = computed(() => [
-	{ id: 'blank', name: t('flyers.editor.template_blank'), description: t('flyers.editor.template_blank_desc'), icon: 'ph:file-dashed', image: null },
 	{ id: 'smart', name: t('flyers.editor.template_smart'), description: t('flyers.editor.template_smart_desc'), icon: 'ph:magic-wand-fill', image: null, isSmart: true },
+	{ id: 'blank', name: t('flyers.editor.template_blank'), description: t('flyers.editor.template_blank_desc'), icon: 'ph:file-dashed', image: null },
 ])
 
 // Templates loaded from API
@@ -322,6 +322,7 @@ onMounted(async () => {
 		if (savedJson.qrColor) smartOptions.value.qrColor = savedJson.qrColor
 		if (savedJson.qrBgColor) smartOptions.value.qrBgColor = savedJson.qrBgColor
 		mode.value = 'smart'
+		selectedBaseTemplate.value = 'smart'
 		return
 	}
 
@@ -329,6 +330,7 @@ onMounted(async () => {
 		canvas.value.backgroundColor = '#ffffff'
 
 		if (savedJson) {
+			if (savedJson._template) selectedBaseTemplate.value = savedJson._template
 			// Full restore: all Fabric.js objects are re-editable
 			try {
 				await canvas.value.loadFromJSON(savedJson)
@@ -1007,7 +1009,7 @@ const exportFlyer = async () => {
 
 		if (response?.url) {
 			showToast('Flyer exporté avec succès', 'success')
-			const canvasJson = canvas.value?.toJSON()
+			const canvasJson = { ...(canvas.value?.toJSON() || {}), _template: selectedBaseTemplate.value }
 			emit('save', response.url, canvasJson)
 		}
 	} catch (e) {
