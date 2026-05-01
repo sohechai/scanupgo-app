@@ -56,7 +56,7 @@ const loadLogoAsDataUrl = async (url: string | null | undefined) => {
 
 		// Try using backend proxy to bypass CORS
 		try {
-			const apiBase = config.public.apiBase || 'http://localhost:4000'
+			const apiBase = config.public.apiUrl || 'http://localhost:4000'
 			const proxyUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(url)}`
 			const proxyResponse = await fetch(proxyUrl)
 
@@ -339,6 +339,10 @@ onMounted(async () => {
 		} else if (props.game?.flyerDesignUrl) {
 			// Fallback for flyers saved before JSON feature: load PNG as locked background
 			await loadFlyerImageAsBackground()
+		} else {
+			// New flyer: start in smart mode by default
+			mode.value = 'smart'
+			selectedBaseTemplate.value = 'smart'
 		}
 
 		canvas.value.renderAll()
@@ -550,7 +554,7 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	let canvasImageUrl = imageUrl
 	if (!imageUrl.startsWith('data:')) {
 		try {
-			const apiBase = config.public.apiBase || 'http://localhost:4000'
+			const apiBase = config.public.apiUrl || 'http://localhost:4000'
 			const proxyUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(imageUrl)}`
 			const response = await fetch(proxyUrl)
 			if (response.ok) {
@@ -646,7 +650,7 @@ const addLogo = async () => {
 
 	// If it's an R2 URL, use the proxy
 	if (logoUrl && logoUrl.includes('r2.dev') && !logoUrl.startsWith('data:')) {
-		const apiBase = config.public.apiBase || 'http://localhost:4000'
+		const apiBase = config.public.apiUrl || 'http://localhost:4000'
 		logoUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(logoUrl)}`
 	}
 
@@ -757,7 +761,7 @@ const handleImageUpload = async (event: Event) => {
 		const formData = new FormData()
 		formData.append('file', file)
 
-		const response = await $api<{ url: string }>('/uploads/image', {
+		const response = await $api<{ url: string }>('/uploads', {
 			method: 'POST',
 			body: formData
 		})
@@ -987,7 +991,7 @@ const exportFlyer = async () => {
 		formData.append('file', blob, 'flyer.png')
 
 		// Upload to R2
-		const response = await $api<{ url: string }>('/uploads/image', {
+		const response = await $api<{ url: string }>('/uploads', {
 			method: 'POST',
 			body: formData
 		})
