@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import FortuneWheel from '~/components/game/FortuneWheel.vue'
 
-defineProps<{
+const props = defineProps<{
   game: any
   business: any
   primaryColor: string
@@ -12,10 +12,29 @@ const emit = defineEmits<{
   'go-to-steps': []
   'show-rules': []
 }>()
+
+const buttonColor = computed(() => props.game?.buttonColor || '#ffffff')
+
+const backgroundStyle = computed(() => {
+  const bg = props.game?.backgroundImage
+  if (!bg) return { backgroundColor: props.primaryColor }
+  if (bg.startsWith('linear-gradient') || bg.startsWith('radial-gradient')) return { background: bg }
+  return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+})
+
+const buttonTextColor = computed(() => {
+  const hex = buttonColor.value.replace('#', '')
+  if (hex.length !== 6) return '#000000'
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  return ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#111111' : '#ffffff'
+})
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+  <div class="fixed inset-0 flex flex-col overflow-hidden" :style="backgroundStyle">
+    <div v-if="game?.backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
     <!-- Error banner -->
     <div v-if="error" class="absolute top-0 left-0 right-0 z-50 bg-red-500/90 text-white text-sm text-center px-4 py-3 font-semibold">
       {{ error }}
@@ -43,8 +62,8 @@ const emit = defineEmits<{
       <!-- Bouton Jouer -->
       <div class="w-full flex justify-end px-5 mt-6 shrink-0 z-20">
         <button @click="emit('go-to-steps')"
-          class="bg-white text-black text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz"
-          style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);">
+          class="text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz"
+          :style="{ backgroundColor: buttonColor, color: buttonTextColor, fontFamily: `'Impact', 'Arial Black', sans-serif`, letterSpacing: '0.5px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2)' }">
           {{ $t('play.intro.play_button') }}
         </button>
       </div>
@@ -52,6 +71,7 @@ const emit = defineEmits<{
       <!-- Roue débordant à gauche -->
       <div class="absolute top-1/2 -translate-y-1/2 -left-[150px] md:-left-[210px] z-10 w-[380px] md:w-[500px] aspect-square">
         <FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
+          :wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor" :wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor"
           :is-spinning="false" :preview-mode="true" pointer-position="right" />
       </div>
     </div>

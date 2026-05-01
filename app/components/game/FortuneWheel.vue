@@ -4,11 +4,15 @@ const { t } = useI18n()
 const props = defineProps<{
 	prizes: any[]
 	primaryColor: string
+	wheelLostColor?: string
+	wheelPrizeColor?: string
+	wheelBorderColor?: string
+	wheelPointerColor?: string
 	targetPrizeIndex: number | null // If null, we don't know the winner yet
 	isSpinning: boolean
-	hasLost?: boolean // New prop to indicate if player lost
-	previewMode?: boolean // Static display mode for intro page
-	pointerPosition?: 'top' | 'right' // Pointer position
+	hasLost?: boolean
+	previewMode?: boolean
+	pointerPosition?: 'top' | 'right'
 }>()
 
 const emit = defineEmits(['spin-end'])
@@ -32,23 +36,21 @@ const wheelSegments = computed(() => {
 
 	for (let i = 0; i < TOTAL_SEGMENTS; i++) {
 		if (i % 2 === 0) {
-			// Lost segment (white)
 			segments.push({
 				type: 'lost',
 				name: t('play.wheel.lost'),
-				color: '#3f3f46', // Dark grey (zinc-700)
-				textColor: '#ffffff' // White text
+				color: props.wheelLostColor || '#3f3f46',
+				textColor: '#ffffff'
 			})
 		} else {
-			// Gift/Prize segment
 			const prizeIndex = Math.floor(i / 2)
 			const prize = props.prizes[prizeIndex % props.prizes.length]
 			segments.push({
 				type: 'prize',
 				name: prize?.name || t('play.wheel.gift'),
 				data: prize,
-				color: '#3f3f46', // Dark grey (zinc-700)
-				textColor: '#ffffff', // White text
+				color: props.wheelPrizeColor || '#3f3f46',
+				textColor: '#ffffff',
 				hasGiftImage: true
 			})
 		}
@@ -84,6 +86,7 @@ onUnmounted(() => {
 
 watch(() => props.prizes, drawWheel, { deep: true })
 watch(wheelSegments, drawWheel, { deep: true })
+watch(() => [props.wheelLostColor, props.wheelPrizeColor, props.wheelBorderColor], drawWheel)
 watch(() => props.isSpinning, (newVal) => {
 	if (newVal) {
 		startSpin()
@@ -172,7 +175,7 @@ function drawWheel() {
 
 		// Draw thick border
 		ctx.lineWidth = 10
-		ctx.strokeStyle = '#ffffff'
+		ctx.strokeStyle = props.wheelBorderColor || '#ffffff'
 		ctx.stroke()
 
 		// Draw content (text or image)
@@ -225,7 +228,7 @@ function drawWheel() {
 	ctx.beginPath()
 	ctx.arc(centerX, centerY, wheelRadius, 0, 2 * Math.PI)
 	ctx.lineWidth = 28
-	ctx.strokeStyle = '#ffffff'
+	ctx.strokeStyle = props.wheelBorderColor || '#ffffff'
 	ctx.stroke()
 
 	// --- 6. Draw Center Hub ---
@@ -373,17 +376,9 @@ function startDeceleration(targetIndex: number) {
 			:class="pointerPosition === 'right' ? 'top-1/2 -right-[26px] -translate-y-1/2 rotate-90' : '-top-[50px] left-1/2 -translate-x-1/2'">
 			<div class="relative drop-shadow-xl" :style="isSpinning ? { transform: `rotate(${pointerDeflection}deg)`, transformOrigin: 'top center' } : {}">
                 <svg width="32" height="45" viewBox="0 0 80 115" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <!-- Smooth light gold gradient -->
-                        <linearGradient id="goldArrowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fef9c3" />
-                            <stop offset="50%" stop-color="#fde047" />
-                            <stop offset="100%" stop-color="#eab308" />
-                        </linearGradient>
-                    </defs>
                     <g>
-                        <path fill="url(#goldArrowGradient)" d="M40,0C17.9,0,0,17.7,0,39.4S40,115,40,115s40-53.9,40-75.6S62.1,0,40,0z M40,52.5c-7,0-12.6-5.6-12.6-12.4 S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
-                        <path fill="rgba(0, 0, 0, 0.3)" d="M40,19.2c-11.7,0-21.2,9.3-21.2,20.8S28.3,60.8,40,60.8S61.2,51.5,61.2,40S51.7,19.2,40,19.2z M40,52.5 c-7,0-12.6-5.6-12.6-12.4S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
+                        <path :fill="props.wheelPointerColor || '#fde047'" d="M40,0C17.9,0,0,17.7,0,39.4S40,115,40,115s40-53.9,40-75.6S62.1,0,40,0z M40,52.5c-7,0-12.6-5.6-12.6-12.4 S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
+                        <path fill="rgba(0,0,0,0.25)" d="M40,19.2c-11.7,0-21.2,9.3-21.2,20.8S28.3,60.8,40,60.8S61.2,51.5,61.2,40S51.7,19.2,40,19.2z M40,52.5 c-7,0-12.6-5.6-12.6-12.4S33,27.7,40,27.7s12.6,5.6,12.6,12.4C52.6,46.9,47,52.5,40,52.5z"></path>
                     </g>
                 </svg>
 			</div>

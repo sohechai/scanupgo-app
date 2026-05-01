@@ -6,6 +6,11 @@ const props = defineProps<{
 	tagline?: string;
 	description?: string;
 	primaryColor: string;
+	wheelLostColor?: string;
+	wheelPrizeColor?: string;
+	wheelBorderColor?: string;
+	wheelPointerColor?: string;
+	buttonColor?: string;
 	backgroundImage?: string | null;
 	showPrize?: boolean;
 	winningMessage?: string;
@@ -15,6 +20,15 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+
+const ctaButtonTextColor = computed(() => {
+	const hex = (props.buttonColor || '#ffffff').replace('#', '')
+	if (hex.length !== 6) return '#000000'
+	const r = parseInt(hex.substring(0, 2), 16)
+	const g = parseInt(hex.substring(2, 4), 16)
+	const b = parseInt(hex.substring(4, 6), 16)
+	return ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#111111' : '#ffffff'
+})
 
 
 
@@ -116,9 +130,12 @@ const previewPrizes = computed(() => {
 			<!-- Screen -->
 			<div class="rounded-[2rem] overflow-hidden w-full h-full relative font-display transition-colors duration-500"
 				:style="{ backgroundColor: primaryColor || '#00e5ff' }">
-				<!-- Background Image -->
-				<img v-if="backgroundImage" :src="backgroundImage"
+				<!-- Background Image / Gradient -->
+				<div v-if="backgroundImage && (backgroundImage.startsWith('linear-gradient') || backgroundImage.startsWith('radial-gradient'))"
+					class="absolute inset-0 z-0" :style="{ background: backgroundImage }" />
+				<img v-else-if="backgroundImage" :src="backgroundImage"
 					class="absolute inset-0 w-full h-full object-cover z-0" />
+				<div v-if="backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
 
 				<!-- Fake Status Bar -->
 				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-30 text-[10px] font-bold tracking-widest opacity-80"
@@ -161,8 +178,8 @@ const previewPrizes = computed(() => {
 
 					<!-- Bouton Jouer -->
 					<div class="relative z-20 w-full flex justify-end px-4 mt-6 shrink-0">
-						<div class="bg-white text-black text-[18px] uppercase px-5 py-3 rounded-lg font-black shadow-lg transform transition active:scale-95 animate-wizz"
-							style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.3px;">
+						<div class="text-[18px] uppercase px-5 py-3 rounded-lg font-black shadow-lg animate-wizz"
+							:style="{ backgroundColor: props.buttonColor || '#ffffff', color: ctaButtonTextColor, fontFamily: `'Impact', 'Arial Black', sans-serif`, letterSpacing: '0.3px' }">
 							{{ $t('play.intro.play_button') }}
 						</div>
 					</div>
@@ -170,6 +187,7 @@ const previewPrizes = computed(() => {
 					<!-- Roue débordant à gauche -->
 					<div class="absolute top-[60%] -translate-y-1/2 -left-[110px] z-10 w-[280px] aspect-square">
 						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
+							:wheel-lost-color="props.wheelLostColor" :wheel-prize-color="props.wheelPrizeColor" :wheel-border-color="props.wheelBorderColor" :wheel-pointer-color="props.wheelPointerColor"
 							:target-prize-index="null" :is-spinning="false" :has-lost="false" :preview-mode="true"
 							pointer-position="right" />
 					</div>
@@ -287,6 +305,7 @@ const previewPrizes = computed(() => {
 					<div class="flex-1 flex items-center justify-center overflow-hidden w-full">
 						<div class="wheel-preview-container-playing">
 							<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
+								:wheel-lost-color="props.wheelLostColor" :wheel-prize-color="props.wheelPrizeColor" :wheel-border-color="props.wheelBorderColor" :wheel-pointer-color="props.wheelPointerColor"
 								:target-prize-index="targetPrizeIndex" :is-spinning="isSpinning" :has-lost="hasLost"
 								@spin-end="onSpinEnd" />
 						</div>

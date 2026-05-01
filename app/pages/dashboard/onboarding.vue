@@ -18,7 +18,7 @@ const saving = ref(false)
 const business = ref({
 	id: undefined as string | undefined,
 	name: '',
-	email: '',
+	email: user.value?.email || '',
 	phone: '',
 	address: '',
 	addressStreet: '',
@@ -38,8 +38,10 @@ const fetchBusiness = async () => {
 			business.value = {
 				...business.value,
 				...data,
+				phone: data.phone ?? '',
 				primary_color: data.primaryColor || '#00E5FF',
 				name: data.name === user.value?.email ? '' : (data.name || ''),
+				email: data.email || user.value?.email || '',
 				address: [data.addressStreet, data.addressCity, data.addressZip, data.addressCountry]
 					.filter(Boolean)
 					.join(', ')
@@ -148,8 +150,7 @@ onMounted(() => fetchBusiness())
 			<div v-else class="w-full max-w-2xl">
 
 				<!-- Step 1: Nom de l'établissement -->
-				<Transition name="slide" mode="out-in">
-					<div v-if="step === 1" key="step1">
+				<div v-if="step === 1">
 						<div class="mb-8">
 							<div class="w-12 h-12 bg-[#007AFF]/5 rounded-2xl flex items-center justify-center mb-4">
 								<Icon name="ph:storefront-duotone" size="26" class="text-[#007AFF]" />
@@ -183,11 +184,9 @@ onMounted(() => fetchBusiness())
 							</button>
 						</div>
 					</div>
-				</Transition>
 
 				<!-- Step 2: Coordonnées -->
-				<Transition name="slide" mode="out-in">
-					<div v-if="step === 2" key="step2">
+				<div v-else-if="step === 2">
 						<div class="mb-8">
 							<div class="w-12 h-12 bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center mb-4">
 								<Icon name="ph:map-pin-duotone" size="26" class="text-slate-400 dark:text-slate-500" />
@@ -205,8 +204,8 @@ onMounted(() => fetchBusiness())
 										<input
 											v-model="business.email"
 											type="email"
-											placeholder="contact@monshop.fr"
-											class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium focus:border-[#007AFF]/40 focus:ring-4 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400"
+											readonly
+											class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-500 text-sm font-medium outline-none cursor-default select-none"
 										/>
 									</div>
 								</div>
@@ -286,11 +285,9 @@ onMounted(() => fetchBusiness())
 							</button>
 						</div>
 					</div>
-				</Transition>
 
 				<!-- Step 3: Identité visuelle -->
-				<Transition name="slide" mode="out-in">
-					<div v-if="step === 3" key="step3">
+				<div v-else-if="step === 3">
 						<div class="mb-6">
 							<div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
 								<Icon name="ph:palette-duotone" size="26" class="text-amber-600" />
@@ -399,8 +396,7 @@ onMounted(() => fetchBusiness())
 								<Icon v-if="!saving" name="ph:arrow-right-bold" size="16" />
 							</button>
 						</div>
-					</div>
-				</Transition>
+				</div>
 
 			</div>
 		</main>
@@ -408,17 +404,3 @@ onMounted(() => fetchBusiness())
 	</div>
 </template>
 
-<style scoped>
-.slide-enter-active,
-.slide-leave-active {
-	transition: all 0.25s ease;
-}
-.slide-enter-from {
-	opacity: 0;
-	transform: translateX(20px);
-}
-.slide-leave-to {
-	opacity: 0;
-	transform: translateX(-20px);
-}
-</style>

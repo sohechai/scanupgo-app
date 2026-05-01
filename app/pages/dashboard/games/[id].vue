@@ -113,6 +113,24 @@ const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.
 const showGoogleHelpModal = ref(false)
 const showPreviewModal = ref(false)
 
+// Background customization
+const bgTab = ref<'themes' | 'image'>('themes')
+const backgroundThemes = ref<{ id?: string; name: string; value: string | null; type?: string }[]>([
+	{ name: t('games.detail.background_none'), value: null },
+])
+
+const fetchBackgroundThemes = async () => {
+	try {
+		const themes = await $api<any[]>('/games/background-themes')
+		backgroundThemes.value = [
+			{ name: t('games.detail.background_none'), value: null },
+			...themes,
+		]
+	} catch {
+		// keep default "none" entry only
+	}
+}
+
 const pageTitle = computed(() => isNew ? t('games.detail.title') : t('games.detail.edit_title'))
 
 const game = ref({
@@ -121,6 +139,11 @@ const game = ref({
 	tagline: 'PARTICIPEZ À NOTRE JEU ET TENTEZ DE GAGNER UN CADEAU',
 	description: '',
 	primaryColor: '#00e5ff',
+	wheelLostColor: '#3f3f46',
+	wheelPrizeColor: '#3f3f46',
+	wheelBorderColor: '#ffffff',
+	wheelPointerColor: '#fde047',
+	buttonColor: '#ffffff',
 	backgroundImage: null as string | null,
 	gameLanguage: 'fr',
 	active: true,
@@ -165,6 +188,7 @@ const fetchBusiness = async () => {
 }
 
 onMounted(async () => {
+	fetchBackgroundThemes()
 	try {
 		await fetchSubscription()
 		if (!hasActiveSubscription.value) return
@@ -972,21 +996,114 @@ const downloadFlyerPDF = async () => {
 								<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.appearance_subtitle') }}</p>
 							</div>
 
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<!-- Couleur de fond -->
 								<div>
-									<label
-										class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.background_color') }}</label>
-									<div
-										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
-										<input v-model="game.primaryColor" type="color"
-											class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
-										<div class="flex-1">
-											<p class="text-slate-900 dark:text-white font-mono font-bold text-sm">{{
-												game.primaryColor
-											}}
-											</p>
-										</div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.background_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.primaryColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.primaryColor }}</p>
 									</div>
+								</div>
+
+								<!-- Couleur des boutons -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.button_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.buttonColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.buttonColor }}</p>
+									</div>
+								</div>
+
+								<!-- Couleur cases perdu -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.wheel_lost_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.wheelLostColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.wheelLostColor }}</p>
+									</div>
+								</div>
+
+								<!-- Couleur cases cadeaux -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.wheel_prize_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.wheelPrizeColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.wheelPrizeColor }}</p>
+									</div>
+								</div>
+
+								<!-- Couleur des bordures -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.wheel_border_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.wheelBorderColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.wheelBorderColor }}</p>
+									</div>
+								</div>
+
+								<!-- Couleur du curseur -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.wheel_pointer_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.wheelPointerColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.wheelPointerColor }}</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- Arrière-plan -->
+							<div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
+								<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-3">{{ $t('games.detail.background_label') }}</label>
+
+								<!-- Tabs -->
+								<div class="flex gap-1 mb-4 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-lg w-fit">
+									<button type="button" @click="bgTab = 'themes'"
+										:class="bgTab === 'themes' ? 'bg-white dark:bg-slate-600 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'"
+										class="px-3 py-1.5 rounded-md text-xs font-medium transition-all">
+										{{ $t('games.detail.background_themes') }}
+									</button>
+									<button type="button" @click="bgTab = 'image'"
+										:class="bgTab === 'image' ? 'bg-white dark:bg-slate-600 shadow text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'"
+										class="px-3 py-1.5 rounded-md text-xs font-medium transition-all">
+										{{ $t('games.detail.background_image') }}
+									</button>
+								</div>
+
+								<!-- Themes grid -->
+								<div v-if="bgTab === 'themes'" class="grid grid-cols-5 gap-2">
+									<button v-for="theme in backgroundThemes" :key="theme.name" type="button"
+										@click="game.backgroundImage = theme.value"
+										:class="game.backgroundImage === theme.value ? 'ring-2 ring-[#007AFF] ring-offset-2 dark:ring-offset-slate-800' : 'hover:ring-2 hover:ring-slate-300 hover:ring-offset-1'"
+										class="relative aspect-square rounded-lg overflow-hidden transition-all group">
+										<img v-if="theme.type === 'image' && theme.value" :src="theme.value" class="w-full h-full object-cover" />
+										<div v-else-if="theme.value" class="w-full h-full" :style="{ background: theme.value }" />
+										<div v-else class="w-full h-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+											<Icon name="ph:x-bold" size="16" class="text-slate-400 dark:text-slate-500" />
+										</div>
+										<div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all" />
+										<div v-if="game.backgroundImage === theme.value" class="absolute inset-0 flex items-center justify-center">
+											<Icon name="ph:check-bold" size="18" class="text-white drop-shadow-lg" />
+										</div>
+										<p class="absolute bottom-0 left-0 right-0 text-[9px] text-white text-center py-1 bg-black/40 truncate px-1">{{ theme.name }}</p>
+									</button>
+								</div>
+
+								<!-- Image upload -->
+								<div v-if="bgTab === 'image'" class="space-y-3">
+									<FileUpload
+										v-model="game.backgroundImage"
+										upload-type="background"
+										accept="image/*"
+										:max-size="5"
+										:preview="false"
+										:label="$t('games.detail.background_upload_label')" />
+									<button v-if="game.backgroundImage && !backgroundThemes.some(th => th.value === game.backgroundImage)" type="button"
+										@click="game.backgroundImage = null"
+										class="text-xs text-red-500 hover:text-red-600 flex items-center gap-1">
+										<Icon name="ph:trash-bold" size="14" />
+										{{ $t('games.detail.background_remove') }}
+									</button>
 								</div>
 							</div>
 
@@ -1265,6 +1382,8 @@ const downloadFlyerPDF = async () => {
 						</div>
 						<div class="flex justify-center">
 							<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor"
+								:wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor"
+								:wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor" :button-color="game.buttonColor"
 								:background-image="game.backgroundImage" :logo="businessLogo"
 								:prizes="(game as any).prizes"
 								:google-review-url="game.googleReviewUrl" />
