@@ -1263,7 +1263,7 @@ const downloadFlyerPDF = async () => {
 								{{ $t('games.detail.mobile_preview') }}
 							</span>
 						</div>
-						<div class="flex justify-center transform hover:scale-[1.02] transition-transform duration-500">
+						<div class="flex justify-center">
 							<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor"
 								:background-image="game.backgroundImage" :logo="businessLogo"
 								:prizes="(game as any).prizes"

@@ -16,6 +16,8 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
+
+
 // Current preview step
 type PreviewStep = 'intro' | 'steps' | 'form' | 'playing' | 'result'
 const currentStep = ref<PreviewStep>('intro')
@@ -119,7 +121,7 @@ const previewPrizes = computed(() => {
 					class="absolute inset-0 w-full h-full object-cover z-0" />
 
 				<!-- Fake Status Bar -->
-				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-20 text-[10px] font-bold tracking-widest opacity-80"
+				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-30 text-[10px] font-bold tracking-widest opacity-80"
 					:style="{ color: textColor }">
 					<span>9:41</span>
 					<div class="flex gap-1.5">
@@ -129,121 +131,146 @@ const previewPrizes = computed(() => {
 					</div>
 				</div>
 
+				<!-- Fake Language Flags -->
+				<div class="absolute top-9 right-4 z-20 flex gap-1.5">
+					<div class="w-6 h-6 rounded-full flex items-center justify-center text-[12px] bg-white/40 shadow-sm scale-110">🇫🇷</div>
+					<div class="w-6 h-6 rounded-full flex items-center justify-center text-[12px] bg-white/10 opacity-60">🇬🇧</div>
+					<div class="w-6 h-6 rounded-full flex items-center justify-center text-[12px] bg-white/10 opacity-60">🇲🇦</div>
+				</div>
+
 				<!-- STEP 1: INTRO -->
-				<div v-if="currentStep === 'intro'"
-					class="relative z-10 h-full flex flex-col items-center p-4 pt-10 overflow-hidden"
-					:style="{ color: textColor }">
+				<div v-if="currentStep === 'intro'" class="relative h-full overflow-hidden flex flex-col">
 
 					<!-- Logo -->
-					<div v-if="logoUrl && !imgError"
-						class="w-14 h-14 bg-white rounded-xl p-1 shadow-lg flex items-center justify-center overflow-hidden mb-2 z-10 shrink-0">
-						<img :src="logoUrl" @error="() => { imgError = true }"
-							class="w-full h-full object-contain max-w-full max-h-full" />
+					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
+						<h1 v-else class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
-					<div v-else
-						class="w-20 h-7 bg-white/30 backdrop-blur-sm rounded-lg shadow-lg flex items-center justify-center overflow-hidden mb-2 z-10 shrink-0">
-					</div>
-
-					<!-- Title -->
-					<h1 class="text-sm font-black tracking-tight text-center mb-1 z-10">{{ displayTitle }}</h1>
 
 					<!-- Tagline -->
-					<div class="text-center mb-3 z-10">
-						<p class="text-[8px] uppercase tracking-wide opacity-90 font-bold px-3 leading-tight">{{
-							displayTagline }}</p>
+					<div class="relative z-10 px-4 mt-4 shrink-0 mx-auto w-full max-w-[90%]">
+						<div class="rounded-xl px-3 py-2.5 text-center shadow-xl border border-white/20"
+							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							<p class="text-[12px] uppercase leading-[1.1]"
+								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.3px;">
+								{{ displayTagline }}
+							</p>
+						</div>
 					</div>
 
-					<!-- Wheel -->
-					<div class="wheel-preview-container-intro">
-						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
-							:target-prize-index="null" :is-spinning="false" :has-lost="false" :preview-mode="true" />
-					</div>
-
-					<!-- Button -->
-					<div class="w-full px-4 z-20">
-						<div
-							class="bg-slate-900 text-white py-2.5 rounded-full font-black text-[9px] uppercase tracking-wider text-center shadow-lg">
+					<!-- Bouton Jouer -->
+					<div class="relative z-20 w-full flex justify-end px-4 mt-6 shrink-0">
+						<div class="bg-white text-black text-[18px] uppercase px-5 py-3 rounded-lg font-black shadow-lg transform transition active:scale-95 animate-wizz"
+							style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.3px;">
 							{{ $t('play.intro.play_button') }}
 						</div>
 					</div>
 
-					<!-- Footer -->
-					<div class="absolute bottom-2 left-0 right-0 z-10">
-						<p class="text-[6px] uppercase tracking-widest opacity-40 text-center">
-							{{ $t('play.intro.powered_by') }}
-						</p>
+					<!-- Roue débordant à gauche -->
+					<div class="absolute top-[60%] -translate-y-1/2 -left-[110px] z-10 w-[280px] aspect-square">
+						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
+							:target-prize-index="null" :is-spinning="false" :has-lost="false" :preview-mode="true"
+							pointer-position="right" />
+					</div>
+
+					<!-- Footer bar -->
+					<div class="absolute bottom-0 left-0 right-0 h-[45px] bg-[#2a2a2a] flex justify-between items-center px-8 z-30 shadow-[0_-3px_8px_rgba(0,0,0,0.4)]">
+						<span class="text-[11px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.rules') }}</span>
+						<span class="text-[11px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.contact') }}</span>
 					</div>
 				</div>
 
 				<!-- STEP 2: STEPS -->
 				<div v-else-if="currentStep === 'steps'"
-					class="relative z-10 h-full flex flex-col items-center p-4 pt-12" :style="{ color: textColor }">
-					<h2 class="text-sm font-bold mb-4">{{ $t('play.steps.heading') }}</h2>
+					class="relative z-10 h-full flex flex-col items-center justify-center p-4">
+					<!-- Backdrop -->
+					<div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
-					<div class="space-y-3 w-full">
-						<div
-							class="bg-white/90 flex items-center gap-3 backdrop-blur-md rounded-xl p-3 border border-white/20">
-							<div
-								class="border border-black/10 w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px]">
-								1</div>
-							<span class="font-medium text-[10px] text-slate-900">{{ $t('play.steps.step1') }}</span>
+					<!-- Centered Modal -->
+					<div class="relative bg-[#333333] rounded-3xl w-full max-w-sm shadow-2xl mt-8">
+						<!-- Floating Google Logo -->
+						<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl border-[6px] border-[#333333]">
+							<svg viewBox="0 0 24 24" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+								<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+								<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+								<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+								<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+							</svg>
 						</div>
 
-						<div
-							class="bg-white/90 flex items-center gap-3 backdrop-blur-md rounded-xl p-3 border border-white/20">
-							<div
-								class="border border-black/10 w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px]">
-								2</div>
-							<span class="font-medium text-[10px] text-slate-900">{{ $t('play.steps.step2') }}</span>
-						</div>
+						<!-- ÉTAPE : INSTRUCTIONS -->
+						<div class="px-5 pt-14 pb-6 flex flex-col items-center">
+							<h2 class="text-[20px] font-black text-white mb-5 text-center tracking-wide leading-tight">
+								{{ $t('play.steps.heading') }}
+							</h2>
 
-						<div
-							class="bg-white/90 flex items-center gap-3 backdrop-blur-md rounded-xl p-3 border border-white/20">
-							<div
-								class="border border-black/10 w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px]">
-								3</div>
-							<span class="font-medium text-[10px] text-slate-900">{{ $t('play.steps.step3') }}</span>
-						</div>
-					</div>
+							<div class="space-y-3 mb-5 w-full">
+								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
+									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+										<span class="text-black font-black text-[13px]">1</span>
+									</div>
+									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step1') }}</span>
+								</div>
+								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
+									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+										<span class="text-black font-black text-[13px]">2</span>
+									</div>
+									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step2') }}</span>
+								</div>
+								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
+									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
+										<span class="text-black font-black text-[13px]">3</span>
+									</div>
+									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step3') }}</span>
+								</div>
+							</div>
 
-					<div class="w-full mt-auto pb-6">
-						<div
-							class="bg-black/90 text-white w-full py-3 rounded-xl font-bold text-[11px] flex items-center justify-center gap-2">
-							<Icon name="ph:google-logo-bold" size="16" />
-							{{ $t('play.steps.google_button') }}
+							<!-- 5 étoiles -->
+							<div class="flex justify-center gap-1 mb-5">
+								<span v-for="i in 5" :key="i" class="text-3xl">⭐</span>
+							</div>
+
+							<!-- Bouton Google -->
+							<button
+								class="w-full py-3.5 rounded-[20px] font-black text-[16px] flex items-center justify-center shadow-lg"
+								:style="{ backgroundColor: primaryColor || '#1a1a1a', color: buttonTextColor }">
+								{{ $t('play.steps.google_button') }}
+							</button>
 						</div>
 					</div>
 				</div>
 
 				<!-- STEP 3: FORM -->
 				<div v-else-if="currentStep === 'form'"
-					class="relative z-10 h-full flex flex-col items-center p-4 pt-12" :style="{ color: textColor }">
-					<div class="text-center mb-6">
-						<h2 class="text-base font-bold">{{ $t('play.form.heading') }}</h2>
-						<p class="text-[10px] opacity-80">{{ $t('play.form.subtitle') }}</p>
-					</div>
-
-					<div class="space-y-3 w-full">
-						<div
-							class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2.5 text-[10px] opacity-60">
-							{{ $t('play.form.first_name_placeholder') }}</div>
-						<div
-							class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2.5 text-[10px] opacity-60">
-							{{ $t('play.form.email_placeholder') }}</div>
-						<div
-							class="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2.5 text-[10px] opacity-60">
-							{{ $t('play.form.phone_placeholder') }}</div>
-
-						<div class="flex items-start gap-3 pt-1">
-							<div class="w-4 h-4 border-2 border-white/40 rounded bg-transparent"></div>
-							<span class="text-[9px] opacity-80 leading-tight">{{ $t('play.form.email_optin') }}</span>
+					class="relative z-10 w-full h-full flex flex-col justify-center items-center p-4">
+					<div class="bg-[#333333] rounded-[24px] p-6 shadow-2xl w-full text-center flex flex-col items-center">
+						<div class="mb-5">
+							<h2 class="text-lg font-black text-white leading-tight">{{ $t('play.form.heading') }}</h2>
+							<p class="text-[11px] font-bold text-white mt-1.5">{{ $t('play.form.subtitle') }}</p>
 						</div>
-					</div>
 
-					<div class="w-full mt-auto pb-6">
-						<div
-							class="bg-black/90 text-white w-full py-3 text-[11px] font-bold rounded-xl shadow-lg text-center">
-							{{ $t('play.form.submit') }}
+						<div class="space-y-3 w-full text-left rtl:text-right">
+							<div class="w-full bg-[#262626] border border-[#444] rounded-xl px-3 py-2.5 text-[11px] font-bold text-gray-400">
+								{{ $t('play.form.first_name_placeholder') }}
+							</div>
+							<div class="w-full bg-[#262626] border border-[#444] rounded-xl px-3 py-2.5 text-[11px] font-bold text-gray-400">
+								{{ $t('play.form.email_placeholder') }}
+							</div>
+							<div class="w-full bg-[#262626] border border-[#444] rounded-xl px-3 py-2.5 text-[11px] font-bold text-gray-400">
+								{{ $t('play.form.phone_placeholder') }}
+							</div>
+
+							<div class="flex items-start gap-2 pt-1">
+								<div class="w-3.5 h-3.5 rounded-sm border border-[#666] mt-0.5 shrink-0 bg-transparent"></div>
+								<p class="text-[9px] font-bold text-white leading-tight">{{ $t('play.form.email_optin') }}</p>
+							</div>
+
+							<button
+								class="w-full py-3 mt-4 rounded-[20px] font-black text-[14px] flex items-center justify-center shadow-lg"
+								:style="{ backgroundColor: primaryColor || '#d63d4a', color: buttonTextColor }">
+								{{ $t('play.form.submit') }}
+							</button>
 						</div>
 					</div>
 				</div>
@@ -308,14 +335,6 @@ const previewPrizes = computed(() => {
 </template>
 
 <style scoped>
-.wheel-preview-container-intro {
-	transform: scale(0.46);
-	transform-origin: top center;
-	z-index: 1;
-	margin-top: 8px;
-	margin-bottom: -173px;
-}
-
 .wheel-preview-container-playing {
 	transform: scale(0.38);
 	transform-origin: center center;

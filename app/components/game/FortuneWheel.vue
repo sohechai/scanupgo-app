@@ -14,13 +14,14 @@ const props = defineProps<{
 const emit = defineEmits(['spin-end'])
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const currentRotation = ref(-Math.PI / 16) // Slight rotation for a more natural resting position
+const currentRotation = ref(-Math.PI / 16)
 const spinVelocity = ref(0)
 const isDecelerating = ref(false)
 const animationId = ref<number | null>(null)
 const lightsAnimationId = ref<number | null>(null)
-const lightPhase = ref(0) // For animating the lights
+const lightPhase = ref(0)
 const giftImage = ref<HTMLImageElement | null>(null)
+const pointerDeflection = ref(0) // degrees, updated each frame during spin
 
 // Total number of segments (alternating lost/gift)
 const TOTAL_SEGMENTS = 8
@@ -86,26 +87,34 @@ watch(wheelSegments, drawWheel, { deep: true })
 watch(() => props.isSpinning, (newVal) => {
 	if (newVal) {
 		startSpin()
+		// targetPrizeIndex/hasLost may already be set before spin started —
+		// the watch on those won't re-fire, so force a deceleration check
+		// after minimum spin time to handle that case.
+		setTimeout(() => {
+			checkAndDecelerate()
+		}, 2500)
 	}
 })
-watch(() => [props.targetPrizeIndex, props.hasLost], ([newIndex, hasLost]) => {
+function checkAndDecelerate() {
 	if (props.isSpinning && !isDecelerating.value) {
-		if (hasLost) {
-			// Find a "lost" segment index
+		if (props.hasLost) {
 			const lostSegmentIndex = wheelSegments.value.findIndex(s => s.type === 'lost')
 			if (lostSegmentIndex !== -1) {
 				startDeceleration(lostSegmentIndex)
 			}
-		} else if (newIndex !== null) {
-			// Find the actual segment index for this prize
+		} else if (props.targetPrizeIndex !== null) {
 			const prizeSegmentIndex = wheelSegments.value.findIndex(s =>
-				s.type === 'prize' && s.data === props.prizes[newIndex as number]
+				s.type === 'prize' && s.data === props.prizes[props.targetPrizeIndex as number]
 			)
 			if (prizeSegmentIndex !== -1) {
 				startDeceleration(prizeSegmentIndex)
 			}
 		}
 	}
+}
+
+watch(() => [props.targetPrizeIndex, props.hasLost], () => {
+	checkAndDecelerate()
 }, { deep: true })
 
 function startIdleAnimation() {
@@ -267,21 +276,29 @@ function lightenColor(color: string, percent: number) {
 	return '#' + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1)
 }
 
+function updatePointerDeflection(rotation: number) {
+	const numSeg = wheelSegments.value.length
+	const anglePerSeg = (2 * Math.PI) / numSeg
+	const normalized = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
+	const distFraction = (normalized % anglePerSeg) / anglePerSeg
+	// Sharp click at boundary (first 20% of segment), spring back to 0
+	pointerDeflection.value = distFraction < 0.2 ? -28 * (1 - distFraction / 0.2) : 0
+}
+
 function startSpin() {
-	spinVelocity.value = 0.3 // Faster initial velocity
+	spinVelocity.value = 0.3
 	isDecelerating.value = false
 	currentRotation.value = 0
 
 	const animate = () => {
-		// Update lights phase slightly faster during spin
 		lightPhase.value += 0.5
-		
 		currentRotation.value += spinVelocity.value
 
 		if (currentRotation.value >= 2 * Math.PI) {
 			currentRotation.value -= 2 * Math.PI
 		}
 
+		updatePointerDeflection(currentRotation.value)
 		drawWheel()
 
 		if (props.isSpinning) {
@@ -319,20 +336,21 @@ function startDeceleration(targetIndex: number) {
 	const startTime = performance.now()
 
 	const animateDecel = (time: number) => {
-		lightPhase.value += 0.2 // Slow down lights too
-		
+		lightPhase.value += 0.2
+
 		const elapsed = time - startTime
 		const progress = Math.min(elapsed / duration, 1)
 
-		// Custom easing: easeOutCubic
 		const ease = 1 - Math.pow(1 - progress, 3)
 
 		currentRotation.value = startRot + (finalDestination - startRot) * ease
+		updatePointerDeflection(currentRotation.value)
 		drawWheel()
 
 		if (progress < 1) {
 			requestAnimationFrame(animateDecel)
 		} else {
+			pointerDeflection.value = 0
 			emit('spin-end')
 		}
 	}
@@ -353,7 +371,7 @@ function startDeceleration(targetIndex: number) {
 		<!-- Improved Pointer (User's SVG Map Pin with Gold Effect) -->
 		<div class="absolute z-20 pointer-container"
 			:class="pointerPosition === 'right' ? 'top-1/2 -right-[26px] -translate-y-1/2 rotate-90' : '-top-[50px] left-1/2 -translate-x-1/2'">
-			<div class="relative drop-shadow-xl" :class="{ 'animate-wobble': isSpinning }">
+			<div class="relative drop-shadow-xl" :style="isSpinning ? { transform: `rotate(${pointerDeflection}deg)`, transformOrigin: 'top center' } : {}">
                 <svg width="32" height="45" viewBox="0 0 80 115" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <!-- Smooth light gold gradient -->
@@ -380,13 +398,4 @@ function startDeceleration(targetIndex: number) {
 </template>
 
 <style scoped>
-.animate-wobble {
-	animation: wobble 0.1s ease-in-out infinite;
-	transform-origin: top center;
-}
-
-@keyframes wobble {
-	0%, 100% { transform: rotate(-5deg); }
-	50% { transform: rotate(5deg); }
-}
 </style>

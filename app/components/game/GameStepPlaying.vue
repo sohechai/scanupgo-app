@@ -14,20 +14,20 @@ defineProps<{
 const emit = defineEmits<{
   'start-spin': []
   'spin-end': []
+  'show-rules': []
 }>()
 </script>
 
 <template>
   <div class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
     <div class="relative z-10 w-full h-full flex flex-col pt-12">
-
       <!-- Logo -->
       <div class="flex justify-center px-8 shrink-0">
         <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[280px] object-contain drop-shadow-2xl" />
         <h1 v-else class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
       </div>
 
-      <!-- Tagline "MERCI, BONNE CHANCE !" -->
+      <!-- Tagline "MERCI, BONNE CHANCE !" — même style que l'intro -->
       <div class="px-5 mt-6 shrink-0 w-full max-w-sm mx-auto">
         <div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
           style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
@@ -38,39 +38,38 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <!-- Zone principale : bouton avant spin, roue après -->
-      <div class="flex-1 flex flex-col items-center justify-center relative">
-
-        <!-- Roue débordant à gauche (avant le spin) -->
-        <template v-if="!isSpinning">
-          <div class="absolute top-1/2 -translate-y-1/2 -left-[150px] md:-left-[210px] z-10 w-[380px] md:w-[500px] aspect-square">
-            <FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
-              :is-spinning="false" :preview-mode="true" pointer-position="right" />
-          </div>
-
-          <!-- Bouton Jouer (droite, comme l'intro) -->
-          <div class="absolute right-5 z-20">
-            <button @click="emit('start-spin')" :disabled="isLoadingResult"
-              class="bg-white text-black text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 disabled:opacity-60"
-              style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);">
-              <span v-if="isLoadingResult" class="flex items-center gap-2">
-                <Icon name="ph:spinner-gap-bold" class="animate-spin" size="20" />
-              </span>
-              <span v-else>{{ $t('play.intro.play_button') }}</span>
-            </button>
-          </div>
-        </template>
-
-        <!-- Roue centrée (pendant le spin) -->
-        <template v-else>
-          <div class="w-full max-w-[360px] mx-auto px-4 animate-fade-in">
-            <FortuneWheel :prizes="game.prizes" :primary-color="primaryColor"
-              :target-prize-index="targetPrizeIndex" :is-spinning="isSpinning" :has-lost="hasLost"
-              @spin-end="emit('spin-end')" />
-          </div>
-        </template>
-
+      <!-- Bouton Jouer — même style que l'intro -->
+      <div class="w-full flex justify-end px-5 mt-6 shrink-0 z-20">
+        <button v-if="!isSpinning" @click="emit('start-spin')" :disabled="isLoadingResult"
+          class="bg-white text-black text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz disabled:opacity-60"
+          style="font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);">
+          <span v-if="isLoadingResult" class="flex items-center gap-2">
+            <Icon name="ph:spinner-gap-bold" class="animate-spin" size="20" />
+          </span>
+          <span v-else>{{ $t('play.intro.play_button') }}</span>
+        </button>
       </div>
+
+      <!-- Roue débordant à gauche (toujours à la même place, même pendant le spin) -->
+      <div class="absolute top-1/2 -translate-y-1/2 -left-[150px] md:-left-[210px] z-10 w-[380px] md:w-[500px] aspect-square transition-all duration-500">
+        <FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" 
+          :target-prize-index="targetPrizeIndex"
+          :is-spinning="isSpinning" 
+          :has-lost="hasLost"
+          :preview-mode="!isSpinning"
+          pointer-position="right"
+          @spin-end="emit('spin-end')" />
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="absolute bottom-0 left-0 right-0 h-[60px] bg-[#2a2a2a] flex justify-between items-center px-10 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.4)]">
+      <button @click="emit('show-rules')" class="text-white font-bold text-sm tracking-wider uppercase hover:text-gray-300 transition-colors underline decoration-2 underline-offset-4">
+        {{ $t('play.intro.rules') }}
+      </button>
+      <a href="mailto:contact@booster-avis.com" class="text-white font-bold text-sm tracking-wider uppercase hover:text-gray-300 transition-colors underline decoration-2 underline-offset-4">
+        {{ $t('play.intro.contact') }}
+      </a>
     </div>
   </div>
 </template>

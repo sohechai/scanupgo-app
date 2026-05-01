@@ -2382,6 +2382,8 @@
       "back": "Retour"
     },
     "review_timer": {
+      "not_done": "Pas encore fait ?",
+      "verifying_action": "Nous vérifions actuellement votre action...",
       "title": "Laissez votre avis ⭐",
       "subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
       "seconds": "sec",
@@ -2405,7 +2407,7 @@
       "good_luck_prefix": "Bonne chance ",
       "good_luck_suffix": " !",
       "fingers_crossed": "Croisons les doigts...",
-      "merci": "MERCI !",
+      "merci": "MERCI",
       "bonne_chance": "BONNE CHANCE !"
     },
     "result": {

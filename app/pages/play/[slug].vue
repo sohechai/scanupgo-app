@@ -230,10 +230,11 @@ const onSpinEnd = () => { isSpinning.value = false; step.value = 'result' }
           :game="game" :business="business" :primary-color="primaryColor"
           :target-prize-index="targetPrizeIndex" :is-spinning="isSpinning"
           :has-lost="hasLost" :is-loading-result="isLoadingResult"
-          @start-spin="startSpin" @spin-end="onSpinEnd" />
+          @start-spin="startSpin" @spin-end="onSpinEnd" @show-rules="showRules = true" />
 
         <GameStepResult v-else-if="step === 'result'"
-          :game="game" :is-win="isWin" :won-prize="wonPrize" :qr-code-data-url="qrCodeDataUrl"
+          :game="game" :business="business" :primary-color="primaryColor"
+          :is-win="isWin" :won-prize="wonPrize" :qr-code-data-url="qrCodeDataUrl"
           @restart="step = 'intro'" />
       </template>
     </div>
@@ -244,7 +245,7 @@ const onSpinEnd = () => { isSpinning.value = false; step.value = 'result' }
   </div>
 
   <!-- Modals -->
-  <GameStepsModal :show="showStepsModal" :game="game"
+  <GameStepsModal :show="showStepsModal" :game="game" :business="business"
     @close="showStepsModal = false"
     @done="onStepsDone" />
 
