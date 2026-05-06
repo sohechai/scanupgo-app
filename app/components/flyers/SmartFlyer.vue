@@ -285,8 +285,8 @@ defineExpose({
 			</div>
 
 			<!-- QR Code Card -->
-			<div class="absolute z-30 bg-white rounded-xl p-3" style="right: 30px; bottom: 130px; transform: rotate(-5deg); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-				<div class="w-40 h-40 bg-white flex items-center justify-center">
+			<div class="absolute z-30 rounded-xl p-3" :style="{ right: '30px', bottom: '130px', transform: 'rotate(-5deg)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', background: props.qrBgColor || '#ffffff' }">
+				<div class="w-40 h-40 flex items-center justify-center" :style="{ background: props.qrBgColor || '#ffffff' }">
 					<img v-if="displayQrCodeUrl" :src="displayQrCodeUrl" crossorigin="anonymous" class="w-full h-full object-contain" />
 					<div v-else class="text-slate-300">QR Code</div>
 				</div>
