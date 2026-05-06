@@ -1,294 +1,256 @@
 <script setup lang="ts">
-definePageMeta({
-	layout: 'dashboard',
-	pageTransition: false,
-	middleware: 'auth'
-})
-useHead({ title: 'Valider un bon' })
+definePageMeta({ layout: 'dashboard', pageTransition: false, middleware: 'auth' })
+useHead({ title: 'Mes Lots' })
 
-const { t } = useI18n()
 const { $api } = useNuxtApp()
-const { fetchSubscription } = useSubscription()
 const { formatDate } = useLocaleDate()
 
-const redemptionCode = ref('')
-const loading = ref(false)
-const scanning = ref(false)
-const result = ref<any>(null)
-const error = ref<string | null>(null)
-const activeMode = ref<'manual' | 'scan'>('manual')
-const stream = ref<MediaStream | null>(null)
+const sessions = ref<any[]>([])
+const loading = ref(true)
+const filter = ref<'all' | 'pending' | 'redeemed'>('all')
 
-const validateCode = async (code: string) => {
-	if (!code || code.length < 6) {
-		error.value = t('dashboard.quick_validate.invalid_code')
-		return
-	}
+const actionLoading = ref(false)
+const actionError = ref('')
+const modal = ref<{ type: 'validate' | 'unredeem'; session: any } | null>(null)
+
+const fetchSessions = async () => {
 	loading.value = true
-	error.value = null
-	result.value = null
 	try {
-		const response = await $api('/gameplay/redeem', {
-			method: 'POST',
-			body: { redemptionCode: code.toUpperCase() }
-		})
-		result.value = response
-		redemptionCode.value = ''
-	} catch (err: any) {
-		error.value = err?.data?.message || t('redeem.error')
+		const all = await $api('/gameplay/sessions')
+		sessions.value = (all as any[]).filter((s: any) => s.prizeWon)
+	} catch {}
+	finally { loading.value = false }
+}
+
+onMounted(fetchSessions)
+
+const prizes = computed(() => {
+	if (filter.value === 'pending') return sessions.value.filter(s => !s.redeemed)
+	if (filter.value === 'redeemed') return sessions.value.filter(s => s.redeemed)
+	return sessions.value
+})
+
+const stats = computed(() => ({
+	total: sessions.value.length,
+	pending: sessions.value.filter(s => !s.redeemed).length,
+	redeemed: sessions.value.filter(s => s.redeemed).length,
+}))
+
+const openModal = (type: 'validate' | 'unredeem', session: any) => {
+	actionError.value = ''
+	modal.value = { type, session }
+}
+
+const closeModal = () => {
+	if (actionLoading.value) return
+	modal.value = null
+	actionError.value = ''
+}
+
+const confirm = async () => {
+	if (!modal.value) return
+	const { type, session } = modal.value
+	actionLoading.value = true
+	actionError.value = ''
+	try {
+		if (type === 'validate') {
+			await $api('/gameplay/redeem', { method: 'POST', body: { redemptionCode: session.redemptionCode } })
+			session.redeemed = true
+			session.redeemedAt = new Date().toISOString()
+		} else {
+			await $api(`/gameplay/sessions/${session.id}/unredeem`, { method: 'PATCH' })
+			session.redeemed = false
+			session.redeemedAt = null
+		}
+		modal.value = null
+	} catch (e: any) {
+		actionError.value = e?.data?.message || 'Erreur'
 	} finally {
-		loading.value = false
+		actionLoading.value = false
 	}
 }
-
-const handleSubmit = () => validateCode(redemptionCode.value)
-
-const startScanning = async () => {
-	scanning.value = true
-	error.value = null
-	try {
-		stream.value = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-		await nextTick()
-		const video = document.getElementById('qr-video') as HTMLVideoElement
-		if (video && stream.value) video.srcObject = stream.value
-	} catch (err) {
-		error.value = t('dashboard.quick_validate.error')
-		scanning.value = false
-	}
-}
-
-const stopScanning = () => {
-	stream.value?.getTracks().forEach(t => t.stop())
-	stream.value = null
-	scanning.value = false
-}
-
-const scanQRCode = async () => {
-	const video = document.getElementById('qr-video') as HTMLVideoElement
-	const canvas = document.createElement('canvas')
-	const context = canvas.getContext('2d')
-	if (!video || !context) return
-	canvas.width = video.videoWidth
-	canvas.height = video.videoHeight
-	context.drawImage(video, 0, 0, canvas.width, canvas.height)
-	const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-	if (typeof window !== 'undefined' && (window as any).jsQR) {
-		const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height)
-		if (code) { stopScanning(); await validateCode(code.data) }
-	}
-}
-
-const onVideoPlay = () => {
-	const scanInterval = setInterval(() => {
-		if (!scanning.value) { clearInterval(scanInterval); return }
-		scanQRCode()
-	}, 300)
-}
-
-const switchMode = (mode: 'manual' | 'scan') => {
-	if (activeMode.value === 'scan' && mode === 'manual') stopScanning()
-	activeMode.value = mode
-	error.value = null
-	if (mode === 'scan') startScanning()
-}
-
-const resetState = () => {
-	result.value = null
-	error.value = null
-	redemptionCode.value = ''
-}
-
-onUnmounted(() => stopScanning())
-onMounted(() => fetchSubscription())
 </script>
 
 <template>
-	<SubscriptionGate>
-	<div class="max-w-lg mx-auto pt-2 pb-16">
+	<div class="space-y-5">
 
-		<!-- SUCCESS STATE -->
-		<Transition
-			enter-active-class="transition duration-300 ease-out"
-			enter-from-class="opacity-0 translate-y-3"
-			enter-to-class="opacity-100 translate-y-0">
-		<div v-if="result">
-
-			<!-- Status header -->
-			<div class="flex items-center gap-3 mb-5">
-				<div class="w-9 h-9 rounded-md bg-emerald-50 flex items-center justify-center shrink-0">
-					<Icon name="ph:check-bold" class="text-emerald-600" size="16" />
-				</div>
-				<div class="flex-1 min-w-0">
-					<p class="font-semibold text-slate-900 dark:text-white text-sm leading-tight">{{ $t('redeem.success') }}</p>
-					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('redeem.success_message') }}</p>
-				</div>
-				<span class="inline-flex items-center gap-1.5 text-xs text-emerald-600">
-					<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-					{{ $t('redeem.validated') }}
-				</span>
-			</div>
-
-			<!-- Receipt card -->
-			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden mb-4">
-
-				<!-- Prize header -->
-				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-					<div>
-						<p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{{ $t('redeem.prize_won') }}</p>
-						<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ result.prize?.name }}</p>
-					</div>
-					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-						<Icon name="ph:gift-bold" class="text-slate-400 dark:text-slate-500" size="15" />
-					</div>
-				</div>
-
-				<!-- Info rows -->
-				<div class="divide-y divide-slate-100 dark:divide-slate-800">
-
-					<div class="flex items-center gap-3.5 px-5 py-3.5">
-						<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-							<span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-								{{ (result.player?.firstName?.[0] || '') + (result.player?.lastName?.[0] || '') }}
-							</span>
-						</div>
-						<div class="flex-1 min-w-0">
-							<p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('redeem.player') }}</p>
-							<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ result.player?.firstName }} {{ result.player?.lastName }}</p>
-							<p v-if="result.player?.phone" class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ result.player.phone }}</p>
-						</div>
-					</div>
-
-					<div class="flex items-center gap-3.5 px-5 py-3.5">
-						<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-							<Icon name="ph:calendar-check" class="text-slate-400 dark:text-slate-500" size="14" />
-						</div>
-						<div>
-							<p class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('redeem.validation_date') }}</p>
-							<p class="text-sm font-semibold text-slate-900 dark:text-white">{{ formatDate(result.redeemedAt) }}</p>
-						</div>
-					</div>
-
-				</div>
-			</div>
-
-			<button @click="resetState"
-				class="w-full py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
-				{{ $t('redeem.validate_another') }}
-			</button>
+		<!-- Header -->
+		<div>
+			<h1 class="text-xl font-semibold text-slate-900 dark:text-white">Mes Lots</h1>
+			<p class="text-sm text-slate-400 mt-0.5">Suivez et gérez les lots gagnés par vos joueurs</p>
 		</div>
-		</Transition>
 
-		<!-- INPUT STATE -->
-		<template v-if="!result">
+		<!-- Stats -->
+		<div class="grid grid-cols-3 gap-3">
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
+				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">Total gagnés</p>
+				<p class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{{ stats.total }}</p>
+			</div>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-amber-200 dark:border-amber-900/40 px-4 py-3">
+				<p class="text-[10px] font-medium text-amber-500 uppercase tracking-wide mb-1">En attente</p>
+				<p class="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{{ stats.pending }}</p>
+			</div>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-green-200 dark:border-green-900/40 px-4 py-3">
+				<p class="text-[10px] font-medium text-green-500 uppercase tracking-wide mb-1">Récupérés</p>
+				<p class="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">{{ stats.redeemed }}</p>
+			</div>
+		</div>
 
-			<!-- Page title -->
-			<div class="mb-5">
-				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('redeem.title') }}</h1>
-				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('redeem.subtitle') }}</p>
+		<!-- Table card -->
+		<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+
+			<!-- Filters -->
+			<div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+				<div class="flex gap-1 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-md w-fit">
+					<button v-for="f in [{ key: 'all', label: 'Tous' }, { key: 'pending', label: 'En attente' }, { key: 'redeemed', label: 'Récupérés' }]"
+						:key="f.key"
+						@click="filter = f.key as any"
+						:class="filter === f.key ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'"
+						class="text-xs font-medium px-2.5 py-1 rounded transition-all">
+						{{ f.label }}
+						<span v-if="f.key === 'pending' && stats.pending > 0"
+							class="ml-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+							{{ stats.pending }}
+						</span>
+					</button>
+				</div>
 			</div>
 
-			<!-- Error -->
+			<!-- Loading -->
+			<div v-if="loading" class="p-12 text-center">
+				<Icon name="ph:spinner-gap-bold" size="28" class="animate-spin text-slate-300 mx-auto" />
+			</div>
+
+			<!-- Empty -->
+			<div v-else-if="prizes.length === 0" class="p-12 text-center text-slate-400">
+				<Icon name="ph:gift-duotone" size="40" class="mx-auto mb-3 opacity-40" />
+				<p class="text-sm font-medium">Aucun lot {{ filter === 'pending' ? 'en attente' : filter === 'redeemed' ? 'récupéré' : 'gagné' }}</p>
+			</div>
+
+			<!-- Table -->
+			<div v-else class="overflow-x-auto">
+				<table class="w-full text-left text-sm">
+					<thead class="border-b border-slate-100 dark:border-slate-800">
+						<tr>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">Joueur</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">Lot</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">Gagné le</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">Statut</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">Récupéré le</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400 text-right">Action</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+						<tr v-for="session in prizes" :key="session.id"
+							class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+							<td class="px-5 py-3">
+								<div class="flex items-center gap-2">
+									<div class="w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-semibold text-slate-500 shrink-0">
+										{{ session.player?.firstName?.[0] || '?' }}
+									</div>
+									<div>
+										<p class="text-sm font-medium text-slate-800 dark:text-slate-200">
+											{{ session.player?.firstName }} {{ session.player?.lastName }}
+										</p>
+										<p v-if="session.player?.phone" class="text-[10px] text-slate-400">{{ session.player.phone }}</p>
+									</div>
+								</div>
+							</td>
+							<td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ session.prizeName }}</td>
+							<td class="px-5 py-3 text-xs text-slate-400">
+								{{ formatDate(session.createdAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}
+							</td>
+							<td class="px-5 py-3">
+								<span v-if="session.redeemed"
+									class="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-2 py-0.5 rounded-full">
+									<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Récupéré
+								</span>
+								<span v-else
+									class="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 px-2 py-0.5 rounded-full">
+									<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>En attente
+								</span>
+							</td>
+							<td class="px-5 py-3 text-xs text-slate-400">
+								{{ session.redeemedAt ? formatDate(session.redeemedAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—' }}
+							</td>
+							<td class="px-5 py-3 text-right">
+								<button v-if="!session.redeemed"
+									@click="openModal('validate', session)"
+									class="text-xs font-medium text-[#007AFF] hover:underline">
+									Valider
+								</button>
+								<button v-else
+									@click="openModal('unredeem', session)"
+									class="text-xs text-slate-400 hover:text-red-500 transition-colors">
+									Annuler
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Modal confirmation -->
+		<Teleport to="body">
 			<Transition
-				enter-active-class="transition duration-200 ease-out"
-				enter-from-class="opacity-0 -translate-y-1"
-				enter-to-class="opacity-100 translate-y-0">
-			<div v-if="error" class="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-md px-4 py-3 mb-4">
-				<Icon name="ph:warning-circle-fill" class="text-red-500 shrink-0" size="15" />
-				<p class="text-red-600 font-medium text-sm">{{ error }}</p>
-			</div>
-			</Transition>
+				enter-active-class="transition duration-150 ease-out"
+				enter-from-class="opacity-0"
+				enter-to-class="opacity-100"
+				leave-active-class="transition duration-100 ease-in"
+				leave-from-class="opacity-100"
+				leave-to-class="opacity-0">
+				<div v-if="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="closeModal">
+					<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-sm p-6 space-y-4">
 
-			<!-- Mode switcher -->
-			<div class="bg-slate-100 dark:bg-slate-800 rounded-md p-1 flex gap-1 mb-4">
-				<button
-					@click="switchMode('manual')"
-					:class="[
-						'flex-1 flex items-center justify-center gap-2 py-2 rounded text-sm font-medium transition-all',
-						activeMode === 'manual'
-							? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-							: 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-					]">
-					<Icon name="ph:keyboard-bold" size="14" />
-					{{ $t('redeem.mode_manual') }}
-				</button>
-				<button
-					@click="switchMode('scan')"
-					:class="[
-						'flex-1 flex items-center justify-center gap-2 py-2 rounded text-sm font-medium transition-all',
-						activeMode === 'scan'
-							? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-							: 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-					]">
-					<Icon name="ph:qr-code-bold" size="14" />
-					{{ $t('redeem.mode_scan') }}
-				</button>
-			</div>
-
-			<!-- MANUAL MODE -->
-			<template v-if="activeMode === 'manual'">
-				<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden mb-3">
-					<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-						<p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('redeem.code_label') }}</p>
-					</div>
-					<div class="px-5 py-4">
-						<input
-							v-model="redemptionCode"
-							@keyup.enter="handleSubmit"
-							type="text"
-							:placeholder="$t('redeem.code_placeholder')"
-							class="w-full bg-slate-50 dark:bg-slate-800 rounded-md px-4 py-3.5 text-slate-900 dark:text-white font-mono font-semibold text-2xl placeholder-slate-300 dark:placeholder-slate-600 outline-none uppercase tracking-[0.25em] transition-all focus:ring-2 focus:ring-[#007AFF]/10 border border-slate-200 dark:border-slate-700 text-center"
-							:disabled="loading"
-							autocomplete="off"
-							autocorrect="off"
-							autocapitalize="characters"
-							spellcheck="false"
-						/>
-					</div>
-				</div>
-
-				<button
-					@click="handleSubmit"
-					:disabled="loading || !redemptionCode"
-					class="w-full py-2.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-					<Icon v-if="loading" name="ph:spinner-gap-bold" class="animate-spin" size="15" />
-					<span v-else>{{ $t('redeem.validate_button') }}</span>
-				</button>
-
-				<div class="flex items-start gap-2.5 px-1 mt-4">
-					<Icon name="ph:info" class="text-slate-300 dark:text-slate-600 mt-0.5 shrink-0" size="14" />
-					<p class="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">{{ $t('redeem.instructions') }}</p>
-				</div>
-			</template>
-
-			<!-- SCAN MODE -->
-			<template v-if="activeMode === 'scan'">
-				<div class="bg-black rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-					<div class="relative aspect-square">
-						<video id="qr-video" autoplay playsinline @play="onVideoPlay"
-							class="w-full h-full object-cover opacity-90"></video>
-
-						<!-- Overlay -->
-						<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-							<div class="absolute inset-0 bg-black/40"></div>
-							<div class="relative z-10 w-56 h-56">
-								<div class="absolute inset-0 rounded-lg ring-1 ring-white/15"></div>
-								<div class="absolute top-0 left-0 w-6 h-6 border-t-[2.5px] border-l-[2.5px] border-white rounded-tl-lg"></div>
-								<div class="absolute top-0 right-0 w-6 h-6 border-t-[2.5px] border-r-[2.5px] border-white rounded-tr-lg"></div>
-								<div class="absolute bottom-0 left-0 w-6 h-6 border-b-[2.5px] border-l-[2.5px] border-white rounded-bl-lg"></div>
-								<div class="absolute bottom-0 right-0 w-6 h-6 border-b-[2.5px] border-r-[2.5px] border-white rounded-br-lg"></div>
-								<div class="absolute left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#007AFF] to-transparent top-1/2 shadow-[0_0_10px_rgba(0,122,255,0.8)]"></div>
+						<!-- Icône -->
+						<div class="flex justify-center">
+							<div :class="modal.type === 'validate' ? 'bg-[#007AFF]/10' : 'bg-red-50 dark:bg-red-900/20'"
+								class="w-12 h-12 rounded-full flex items-center justify-center">
+								<Icon
+									:name="modal.type === 'validate' ? 'ph:check-circle-duotone' : 'ph:arrow-counter-clockwise-bold'"
+									:class="modal.type === 'validate' ? 'text-[#007AFF]' : 'text-red-500'"
+									size="24" />
 							</div>
 						</div>
-					</div>
-					<div class="px-5 py-3 bg-[#111] flex items-center gap-2.5">
-						<Icon name="ph:qr-code" class="text-slate-500 shrink-0" size="14" />
-						<p class="text-xs text-slate-500">{{ $t('redeem.position_qr') }}</p>
+
+						<!-- Texte -->
+						<div class="text-center space-y-1">
+							<p class="font-semibold text-slate-900 dark:text-white">
+								{{ modal.type === 'validate' ? 'Valider le lot' : 'Annuler la validation' }}
+							</p>
+							<p class="text-sm text-slate-500 dark:text-slate-400">
+								<template v-if="modal.type === 'validate'">
+									Confirmez la remise de <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.prizeName }}</strong> à <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.player?.firstName }}</strong>.<br/>
+									<span class="text-xs text-slate-400">Cette action est irréversible.</span>
+								</template>
+								<template v-else>
+									Remettre le lot <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.prizeName }}</strong> en statut "En attente" ?
+								</template>
+							</p>
+						</div>
+
+						<!-- Erreur -->
+						<p v-if="actionError" class="text-xs text-red-500 text-center font-medium">{{ actionError }}</p>
+
+						<!-- Boutons -->
+						<div class="flex gap-2 pt-1">
+							<button @click="closeModal" :disabled="actionLoading"
+								class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+								Annuler
+							</button>
+							<button @click="confirm" :disabled="actionLoading"
+								:class="modal.type === 'validate' ? 'bg-[#007AFF] hover:bg-[#0066DD]' : 'bg-red-500 hover:bg-red-600'"
+								class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+								<Icon v-if="actionLoading" name="ph:spinner-gap-bold" class="animate-spin" size="15" />
+								{{ actionLoading ? '...' : (modal.type === 'validate' ? 'Confirmer' : 'Oui, annuler') }}
+							</button>
+						</div>
+
 					</div>
 				</div>
-			</template>
-
-		</template>
+			</Transition>
+		</Teleport>
 
 	</div>
-	</SubscriptionGate>
 </template>

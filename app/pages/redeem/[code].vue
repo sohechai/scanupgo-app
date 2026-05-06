@@ -8,14 +8,18 @@ const code = route.params.code as string
 const info = ref<any>(null)
 const loading = ref(true)
 const error = ref('')
+const errorTitle = ref('Code invalide')
 const validating = ref(false)
 const validated = ref(false)
+const confirming = ref(false)
 
 onMounted(async () => {
 	try {
 		info.value = await $api(`/gameplay/redeem/public/${code}`)
 	} catch (e: any) {
-		error.value = e?.data?.message || 'Code invalide ou expiré'
+		const msg = e?.data?.message || 'Code invalide ou expiré'
+		error.value = msg
+		errorTitle.value = msg.includes('attendre') || msg.includes('Disponible') ? 'Lot non disponible' : 'Code invalide'
 	} finally {
 		loading.value = false
 	}
@@ -28,7 +32,9 @@ const validate = async () => {
 		await $api('/gameplay/redeem/public', { method: 'POST', body: { redemptionCode: code } })
 		validated.value = true
 	} catch (e: any) {
-		error.value = e?.data?.message || 'Erreur lors de la validation'
+		const msg = e?.data?.message || 'Erreur lors de la validation'
+		error.value = msg
+		errorTitle.value = msg.includes('attendre') || msg.includes('Disponible') ? 'Lot non disponible' : 'Erreur de validation'
 	} finally {
 		validating.value = false
 	}
@@ -64,7 +70,7 @@ const validate = async () => {
 				<div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto">
 					<Icon name="ph:warning-circle-duotone" size="32" class="text-red-400" />
 				</div>
-				<p class="font-semibold text-slate-800">Code invalide</p>
+				<p class="font-semibold text-slate-800">{{ errorTitle }}</p>
 				<p class="text-sm text-slate-400">{{ error }}</p>
 			</div>
 
@@ -114,12 +120,33 @@ const validate = async () => {
 					<!-- Erreur validation -->
 					<p v-if="error" class="text-sm text-red-500 text-center font-medium">{{ error }}</p>
 
-					<!-- Bouton -->
-					<button @click="validate" :disabled="validating"
-						class="w-full py-3.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-						<Icon v-if="validating" name="ph:spinner-gap-bold" class="animate-spin" size="18" />
-						<Icon v-else name="ph:check-bold" size="18" />
-						{{ validating ? 'Validation...' : 'Valider le lot' }}
+					<!-- Confirmation -->
+					<div v-if="confirming" class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+						<div class="flex items-start gap-2">
+							<Icon name="ph:warning-duotone" size="18" class="text-amber-500 shrink-0 mt-0.5" />
+							<p class="text-sm text-amber-800 font-medium">
+								Une fois validé, ce lot sera marqué comme récupéré et ne pourra plus être retiré. Confirmez uniquement si vous remettez physiquement le lot au client.
+							</p>
+						</div>
+						<div class="flex gap-2">
+							<button @click="confirming = false"
+								class="flex-1 py-2.5 bg-white border border-slate-200 text-slate-600 font-medium rounded-lg text-sm hover:bg-slate-50 transition-colors">
+								Annuler
+							</button>
+							<button @click="validate" :disabled="validating"
+								class="flex-1 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5">
+								<Icon v-if="validating" name="ph:spinner-gap-bold" class="animate-spin" size="16" />
+								<Icon v-else name="ph:check-bold" size="16" />
+								{{ validating ? 'Validation...' : 'Confirmer' }}
+							</button>
+						</div>
+					</div>
+
+					<!-- Bouton principal -->
+					<button v-else @click="confirming = true"
+						class="w-full py-3.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+						<Icon name="ph:check-bold" size="18" />
+						Valider le lot
 					</button>
 
 					<p class="text-xs text-slate-400 text-center">Cette action est irréversible</p>

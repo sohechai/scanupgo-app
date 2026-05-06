@@ -40,7 +40,7 @@ const navItems = computed(() => [
 	{ name: t('dashboard.nav.orders'), path: '/dashboard/orders', icon: 'ph:shopping-cart-duotone' },
 	{ name: t('dashboard.nav.players'), path: '/dashboard/players', icon: 'ph:users-three-duotone' },
 	{ name: t('dashboard.nav.marketing'), path: '/dashboard/marketing', icon: 'ph:megaphone-duotone' },
-	{ name: t('dashboard.nav.redeem'), path: '/dashboard/redeem', icon: 'ph:check-circle-duotone' },
+	{ name: t('dashboard.nav.prizes'), path: '/dashboard/redeem', icon: 'ph:gift-duotone' },
 	{ name: t('dashboard.nav.subscription'), path: '/dashboard/subscription', icon: 'ph:crown-duotone' },
 	{ name: t('dashboard.nav.account'), path: '/dashboard/account', icon: 'ph:user-circle-duotone' },
 ])

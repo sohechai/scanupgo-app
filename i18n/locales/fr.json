@@ -206,6 +206,7 @@
       "players": "Joueurs",
       "marketing": "Marketing",
       "redeem": "Validation des lots",
+      "prizes": "Mes Lots",
       "subscription": "Mon Abonnement",
       "account": "Mon Compte"
     },
@@ -342,7 +343,10 @@
     "success_message": "Profil mis à jour avec succès",
     "error_message": "Erreur lors de la sauvegarde",
     "upload_error": "Erreur lors de l'upload",
-    "upload_success": "Logo uploadé"
+    "upload_success": "Logo uploadé",
+    "google_search_label": "Rechercher votre établissement sur Google",
+    "google_search_placeholder": "Ex: Chicken Street Paris...",
+    "google_search_hint": "Sélectionnez votre établissement pour remplir automatiquement les informations."
   },
   "games": {
     "title": "Mes Jeux",
