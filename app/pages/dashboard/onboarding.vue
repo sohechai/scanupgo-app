@@ -105,11 +105,8 @@ onMounted(() => fetchBusiness())
 
 		<!-- Top bar -->
 		<header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-6 shrink-0">
-			<div class="flex items-center gap-3">
-				<div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-					<span class="text-white font-bold text-sm">B.</span>
-				</div>
-				<span class="font-bold text-slate-900 text-lg tracking-tight">ScanUpGo</span>
+			<div class="flex items-center">
+				<AppLogo variant="light" :size="28" />
 			</div>
 
 			<!-- Step indicators -->

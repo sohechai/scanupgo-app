@@ -78,8 +78,8 @@ const toggleTheme = () => {
 			<!-- Brand -->
 			<div class="h-14 flex items-center px-4">
 				<div class="flex items-center">
-					<img src="/images/scanupgo-logo-transparent-clair.png" alt="ScanUpGo" class="h-8 dark:hidden" />
-					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-8 hidden dark:block" />
+					<AppLogo variant="light" :size="32" class="dark:hidden" />
+					<AppLogo variant="dark" :size="32" class="hidden dark:inline-flex" />
 				</div>
 			</div>
 

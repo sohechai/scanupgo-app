@@ -85,7 +85,7 @@ const handleLogin = async () => {
 		<div class="relative w-full max-w-md">
 			<div class="text-center mb-8">
 				<div class="inline-flex items-center mb-3">
-					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-11" />
+					<AppLogo variant="dark" :size="44" />
 				</div>
 				<p class="text-sm text-slate-400">{{ $t('admin.administration') }}</p>
 			</div>
