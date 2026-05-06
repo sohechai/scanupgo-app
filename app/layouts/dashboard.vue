@@ -84,7 +84,7 @@ const toggleTheme = () => {
 			</div>
 
 			<!-- Navigation -->
-			<nav class="flex-1 overflow-y-auto px-2 space-y-0.5">
+			<nav class="flex-1 overflow-y-auto px-2 space-y-1">
 				<NuxtLink v-for="item in navItems" :key="item.path" :to="item.path"
 					class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors group"
 					:class="isActive(item.path)
@@ -97,7 +97,7 @@ const toggleTheme = () => {
 			</nav>
 
 			<!-- User Footer -->
-			<div class="p-2 mt-auto space-y-0.5">
+			<div class="p-2 mt-auto space-y-1">
 				<NuxtLink to="/dashboard/account"
 					class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800/50 transition-colors group">
 					<img v-if="user?.business?.logo" :src="user.business.logo" :alt="user.business.name"
