@@ -503,8 +503,7 @@ onMounted(() => {
 			</div>
 
 			<!-- Row 2 — Analytics events (secondary) -->
-			<div v-if="analyticsEvents.page_visit || analyticsEvents.game_start || analyticsEvents.game_complete || analyticsEvents.prize_claim"
-				class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+			<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
 				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center gap-2">
 					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.page_visit || 0 }}</p>
 					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.page_views') }}</p>
