@@ -133,7 +133,8 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
         targetPrizeIndex.value = idx !== -1 ? idx : 0
         if (wonPrize.value.redemptionCode) {
           try {
-            qrCodeDataUrl.value = await QRCode.toDataURL(wonPrize.value.redemptionCode, { width: 300, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } })
+            const redeemUrl = `${window.location.origin}/redeem/${wonPrize.value.redemptionCode}`
+            qrCodeDataUrl.value = await QRCode.toDataURL(redeemUrl, { width: 300, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } })
           } catch {}
         }
       } else {
