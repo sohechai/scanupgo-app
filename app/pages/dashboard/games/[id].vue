@@ -531,12 +531,15 @@ const saveGame = async () => {
 								<div>
 									<label
 										class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('games.detail.language') }}</label>
-									<select v-model="game.gameLanguage"
-										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 outline-none appearance-none text-sm cursor-pointer">
-										<option value="fr">{{ $t('games.detail.language_french') }}</option>
-										<option value="en">{{ $t('games.detail.language_english') }}</option>
-										<option value="ar">{{ $t('games.detail.language_arabic') }}</option>
-									</select>
+									<div class="relative">
+										<select v-model="game.gameLanguage"
+											class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 pr-8 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 outline-none appearance-none text-sm cursor-pointer">
+											<option value="fr">{{ $t('games.detail.language_french') }}</option>
+											<option value="en">{{ $t('games.detail.language_english') }}</option>
+											<option value="ar">{{ $t('games.detail.language_arabic') }}</option>
+										</select>
+										<Icon name="ph:caret-down-bold" size="13" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+									</div>
 								</div>
 
 								<div
@@ -580,6 +583,11 @@ const saveGame = async () => {
 										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2.5">
 										<Icon name="ph:check-circle-fill" size="16" class="text-emerald-500 shrink-0" />
 										<span class="text-xs text-slate-700 dark:text-slate-300 truncate flex-1 font-mono">{{ businessObject.googleReviewUrl }}</span>
+										<a :href="businessObject.googleReviewUrl" target="_blank" rel="noopener noreferrer"
+											class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shrink-0 flex items-center gap-1 transition-colors"
+											title="Prévisualiser la page d'avis">
+											<Icon name="ph:arrow-square-out-bold" size="14" />
+										</a>
 										<NuxtLink to="/dashboard/account" class="text-xs text-[#007AFF] hover:opacity-70 shrink-0 font-medium">
 											{{ $t('common.edit') }}
 										</NuxtLink>
