@@ -39,6 +39,7 @@ const tabs = computed(() => [
 const subscriptions = ref<any[]>([])
 const loadingSubs = ref(true)
 const refundModalOpen = ref(false)
+const showStripeInfoModal = ref(false)
 const selectedSubscription = ref<any>(null)
 const refundLoading = ref(false)
 
@@ -75,7 +76,15 @@ const getPeriodLabel = (period: string) => {
 	}
 }
 
-const openRefundModal = (sub: any) => { selectedSubscription.value = sub; refundModalOpen.value = true }
+const openRefundModal = (sub: any) => {
+	if (sub.stripeSubscriptionId || sub.stripeCustomerId) {
+		selectedSubscription.value = sub
+		showStripeInfoModal.value = true
+		return
+	}
+	selectedSubscription.value = sub
+	refundModalOpen.value = true
+}
 const closeRefundModal = () => { refundModalOpen.value = false; selectedSubscription.value = null }
 
 const confirmRefund = async () => {
@@ -176,8 +185,20 @@ const submitGrant = async () => {
 		toast.show("Accès accordé avec succès", 'success')
 		showGrantModal.value = false
 		await fetchSubscriptions()
-	} catch (e: any) { toast.show(e?.data?.message || "Erreur lors de l'attribution", 'error') }
-	finally { grantLoading.value = false }
+	} catch (e: any) {
+		if (e?.status === 409) {
+			toast.show("Cet utilisateur a déjà un abonnement Stripe actif. Annulez-le depuis le dashboard Stripe avant d'accorder un abonnement manuel.", 'error')
+		} else {
+			toast.show(e?.data?.message || "Erreur lors de l'attribution", 'error')
+		}
+	} finally { grantLoading.value = false }
+}
+
+const formatDateShort = (d: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
+const daysUntil = (d: string | null) => {
+	if (!d) return null
+	const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000)
+	return diff > 0 ? diff : 0
 }
 
 // --- CONFIRM MODAL ---
@@ -608,6 +629,39 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 					</div>
 				</div>
 			</div>
+		</Teleport>
+
+		<!-- MODAL: STRIPE INFO (abonnement géré par Stripe) -->
+		<Teleport to="body">
+			<Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+				<div v-if="showStripeInfoModal" class="fixed inset-0 z-[100] flex items-center justify-center px-4" @click.self="showStripeInfoModal = false">
+					<div class="absolute inset-0 bg-black/70"></div>
+					<div class="relative w-full max-w-md bg-[#111318] border border-white/[0.09] rounded-xl shadow-2xl overflow-hidden">
+						<div class="h-0.5 w-full bg-gradient-to-r from-violet-500 to-blue-500"></div>
+						<div class="p-6">
+							<div class="flex flex-col items-center text-center mb-5">
+								<div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-3">
+									<Icon name="ph:stripe-logo-bold" class="text-violet-400" size="24" />
+								</div>
+								<h3 class="text-base font-semibold text-white mb-1">Abonnement Stripe</h3>
+								<p class="text-sm text-slate-400 leading-relaxed">
+									Pour annuler ou rembourser cet abonnement, rendez-vous sur le <strong class="text-white">Dashboard Stripe</strong>.
+								</p>
+							</div>
+							<div class="flex gap-2">
+								<button @click="showStripeInfoModal = false" class="flex-1 py-2 bg-white/[0.04] border border-white/[0.08] text-slate-300 font-medium rounded-md hover:bg-white/[0.08] transition-colors text-sm">
+									Fermer
+								</button>
+								<a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener"
+									class="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-md transition-colors text-sm flex items-center justify-center gap-2">
+									<Icon name="ph:arrow-square-out-bold" size="15" />
+									Dashboard Stripe
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</Transition>
 		</Teleport>
 
 		<!-- MODAL: REFUND -->
