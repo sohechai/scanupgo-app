@@ -78,6 +78,9 @@ const syncGameToServer = async () => {
 		game.value.description = game.value.tagline
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
+		} else {
+			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de créer ce jeu.', 'error')
+			throw new Error('googleReviewUrl missing')
 		}
 		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
 		if (createdGameId.value) {
@@ -277,6 +280,9 @@ const saveGame = async () => {
 		// Sync googleReviewUrl from business
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
+		} else {
+			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de publier ce jeu.', 'error')
+			return
 		}
 
 		// Sync tagline to description if needed
