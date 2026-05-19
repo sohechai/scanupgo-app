@@ -20,9 +20,12 @@ const business = ref({
 	addressCity: '',
 	addressZip: '',
 	addressCountry: '',
-	website: '',
 	primaryColor: '#00E5FF',
 	logo: null as string | null,
+	googlePlaceId: null as string | null,
+	googleReviewUrl: null as string | null,
+	googleRating: null as number | null,
+	googleReviewCount: null as number | null,
 })
 
 const loading = ref(true)
@@ -93,10 +96,13 @@ const handleSave = async () => {
 		}
 
 		if (business.value.phone) payload.phone = business.value.phone
-		if (business.value.website) payload.website = business.value.website
 		if (business.value.addressCity) payload.addressCity = business.value.addressCity
 		if (business.value.addressZip) payload.addressZip = business.value.addressZip
 		if (business.value.addressCountry) payload.addressCountry = business.value.addressCountry
+		if (business.value.googlePlaceId) payload.googlePlaceId = business.value.googlePlaceId
+		if (business.value.googleReviewUrl) payload.googleReviewUrl = business.value.googleReviewUrl
+		if (business.value.googleRating != null) payload.googleRating = business.value.googleRating
+		if (business.value.googleReviewCount != null) payload.googleReviewCount = business.value.googleReviewCount
 
 		if (business.value.id) {
 			await $api(`/businesses/${business.value.id}`, {
@@ -158,7 +164,21 @@ const handleLogoUpload = async (event: Event) => {
 		logoUploadError.value = e?.data?.message || t('profile.upload_error')
 	} finally {
 		logoUploading.value = false
+		if (fileInputRef.value) fileInputRef.value.value = ''
 	}
+}
+
+const handlePlaceSelect = (details: any) => {
+	business.value.name = details.name || business.value.name
+	business.value.addressStreet = details.addressStreet || ''
+	business.value.addressCity = details.addressCity || ''
+	business.value.addressZip = details.addressZip || ''
+	business.value.addressCountry = details.addressCountry || ''
+	business.value.phone = details.phone || business.value.phone
+	business.value.googlePlaceId = details.placeId
+	business.value.googleReviewUrl = details.googleReviewUrl
+	business.value.googleRating = details.rating
+	business.value.googleReviewCount = details.reviewCount
 }
 
 onMounted(() => {
@@ -227,6 +247,27 @@ onMounted(() => {
 				<div class="p-5">
 
 				<div class="space-y-4">
+
+					<!-- Google Places Search -->
+					<div v-if="canEdit">
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.google_search_label') }}</label>
+						<GooglePlacesSearch @select="handlePlaceSelect" :placeholder="$t('profile.google_search_placeholder')" />
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ $t('profile.google_search_hint') }}</p>
+					</div>
+
+					<!-- Google rating badge (read-only) -->
+					<div v-if="business.googleRating && !canEdit" class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#2C2C2E] rounded-lg border border-slate-200 dark:border-slate-700/40">
+						<Icon name="ph:star-fill" class="text-yellow-400 shrink-0" size="16" />
+						<div class="flex items-baseline gap-1.5">
+							<span class="text-sm font-bold text-slate-900 dark:text-white">{{ business.googleRating?.toFixed(1) }}</span>
+							<span class="text-xs text-slate-400">/ 5 · {{ business.googleReviewCount }} avis Google</span>
+						</div>
+						<a v-if="business.googleReviewUrl" :href="business.googleReviewUrl" target="_blank" class="ml-auto text-xs text-blue-500 hover:underline flex items-center gap-1">
+							<Icon name="ph:arrow-square-out" size="13" />
+							Voir
+						</a>
+					</div>
+
 					<!-- Name -->
 					<div>
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.business_name') }}</label>
@@ -244,17 +285,6 @@ onMounted(() => {
 							:variant="colorMode.value === 'dark' ? 'dark' : 'light'"
 							:placeholder="$t('profile.phone_placeholder')"
 						/>
-					</div>
-
-					<!-- Website -->
-					<div>
-						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.website') }}</label>
-						<div class="relative">
-							<Icon name="ph:globe-simple-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
-							<input v-model="business.website" type="url" :disabled="!canEdit"
-								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
-								:placeholder="$t('profile.website_placeholder')">
-						</div>
 					</div>
 
 					<!-- Address -->

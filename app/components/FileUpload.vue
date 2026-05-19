@@ -64,6 +64,7 @@ const handleFileSelect = async (event: Event) => {
 
 		emit('update:modelValue', response.url)
 		showToast(t('components.file_upload.success'), 'success')
+		if (fileInput.value) fileInput.value.value = ''
 	} catch (e: any) {
 		console.error('Upload error:', e)
 		error.value = e?.data?.message || t('components.file_upload.error_upload')

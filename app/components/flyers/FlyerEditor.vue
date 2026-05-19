@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import SmartFlyer from './SmartFlyer.vue'
-import QRCodeCustomizer from './QRCodeCustomizer.vue'
+import FlyerSidebar from './FlyerSidebar.vue'
+import FlyerSmartControls from './FlyerSmartControls.vue'
+import FlyerModals from './FlyerModals.vue'
+import FlyerToolbar from './FlyerToolbar.vue'
 import { nextTick } from 'vue' // Import nextTick
 
 const props = defineProps<{
@@ -14,88 +17,9 @@ const props = defineProps<{
 
 const config = useRuntimeConfig()
 
-// Convert external URL to data URL to bypass CORS
-const logoDataUrl = ref<string | null>(null)
-const logoLoadAttempted = ref(false)
+const { currentBusinessLogo } = useFlyerLogo(() => props.businessLogo)
 
-const loadLogoAsDataUrl = async (url: string | null | undefined) => {
-	if (!url) {
-		logoDataUrl.value = null
-		logoLoadAttempted.value = false
-		return
-	}
-
-	// If it's already a data URL, use it directly
-	if (url.startsWith('data:')) {
-		logoDataUrl.value = url
-		logoLoadAttempted.value = true
-		return
-	}
-
-	try {
-		// First try direct fetch
-		const response = await fetch(url, { mode: 'cors' })
-		if (!response.ok) {
-			throw new Error(`HTTP ${response.status}`)
-		}
-		const blob = await response.blob()
-		const reader = new FileReader()
-
-		reader.onloadend = () => {
-			logoDataUrl.value = reader.result as string
-			logoLoadAttempted.value = true
-		}
-		reader.onerror = () => {
-			console.warn('Failed to convert logo to data URL')
-			logoDataUrl.value = null
-			logoLoadAttempted.value = true
-		}
-		reader.readAsDataURL(blob)
-	} catch (e) {
-		console.warn('Direct fetch failed, trying proxy:', e)
-
-		// Try using backend proxy to bypass CORS
-		try {
-			const apiBase = config.public.apiUrl || 'http://localhost:4000'
-			const proxyUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(url)}`
-			const proxyResponse = await fetch(proxyUrl)
-
-			if (!proxyResponse.ok) {
-				throw new Error(`Proxy HTTP ${proxyResponse.status}`)
-			}
-
-			const blob = await proxyResponse.blob()
-			const reader = new FileReader()
-
-			reader.onloadend = () => {
-				logoDataUrl.value = reader.result as string
-				logoLoadAttempted.value = true
-			}
-			reader.onerror = () => {
-				console.warn('Failed to convert proxied logo to data URL')
-				logoDataUrl.value = null
-				logoLoadAttempted.value = true
-			}
-			reader.readAsDataURL(blob)
-		} catch (proxyError) {
-			console.warn('Proxy fetch also failed:', proxyError)
-			logoDataUrl.value = null
-			logoLoadAttempted.value = true
-		}
-	}
-}
-
-// Watch for logo changes and load as data URL
-watch(() => props.businessLogo, (newLogo) => {
-	loadLogoAsDataUrl(newLogo)
-}, { immediate: true })
-
-// Also try loading on mount in case the watch doesn't trigger
 onMounted(async () => {
-	if (props.businessLogo && !logoLoadAttempted.value) {
-		loadLogoAsDataUrl(props.businessLogo)
-	}
-
 	// Load templates from API
 	try {
 		const data = await $api<any[]>('/flyer-generator/templates')
@@ -111,13 +35,6 @@ onMounted(async () => {
 	}
 })
 
-// Computed props for reactivity in child components
-// Use data URL if available, otherwise fall back to original URL
-const currentBusinessLogo = computed(() => logoDataUrl.value || props.businessLogo)
-const currentBusinessName = computed(() => props.businessName)
-const currentQrCodeUrl = computed(() => props.qrCodeUrl)
-const currentGame = computed(() => props.game)
-
 const emit = defineEmits<{
 	'save': [imageUrl: string, canvasJson?: Record<string, any>]
 }>()
@@ -127,10 +44,14 @@ const { show: showToast } = useToast()
 const { t } = useI18n()
 
 const canvasRef = ref<HTMLCanvasElement>()
-const canvas = shallowRef<any>(null)
+const textColor = ref('#000000')
+const textFontFamily = ref('Luckiest Guy')
+const textAlign = ref<'left' | 'center' | 'right'>('left')
+
+const { canvas, CANVAS_WIDTH, CANVAS_HEIGHT, initCanvas, configureObjectControls, loadFlyerImageAsBackground } = useFabricCanvas(canvasRef, { textColor, textFontFamily, textAlign })
+
 const uploading = ref(false)
 const exporting = ref(false)
-// Track selected object
 const selectedObject = ref<any>(null)
 const selectedObjectColor = ref('#000000')
 
@@ -202,98 +123,9 @@ const apiTemplates = ref<any[]>([])
 
 const templates = computed(() => [...staticTemplates.value, ...apiTemplates.value])
 
-// Canvas dimensions (A4 ratio - 595x842px for web, scaled down for A6)
-const CANVAS_WIDTH = 420  // A6 width (105mm at 4px/mm)
-const CANVAS_HEIGHT = 595 // A6 height (148mm at 4px/mm)
 
-// New: Function to initialize Fabric canvas
-const initCanvas = async () => {
-	// Dynamic import for client-side only
-	if (process.client && canvasRef.value && !canvas.value) { // Only initialize if not already initialized
-		const fabric = await import('fabric')
-		const { Canvas, Control, controlsUtils } = fabric
-
-		canvas.value = new Canvas(canvasRef.value, {
-			width: CANVAS_WIDTH,
-			height: CANVAS_HEIGHT,
-			backgroundColor: '#ffffff',
-		})
-
-		// Sync textColor, textFontFamily and textAlign when selecting a text object
-		const syncTextProps = (e: any) => {
-			const obj = e.selected?.[0] ?? e.target
-			if (obj && obj.type === 'textbox') {
-				if (obj.fill) textColor.value = obj.fill as string
-				if (obj.fontFamily) textFontFamily.value = obj.fontFamily
-				if (obj.textAlign) textAlign.value = obj.textAlign as 'left' | 'center' | 'right'
-			}
-		}
-		canvas.value.on('selection:created', syncTextProps)
-		canvas.value.on('selection:updated', syncTextProps)
-
-		// Configure global control appearance
-		if (fabric.Object && fabric.Object.prototype) {
-			try {
-				fabric.Object.prototype.transparentCorners = false
-				fabric.Object.prototype.cornerSize = 12
-				fabric.Object.prototype.cornerColor = '#00E5FF'
-				fabric.Object.prototype.cornerStrokeColor = '#ffffff'
-				fabric.Object.prototype.borderColor = '#00E5FF'
-				fabric.Object.prototype.cornerStyle = 'circle'
-				fabric.Object.prototype.touchCornerSize = 20
-				fabric.Object.prototype.borderScaleFactor = 2
-
-				// ✅ FIX FABRIC V7: Safer access to controls
-				// Check if controls object exists before accessing mtr
-				if (fabric.Object.prototype.controls && !fabric.Object.prototype.controls.mtr) {
-					// Ensure controlsUtils is available
-					const utils = (controlsUtils as any) || (fabric as any)?.controlsUtils
-
-					if (utils) {
-						fabric.Object.prototype.controls.mtr = new Control({
-							x: 0,
-							y: -0.5,
-							offsetY: -30,
-							cursorStyle: 'crosshair',
-							actionHandler: utils.rotationWithSnapping || utils.rotateObject,
-							actionName: 'rotate',
-							render: utils.renderCircleControl,
-						})
-					}
-				}
-			} catch (err) {
-				console.warn('Error configuring Fabric controls:', err)
-			}
-		}
-	}
-}
-
-const loadFlyerImageAsBackground = async () => {
-	if (!canvas.value || !props.game?.flyerDesignUrl) return
-	try {
-		const { FabricImage } = await import('fabric')
-		const img = await FabricImage.fromURL(props.game.flyerDesignUrl, { crossOrigin: 'anonymous' })
-		img.set({
-			left: 0,
-			top: 0,
-			originX: 'left',
-			originY: 'top',
-			scaleX: CANVAS_WIDTH / (img.width || CANVAS_WIDTH),
-			scaleY: CANVAS_HEIGHT / (img.height || CANVAS_HEIGHT),
-			selectable: false,
-			evented: false,
-			lockMovementX: true,
-			lockMovementY: true,
-		})
-		canvas.value.add(img)
-		canvas.value.sendObjectToBack(img)
-	} catch (e) {
-		console.warn('Could not load flyer image as background:', e)
-	}
-}
 
 onMounted(async () => {
-	// Preload all canvas fonts so Fabric.js renders them correctly
 	if (process.client) {
 		await Promise.allSettled([
 			document.fonts.load('20px "Luckiest Guy"'),
@@ -302,7 +134,6 @@ onMounted(async () => {
 			document.fonts.load('20px "Righteous"'),
 		])
 	}
-	// Initialize Fabric only if not in smart mode initially (default is canvas)
 	await initCanvas()
 
 	const savedJson = props.game?.flyerDesignJson
@@ -311,7 +142,6 @@ onMounted(async () => {
 			: props.game.flyerDesignJson)
 		: null
 
-	// If flyer was saved in smart mode, switch automatically and restore options
 	if (savedJson?._mode === 'smart') {
 		if (savedJson.fontFamily) smartOptions.value.fontFamily = savedJson.fontFamily
 		if (savedJson.backgroundColor) smartOptions.value.backgroundColor = savedJson.backgroundColor
@@ -331,18 +161,14 @@ onMounted(async () => {
 
 		if (savedJson) {
 			if (savedJson._template) selectedBaseTemplate.value = savedJson._template
-			// Full restore: all Fabric.js objects are re-editable
 			try {
 				await canvas.value.loadFromJSON(savedJson)
-			} catch (e) {
-				console.warn('Could not restore canvas JSON, falling back to image:', e)
-				await loadFlyerImageAsBackground()
+			} catch {
+				if (props.game?.flyerDesignUrl) await loadFlyerImageAsBackground(props.game.flyerDesignUrl)
 			}
 		} else if (props.game?.flyerDesignUrl) {
-			// Fallback for flyers saved before JSON feature: load PNG as locked background
-			await loadFlyerImageAsBackground()
+			await loadFlyerImageAsBackground(props.game.flyerDesignUrl)
 		} else {
-			// New flyer: start in smart mode by default
 			mode.value = 'smart'
 			selectedBaseTemplate.value = 'smart'
 		}
@@ -350,53 +176,6 @@ onMounted(async () => {
 		canvas.value.renderAll()
 	}
 })
-
-onBeforeUnmount(() => {
-	const canvasToDispose = canvas.value
-	canvas.value = null
-	if (canvasToDispose) {
-		canvasToDispose.dispose().catch(() => {})
-	}
-})
-
-const configureObjectControls = (obj: any) => {
-	// Configure controls appearance directly on the object
-	obj.set({
-		borderColor: '#00E5FF',
-		cornerColor: '#ffffff',
-		cornerStrokeColor: '#00E5FF',
-		cornerStyle: 'circle',
-		cornerSize: 10,
-		transparentCorners: false,
-		borderScaleFactor: 2,
-
-		// Interaction settings
-		lockRotation: false,
-		lockScalingX: false,
-		lockScalingY: false,
-		lockMovementX: false,
-		lockMovementY: false,
-		lockUniScaling: false,
-		selectable: true,
-		evented: true,
-		hasControls: true,
-		hasBorders: true,
-		objectCaching: false,
-	})
-
-	// Force controls visibility
-	obj.setControlsVisibility({
-		mt: true,
-		mb: true,
-		ml: true,
-		mr: true,
-		bl: true,
-		br: true,
-		tl: true,
-		tr: true,
-		mtr: true,
-	})
-}
 
 // Load template
 const loadTemplate = async (templateId: string) => {
@@ -736,33 +515,19 @@ const addQRCode = () => {
 }
 
 // Upload and add custom image
-const fileInputRef = ref<HTMLInputElement>()
-
-const triggerImageUpload = async () => {
+const handleImageFile = async (file: File) => {
 	const ready = await convertSmartToCanvas()
 	if (!ready) return
-	fileInputRef.value?.click()
-}
 
-const handleImageUpload = async (event: Event) => {
-	const input = event.target as HTMLInputElement
-	const file = input.files?.[0]
-
-	if (!file) return
-
-	// Validate file type
 	const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 	if (!allowedTypes.includes(file.type)) {
 		showToast('Format non supporté. Utilisez JPG, PNG, WebP ou GIF.', 'error')
-		input.value = ''
 		return
 	}
 
-	// Validate file size (5MB max)
 	const maxSize = 5 * 1024 * 1024
 	if (file.size > maxSize) {
 		showToast('Le fichier est trop volumineux (max 5MB)', 'error')
-		input.value = ''
 		return
 	}
 
@@ -903,9 +668,6 @@ watch(backgroundColor, (newColor) => {
 	canvas.value.renderAll()
 })
 
-// Change text color
-const textColor = ref('#000000')
-
 const changeTextColor = (color: string) => {
 	if (mode.value === 'smart') return
 	if (!canvas.value) return
@@ -921,8 +683,6 @@ watch(textColor, (newColor) => {
 	changeTextColor(newColor)
 })
 
-const textFontFamily = ref('Luckiest Guy')
-
 const changeFontFamily = async (font: string) => {
 	if (mode.value === 'smart') return
 	if (!canvas.value) return
@@ -937,8 +697,6 @@ const changeFontFamily = async (font: string) => {
 watch(textFontFamily, (newFont) => {
 	changeFontFamily(newFont)
 })
-
-const textAlign = ref<'left' | 'center' | 'right'>('left')
 
 const changeTextAlign = (align: 'left' | 'center' | 'right') => {
 	if (mode.value === 'smart') return
@@ -1254,229 +1012,50 @@ const previewFlyer = async () => {
 <template>
 	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-6 relative">
 
-		<!-- LEFT SIDEBAR: TOOLS & TEMPLATES -->
-		<div class="w-full xl:w-72 flex flex-col gap-6 shrink-0">
-
-			<!-- Tools Panel -->
-			<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-				<div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-					<h3
-						class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
-						<Icon name="ph:toolbox-fill" class="text-brand-500" />
-						{{ $t('flyers.editor.tools_title') }}
-					</h3>
-				</div>
-				<div class="p-3 grid grid-cols-2 gap-2">
-					<!-- Add Text -->
-					<button @click="addText" type="button"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon name="ph:text-t-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_text') }}</span>
-					</button>
-
-					<!-- Add Logo -->
-					<button @click="addLogo" type="button" :disabled="!businessLogo"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50 disabled:grayscale">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon name="ph:image-square-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_logo') }}</span>
-					</button>
-
-					<!-- Add QR Code -->
-					<button @click="addQRCode" type="button" :disabled="!qrCodeUrl"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50 disabled:grayscale">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon name="ph:qr-code-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">QR Code</span>
-					</button>
-
-					<!-- Add Image -->
-					<button @click="triggerImageUpload" type="button" :disabled="uploading"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon v-if="uploading" name="ph:spinner-gap-bold" size="20" class="animate-spin" />
-							<Icon v-else name="ph:upload-simple-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_image') }}</span>
-					</button>
-					<input type="file" ref="fileInputRef" @change="handleImageUpload" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
-
-					<!-- Center Horizontally -->
-					<button @click="centerHorizontally" type="button"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon name="ph:align-center-horizontal-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_center_h') }}</span>
-					</button>
-
-					<!-- Center Vertically -->
-					<button @click="centerVertically" type="button"
-						class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
-						<div
-							class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-							<Icon name="ph:align-center-vertical-bold" size="20" />
-						</div>
-						<span class="text-xs font-bold">{{ $t('flyers.editor.tool_center_v') }}</span>
-					</button>
-				</div>
-			</div>
-
-			<!-- Templates Panel -->
-			<div
-				class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex-1">
-				<div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-					<h3
-						class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
-						<Icon name="ph:stack-fill" class="text-brand-500" />
-						{{ $t('flyers.editor.templates_title') }}
-					</h3>
-				</div>
-				<div class="p-4 h-64 xl:h-auto overflow-y-auto custom-scrollbar space-y-3">
-					<button v-for="template in templates" :key="template.id" @click="loadTemplate(template.id)"
-						type="button" :disabled="loadingTemplate"
-						:class="selectedBaseTemplate === template.id ? 'ring-2 ring-brand-500 bg-brand-50 dark:bg-brand-500/20 dark:ring-brand-400' : 'bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600'"
-						class="w-full h-16 rounded-xl border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-3 transition-all text-left">
-						<!-- Preview Thumb -->
-						<div
-							class="h-12 w-12 rounded-lg bg-white dark:bg-slate-600 border border-slate-200 dark:border-slate-500 overflow-hidden shrink-0 flex items-center justify-center">
-							<img v-if="template.image" :src="template.image" class="w-full h-full object-cover" />
-							<Icon v-else :name="template.icon" size="20" class="text-slate-400"
-								:class="{ 'text-brand-500': template.isSmart }" />
-						</div>
-						<div class="min-w-0">
-							<p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ template.name }}</p>
-							<p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ template.description
-								}}</p>
-						</div>
-						<Icon v-if="selectedBaseTemplate === template.id" name="ph:check-circle-fill"
-							class="ml-auto rtl:ml-0 rtl:mr-auto text-brand-500 shrink-0" />
-					</button>
-				</div>
-			</div>
-		</div>
+		<!-- LEFT SIDEBAR -->
+		<FlyerSidebar
+			:has-logo="!!businessLogo"
+			:has-qr-code="!!qrCodeUrl"
+			:uploading="uploading"
+			:loading-template="loadingTemplate"
+			:selected-template="selectedBaseTemplate"
+			:templates="templates"
+			@add-text="addText"
+			@add-logo="addLogo"
+			@add-qr-code="addQRCode"
+			@center-horizontally="centerHorizontally"
+			@center-vertically="centerVertically"
+			@load-template="loadTemplate"
+			@image-file-selected="handleImageFile"
+		/>
 
 		<!-- MAIN CANVAS AREA -->
 		<div
 			class="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
 
 			<!-- TOP BAR: ACTIONS -->
-			<div
-				class="bg-white dark:bg-slate-800 p-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap-reverse items-center justify-between gap-4">
-				<div v-if="mode === 'canvas'" class="flex items-center gap-2">
-					<!-- Background Color -->
-					<div
-						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
-						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">{{ $t('flyers.editor.color_bg') }}</span>
-						<input v-model="backgroundColor" type="color"
-							class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
-					</div>
-
-					<!-- Text Color -->
-					<div
-						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
-						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">{{ $t('flyers.editor.color_text') }}</span>
-						<input v-model="textColor" type="color"
-							class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />
-					</div>
-
-					<!-- Font Family -->
-					<div
-						class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
-						<span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase">Police</span>
-						<select v-model="textFontFamily"
-							class="text-xs bg-transparent border-0 outline-none cursor-pointer text-slate-700 dark:text-slate-200 max-w-[110px]">
-							<option value="Luckiest Guy">Fun</option>
-							<option value="Anton">Impact</option>
-							<option value="Bangers">Comics</option>
-							<option value="Righteous">Moderne</option>
-						</select>
-					</div>
-
-					<!-- Text Alignment -->
-					<div class="flex items-center bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600 overflow-hidden">
-						<button @click="changeTextAlign('left')" type="button" title="Aligner à gauche"
-							class="p-1.5 transition-colors"
-							:class="textAlign === 'left' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
-							<Icon name="ph:text-align-left-bold" size="16" />
-						</button>
-						<button @click="changeTextAlign('center')" type="button" title="Centrer"
-							class="p-1.5 transition-colors"
-							:class="textAlign === 'center' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
-							<Icon name="ph:text-align-center-bold" size="16" />
-						</button>
-						<button @click="changeTextAlign('right')" type="button" title="Aligner à droite"
-							class="p-1.5 transition-colors"
-							:class="textAlign === 'right' ? 'bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'">
-							<Icon name="ph:text-align-right-bold" size="16" />
-						</button>
-					</div>
-
-					<div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-					<!-- Delete -->
-					<button @click="deleteSelected" type="button" title="Supprimer la sélection"
-						class="p-2 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-						<Icon name="ph:trash-bold" size="20" />
-					</button>
-
-					<!-- Clear -->
-					<button @click="clearCanvas" type="button" title="Tout effacer"
-						class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-						<Icon name="ph:eraser-bold" size="20" />
-					</button>
-				</div>
-				<div v-else class=""></div>				<div class="flex items-center gap-2">
-					<!-- Preview (Test) Button -->
-					<button @click="previewFlyer" type="button" :disabled="previewing"
-						class="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
-						<Icon v-if="previewing" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
-						<Icon v-else name="ph:eye-bold" size="16" />
-						<span class="hidden sm:inline">{{ $t('flyers.editor.btn_preview') }}</span>
-					</button>
-
-					<!-- Download PNG -->
-					<button @click="downloadFlyer" type="button"
-						class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
-						<Icon name="ph:file-png-bold" size="16" />
-						<span class="hidden sm:inline">PNG</span>
-					</button>
-
-					<!-- Download PDF -->
-					<button @click="downloadFlyerPDF" type="button"
-						class="px-3 py-2 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
-						<Icon name="ph:file-pdf-bold" size="16" />
-						<span class="hidden sm:inline">PDF</span>
-					</button>
-
-					<!-- Order Flyers -->
-					<button @click="orderFlyers" type="button" :disabled="orderLoading"
-						class="px-3 py-2 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
-						<Icon v-if="orderLoading" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
-						<Icon v-else name="ph:shopping-cart-bold" size="16" />
-						<span class="hidden sm:inline">{{ orderLoading ? $t('flyers.editor.btn_ordering') : $t('flyers.editor.btn_order') }}</span>
-					</button>
-
-					<!-- Export / Save -->
-					<button @click="exportFlyer" type="button" :disabled="exporting || saving"
-						class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20 disabled:opacity-70">
-						<Icon v-if="exporting || saving" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
-						<Icon v-else name="ph:floppy-disk-bold" size="16" />
-						{{ saving ? $t('flyers.editor.btn_saving') : exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}
-					</button>
-				</div>
-
-
-			</div>
+			<FlyerToolbar
+				:mode="mode"
+				:background-color="backgroundColor"
+				:text-color="textColor"
+				:text-font-family="textFontFamily"
+				:text-align="textAlign"
+				:previewing="previewing"
+				:exporting="exporting"
+				:saving="saving ?? false"
+				:order-loading="orderLoading"
+				@update:background-color="backgroundColor = $event"
+				@update:text-color="textColor = $event"
+				@update:text-font-family="textFontFamily = $event"
+				@change-text-align="changeTextAlign"
+				@delete="deleteSelected"
+				@clear="clearCanvas"
+				@preview="previewFlyer"
+				@download-png="downloadFlyer"
+				@download-pdf="downloadFlyerPDF"
+				@order="orderFlyers"
+				@save="exportFlyer"
+			/>
 
 			<!-- CANVAS CONTAINER -->
 			<div
@@ -1484,150 +1063,17 @@ const previewFlyer = async () => {
 
 
 				<div v-if="mode === 'smart'" class="flex flex-col items-center gap-6 py-6 w-full">
-					<SmartFlyer ref="smartFlyerRef" :game="currentGame" :business-name="currentBusinessName"
-						:business-logo="currentBusinessLogo" :qr-code-url="currentQrCodeUrl"
+					<SmartFlyer ref="smartFlyerRef" :game="game" :business-name="businessName"
+						:business-logo="currentBusinessLogo" :qr-code-url="qrCodeUrl"
 						:primary-color="smartOptions.backgroundColor" :accent-color="smartOptions.accentColor"
 						:button-color="smartOptions.buttonColor" :font-family="smartOptions.fontFamily"
-						:prizes="currentGame?.prizes" :conditions="smartOptions.conditions"
+						:prizes="game?.prizes" :conditions="smartOptions.conditions"
 						:footer-icon-color="smartOptions.footerIconColor" :lost-color="smartOptions.lostColor"
 						:qr-color="smartOptions.qrColor" :qr-bg-color="smartOptions.qrBgColor"
 						:qr-play-url="getGameUrl()" />
 
-					<!-- Floating Smart Controls (Moved to Bottom) -->
-					<div
-						class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700 shadow-lg rounded-2xl p-2 flex items-center gap-4 animate-fade-in-up">
-						<div
-							class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-xl">
-							<Icon name="ph:magic-wand-bold" size="16" />
-							<span class="text-xs font-bold uppercase tracking-wide">{{ $t('flyers.editor.smart_customize') }}</span>
-						</div>
-
-						<div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-						<!-- Controls -->
-						<div class="flex items-center gap-3">
-							<!-- Font Picker -->
-							<div class="relative group" title="Police d'écriture">
-								<select v-model="smartOptions.fontFamily"
-									class="appearance-none pl-3 pr-8 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-wide cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 dark:text-white">
-									<option value="Luckiest Guy">Fun</option>
-									<option value="Anton">Impact</option>
-									<option value="Bangers">Comics</option>
-									<option value="Righteous">Moderne</option>
-								</select>
-								<Icon name="ph:caret-down-bold" size="12"
-									class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-							</div>
-
-							<div class="h-6 w-px bg-slate-200"></div>
-
-							<!-- Background Color -->
-							<div class="relative group cursor-pointer" title="Couleur de fond">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.backgroundColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.backgroundColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_bg') }}</span>
-								</div>
-							</div>
-
-							<!-- Accent Color -->
-							<div class="relative group cursor-pointer" title="Couleur des textes">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.accentColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.accentColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_text') }}</span>
-								</div>
-							</div>
-
-							<!-- Button Color -->
-							<div class="relative group cursor-pointer" title="Couleur du bouton">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.buttonColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.buttonColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">{{ $t('flyers.editor.smart_button') }}</span>
-								</div>
-							</div>
-
-							<!-- Footer Icon Color -->
-							<div class="relative group cursor-pointer" title="Couleur des icônes footer">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.footerIconColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.footerIconColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Icônes</span>
-								</div>
-							</div>
-
-							<!-- Lost Color -->
-							<div class="relative group cursor-pointer" title="Couleur des cases Perdu">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.lostColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.lostColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Perdu</span>
-								</div>
-							</div>
-
-							<!-- QR Color -->
-							<div class="relative group cursor-pointer" title="Couleur du QR code">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.qrColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.qrColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">QR</span>
-								</div>
-							</div>
-
-							<!-- QR Background Color -->
-							<div class="relative group cursor-pointer" title="Fond du QR code">
-								<div
-									class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 rounded-lg transition-colors">
-									<div
-										class="w-6 h-6 rounded-full shadow-inner ring-1 ring-black/10 overflow-hidden relative">
-										<input v-model="smartOptions.qrBgColor" type="color"
-											class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer" />
-										<div class="w-full h-full pointer-events-none"
-											:style="{ backgroundColor: smartOptions.qrBgColor }"></div>
-									</div>
-									<span class="text-[10px] font-bold text-slate-500 uppercase">Fond QR</span>
-								</div>
-							</div>
-
-						</div>
-					</div>
+					<!-- Floating Smart Controls -->
+					<FlyerSmartControls v-model="smartOptions" />
 				</div><!-- Canvas Mode -->
 				<div v-else class="relative shadow-2xl shadow-slate-400/20 rounded-sm">
 					<canvas ref="canvasRef"></canvas>
@@ -1660,121 +1106,23 @@ const previewFlyer = async () => {
 			</div>
 		</Transition>
 
-		<!-- QR Code Customizer Modal -->
-		<Teleport to="body">
-			<Transition name="modal">
-				<div v-if="showQRCodeModal"
-					class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-					@click.self="closeQRCodeModal">
-					<div
-						class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-						<!-- Modal Header -->
-						<div
-							class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-							<div class="flex items-center gap-3">
-								<div
-									class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-									<Icon name="ph:qr-code-bold" size="20" />
-								</div>
-								<div>
-									<h2 class="text-lg font-bold text-slate-900 dark:text-white">Ajouter un QR Code</h2>
-									<p class="text-xs text-slate-500 dark:text-slate-400">Personnalisez et ajoutez au flyer</p>
-								</div>
-							</div>
-							<button @click="closeQRCodeModal"
-								class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-								<Icon name="ph:x-bold" size="20" />
-							</button>
-						</div>
-
-						<!-- Modal Content -->
-						<div class="flex-1 overflow-y-auto p-6">
-							<QRCodeCustomizer
-								:game-url="getGameUrl()"
-								:initial-color="game?.qrCodeColor || '#000000'"
-								:initial-bg-color="game?.qrCodeBgColor || '#ffffff'"
-								:initial-logo-url="game?.qrCodeLogoUrl || ''"
-								@update="handleQRCodeUpdate"
-								@save="handleQRCodeSave"
-							/>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
-
-		<!-- Order Flyers Modal -->
-		<OrdersCreateOrderModal v-model="showOrderModal" :flyer-design-url="orderFlyerDesignUrl" @created="handleOrderCreated" />
-
-		<!-- Smart → Canvas Conversion Confirmation Modal -->
-		<Teleport to="body">
-			<Transition
-				enter-active-class="transition duration-150 ease-out"
-				enter-from-class="opacity-0"
-				enter-to-class="opacity-100"
-				leave-active-class="transition duration-100 ease-in"
-				leave-from-class="opacity-100"
-				leave-to-class="opacity-0"
-			>
-				<div v-if="showConversionModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4">
-					<div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="cancelConversion" />
-					<Transition
-						enter-active-class="transition duration-150 ease-out"
-						enter-from-class="opacity-0 scale-95"
-						enter-to-class="opacity-100 scale-100"
-						leave-active-class="transition duration-100 ease-in"
-						leave-from-class="opacity-100 scale-100"
-						leave-to-class="opacity-0 scale-95"
-					>
-						<div v-if="showConversionModal"
-							class="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden"
-							role="dialog" aria-modal="true">
-
-							<!-- Top accent bar -->
-							<div class="h-0.5 w-full bg-indigo-500" />
-
-							<div class="p-5">
-								<!-- Icon + Text -->
-								<div class="flex items-start gap-4 mb-4">
-									<div class="w-9 h-9 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-										<Icon name="ph:magic-wand-bold" size="18" class="text-indigo-500" />
-									</div>
-									<div>
-										<h3 class="text-sm font-semibold text-slate-900 dark:text-white leading-snug">Convertir en canvas éditable</h3>
-										<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">Cette action est irréversible.</p>
-									</div>
-								</div>
-
-								<!-- Consequences -->
-								<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-3">
-									En convertissant, vous pourrez ajouter du texte, des logos et des éléments graphiques, mais la <span class="font-medium text-slate-700 dark:text-slate-300">modification des couleurs du template sera impossible</span>.
-								</p>
-
-								<!-- Warning -->
-								<div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/20 px-3 py-2.5 mb-5">
-									<Icon name="ph:warning-bold" size="13" class="text-amber-500 shrink-0 mt-0.5" />
-									<p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-										Effectuez d'abord toutes vos <strong>modifications de couleurs</strong> dans la barre du bas, puis revenez ajouter vos éléments.
-									</p>
-								</div>
-
-								<!-- Actions -->
-								<div class="flex gap-2 justify-end">
-									<button @click="cancelConversion" type="button"
-										class="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-										Retour aux couleurs
-									</button>
-									<button @click="confirmConversion" type="button"
-										class="px-3.5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-md transition-colors shadow-sm">
-										Convertir quand même
-									</button>
-								</div>
-							</div>
-						</div>
-					</Transition>
-				</div>
-			</Transition>
-		</Teleport>
+		<FlyerModals
+			:show-qr-modal="showQRCodeModal"
+			:game-url="getGameUrl()"
+			:qr-code-color="game?.qrCodeColor || '#000000'"
+			:qr-code-bg-color="game?.qrCodeBgColor || '#ffffff'"
+			:qr-code-logo-url="game?.qrCodeLogoUrl || ''"
+			:show-order-modal="showOrderModal"
+			:order-flyer-design-url="orderFlyerDesignUrl"
+			:show-conversion-modal="showConversionModal"
+			@close-qr-modal="closeQRCodeModal"
+			@qr-update="handleQRCodeUpdate"
+			@qr-save="handleQRCodeSave"
+			@update:show-order-modal="showOrderModal = $event"
+			@order-created="handleOrderCreated"
+			@cancel-conversion="cancelConversion"
+			@confirm-conversion="confirmConversion"
+		/>
 	</div>
 </template>
 

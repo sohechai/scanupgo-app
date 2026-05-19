@@ -32,6 +32,28 @@ const players = ref<any[]>([])
 const playersLoading = ref(true)
 const playerSearchQuery = ref('')
 
+// --- STATE: GOOGLE STATS ---
+const googleStats = ref<{ rating: number | null, reviewCount: number | null, reviewCountMonthStart: number | null, reviewUrl: string | null } | null>(null)
+
+const googleReviewsThisMonth = computed(() => {
+  if (!googleStats.value?.reviewCount || googleStats.value?.reviewCountMonthStart == null) return null
+  return googleStats.value.reviewCount - googleStats.value.reviewCountMonthStart
+})
+
+const fetchGoogleStats = async () => {
+  try {
+    const data = await $api<any>('/businesses/me')
+    if (data?.googleRating || data?.googleReviewCount) {
+      googleStats.value = {
+        rating: data.googleRating ?? null,
+        reviewCount: data.googleReviewCount ?? null,
+        reviewCountMonthStart: data.googleReviewCountMonthStart ?? null,
+        reviewUrl: data.googleReviewUrl ?? null,
+      }
+    }
+  } catch { /* silently fail */ }
+}
+
 // --- STATE: CHART TOOLTIP ---
 const hoveredIdx = ref<number | null>(null)
 
@@ -439,6 +461,7 @@ onMounted(() => {
 	fetchPlayers()
 	fetchDashboardStats()
 	fetchAnalyticsEvents()
+	fetchGoogleStats()
 })
 </script>
 
@@ -477,6 +500,38 @@ onMounted(() => {
 		<!-- 2. STATS BLOCK (2 rows grouped)         -->
 		<!-- ========================================== -->
 		<div v-if="hasActiveSubscription" class="space-y-2">
+
+			<!-- Row 0 — Google Reviews Stats -->
+			<div v-if="googleStats" class="grid grid-cols-3 gap-2">
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Note Google</p>
+					<div class="flex items-baseline gap-1.5">
+						<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
+							{{ googleStats.rating != null ? googleStats.rating.toFixed(1) : '—' }}
+						</p>
+						<Icon v-if="googleStats.rating != null" name="ph:star-fill" class="text-yellow-400 mb-0.5" size="13" />
+					</div>
+					<p class="text-[10px] text-slate-400 mt-1">/ 5.0</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Avis Google</p>
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
+						{{ googleStats.reviewCount ?? '—' }}
+					</p>
+					<a v-if="googleStats.reviewUrl" :href="googleStats.reviewUrl" target="_blank"
+						class="text-[10px] text-[#007AFF] font-medium mt-1 inline-flex items-center gap-0.5">
+						Voir <Icon name="ph:arrow-square-out" size="10" />
+					</a>
+					<p v-else class="text-[10px] text-slate-400 mt-1">total</p>
+				</div>
+				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">Ce mois</p>
+					<p class="text-xl font-semibold tabular-nums" :class="googleReviewsThisMonth != null && googleReviewsThisMonth > 0 ? 'text-emerald-500' : 'text-slate-900 dark:text-white'">
+						{{ googleReviewsThisMonth != null ? `+${googleReviewsThisMonth}` : '—' }}
+					</p>
+					<p class="text-[10px] text-slate-400 mt-1">nouveaux avis</p>
+				</div>
+			</div>
 
 			<!-- Row 1 — Main KPIs -->
 			<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
