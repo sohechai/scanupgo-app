@@ -20,7 +20,12 @@ const uploading = ref(false)
 const error = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement>()
 
-const currentUrl = computed(() => props.modelValue || null)
+const currentUrl = computed(() => {
+	const val = props.modelValue
+	if (!val) return null
+	if (val.startsWith('http') || val.startsWith('/') || val.startsWith('data:')) return val
+	return null
+})
 
 const handleFileSelect = async (event: Event) => {
 	const target = event.target as HTMLInputElement

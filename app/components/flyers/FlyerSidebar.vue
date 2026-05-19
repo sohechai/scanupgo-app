@@ -43,6 +43,17 @@ const onFileChange = (event: Event) => {
 			</div>
 			<div class="p-3 grid grid-cols-2 gap-2">
 
+				<!-- Image upload — featured, full width, top -->
+				<button @click="triggerImageUpload" type="button" :disabled="uploading"
+					class="col-span-2 flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white border border-brand-500 transition-all shadow-md shadow-brand-500/20 disabled:opacity-50 group">
+					<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+						<Icon v-if="uploading" name="ph:spinner-gap-bold" size="18" class="animate-spin" />
+						<Icon v-else name="ph:upload-simple-bold" size="18" />
+					</div>
+					<span class="text-sm font-bold">Importer une image</span>
+				</button>
+				<input type="file" ref="fileInputRef" @change="onFileChange" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
+
 				<button @click="emit('add-text')" type="button"
 					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
 					<div class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -66,16 +77,6 @@ const onFileChange = (event: Event) => {
 					</div>
 					<span class="text-xs font-bold">QR Code</span>
 				</button>
-
-				<button @click="triggerImageUpload" type="button" :disabled="uploading"
-					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50">
-					<div class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-						<Icon v-if="uploading" name="ph:spinner-gap-bold" size="20" class="animate-spin" />
-						<Icon v-else name="ph:upload-simple-bold" size="20" />
-					</div>
-					<span class="text-xs font-bold">{{ t('flyers.editor.tool_image') }}</span>
-				</button>
-				<input type="file" ref="fileInputRef" @change="onFileChange" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
 
 				<button @click="emit('center-horizontally')" type="button"
 					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
