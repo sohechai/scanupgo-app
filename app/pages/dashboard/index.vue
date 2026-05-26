@@ -460,14 +460,24 @@ const recentActivity = computed(() =>
 	[...sessions.value]
 		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 		.slice(0, 8)
-		.map(s => ({
-			id: s.id,
-			name: [s.player?.firstName, s.player?.lastName].filter(Boolean).join(' ') || 'Anonyme',
-			initials: (s.player?.firstName?.[0] || 'A').toUpperCase(),
-			type: s.prize ? 'won' : 'played',
-			detail: s.prize ? `A joué et gagné ${s.prizeName || s.prize?.name || 'un lot'}` : 'A participé au jeu',
-			date: s.createdAt,
-		}))
+		.map(s => {
+			const hasEmail = !!(s.player?.email)
+			const hasPrize = !!(s.prize)
+			const type = hasPrize ? 'won' : hasEmail ? 'contact' : 'played'
+			const detail = hasPrize
+				? `A joué et gagné ${s.prizeName || s.prize?.name || 'un lot'}`
+				: hasEmail
+					? `Nouveau contact — ${s.player.email}`
+					: 'A participé au jeu'
+			return {
+				id: s.id,
+				name: [s.player?.firstName, s.player?.lastName].filter(Boolean).join(' ') || 'Anonyme',
+				initials: (s.player?.firstName?.[0] || 'A').toUpperCase(),
+				type,
+				detail,
+				date: s.createdAt,
+			}
+		})
 )
 
 // Lifecycle
@@ -709,7 +719,11 @@ onMounted(() => {
 					<div v-for="item in recentActivity" :key="item.id"
 						class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
 						<div class="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold text-white shrink-0"
-							:class="item.type === 'won' ? 'bg-emerald-400' : 'bg-slate-400'">
+							:class="{
+								'bg-purple-400': item.type === 'won',
+								'bg-emerald-400': item.type === 'contact',
+								'bg-slate-400': item.type === 'played',
+							}">
 							{{ item.initials }}
 						</div>
 						<div class="flex-1 min-w-0">
@@ -717,8 +731,12 @@ onMounted(() => {
 							<p class="text-[11px] text-slate-400 truncate">{{ item.detail }}</p>
 						</div>
 						<span class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
-							:class="item.type === 'won' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'">
-							{{ item.type === 'won' ? 'Gagné' : 'Joué' }}
+							:class="{
+								'bg-purple-50 text-purple-600': item.type === 'won',
+								'bg-emerald-50 text-emerald-600': item.type === 'contact',
+								'bg-slate-100 text-slate-500': item.type === 'played',
+							}">
+							{{ item.type === 'won' ? 'Récompense' : item.type === 'contact' ? 'Nouveau contact' : 'Joué' }}
 						</span>
 					</div>
 				</div>
