@@ -1817,6 +1817,9 @@
       "modal_image_change": "Change image",
       "modal_image_upload_text": "Click to choose an image",
       "modal_image_upload_hint": "PNG, JPG — portrait format recommended",
+      "modal_error_type": "Format not accepted. Please use PNG or JPEG files only.",
+      "modal_error_size": "File too large: {size} MB — limit is 3 MB. Compress the image before retrying.",
+      "modal_error_upload": "Upload failed. Check your connection and try again.",
       "modal_uploading": "Uploading...",
       "modal_cancel": "Cancel",
       "modal_create": "Create template",
@@ -2358,7 +2361,7 @@
       "add_logo": "Add a logo",
       "logo_hint": "The logo will be displayed in the center of the QR code. Use a square image for best results.",
       "preview_label": "Preview",
-      "add_to_flyer": "Add to flyer",
+      "add_to_flyer": "Apply changes",
       "alert_image_only": "Please select an image",
       "alert_too_large": "Image must not exceed 2MB",
       "error_upload_logo": "Error uploading logo"

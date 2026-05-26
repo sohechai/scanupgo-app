@@ -29,6 +29,7 @@ onMounted(async () => {
 			description: t.description || '',
 			icon: 'ph:image-fill',
 			image: t.imageUrl,
+			qrZone: t.qrZone || null,
 		}))
 	} catch (e) {
 		console.error('Failed to load flyer templates:', e)
@@ -279,6 +280,14 @@ const loadTemplate = async (templateId: string) => {
 					canvas.value.moveObjectTo(img, 0)
 				}
 				canvas.value.renderAll()
+
+				// Auto-place QR code after template loads
+				const qrUrl = props.qrCodeUrl || null
+				if (qrUrl) {
+					setTimeout(() => placeQROnCanvas(qrUrl), 100)
+				}
+
+
 			})
 		} // End if template.image
 
@@ -415,7 +424,6 @@ const addText = async () => {
 }
 
 
-// Add business logo to canvas
 const addLogo = async () => {
 	const ready = await convertSmartToCanvas()
 	if (!ready) return
@@ -458,6 +466,32 @@ const addLogo = async () => {
 // QR Code Customizer Modal
 const showQRCodeModal = ref(false)
 const customQRCodeUrl = ref<string | null>(null)
+const qrCanvasObject = ref<any>(null)
+
+// Place (or replace) QR code on canvas at the template's qrZone
+const placeQROnCanvas = async (url: string) => {
+	if (!canvas.value || !url) return
+	const { FabricImage } = await import('fabric')
+
+	// Remove existing QR object
+	if (qrCanvasObject.value) {
+		canvas.value.remove(qrCanvasObject.value)
+		qrCanvasObject.value = null
+	}
+
+	FabricImage.fromURL(url, { crossOrigin: 'anonymous' }).then((img) => {
+		if (!canvas.value) return
+
+		// Fixed position — same for all templates (white zone at 66%/68% of canvas)
+		img.scaleToWidth(120)
+		img.set({ left: 246, top: 420, originX: 'center', originY: 'center', angle: -13 })
+
+		configureObjectControls(img)
+		canvas.value.add(img)
+		canvas.value.renderAll()
+		qrCanvasObject.value = img
+	})
+}
 
 const getGameUrl = () => {
 	if (!props.game?.slug) return ''
@@ -480,33 +514,105 @@ const handleQRCodeUpdate = (data: { qrCodeDataUrl: string; color: string; bgColo
 	customQRCodeUrl.value = data.qrCodeDataUrl
 }
 
-// Handle QR customization save - add to canvas
-const handleQRCodeSave = async (data: { color: string; bgColor: string; logoUrl: string | null }) => {
-	if (!canvas.value || !customQRCodeUrl.value) {
-		showToast('Erreur lors de l\'ajout du QR code', 'error')
-		return
+// Detect the largest white square zone in the canvas pixel data (for auto QR placement)
+function detectWhiteSquareZone(fabricCanvas: any): { cx: number; cy: number; size: number; angle: number } | null {
+	const el = fabricCanvas.getElement() as HTMLCanvasElement
+	if (!el) return null
+	const ctx = el.getContext('2d')
+	if (!ctx) return null
+
+	// el.width/height are retina-scaled (DPR×logical). Get scale ratio.
+	const logW: number = fabricCanvas.width || CANVAS_WIDTH
+	const logH: number = fabricCanvas.height || CANVAS_HEIGHT
+	const W = el.width   // actual pixel buffer width (may be 2× on retina)
+	const H = el.height
+	const dprX = W / logW
+	const dprY = H / logH
+
+	let imageData: ImageData
+	try { imageData = ctx.getImageData(0, 0, W, H) } catch { return null }
+	const { data } = imageData
+
+	const BLOCK = Math.round(16 * dprX) // scale block size with DPR
+	const cols = Math.floor(W / BLOCK)
+	const rows = Math.floor(H / BLOCK)
+	const WHITE = 238
+
+	const wb: boolean[][] = Array.from({ length: rows }, (_, r) =>
+		Array.from({ length: cols }, (_, c) => {
+			let white = 0, total = 0
+			for (let dy = 0; dy < BLOCK; dy += Math.round(4 * dprX)) {
+				for (let dx = 0; dx < BLOCK; dx += Math.round(4 * dprX)) {
+					const px = c * BLOCK + dx, py = r * BLOCK + dy
+					if (px >= W || py >= H) continue
+					total++
+					const i = (py * W + px) * 4
+					if (data[i] >= WHITE && data[i + 1] >= WHITE && data[i + 2] >= WHITE && data[i + 3] > 200) white++
+				}
+			}
+			return total > 0 && white / total > 0.90
+		})
+	)
+
+	const dp: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(0))
+	let best = 0, bestR = 0, bestC = 0
+	for (let r = 0; r < rows; r++) {
+		for (let c = 0; c < cols; c++) {
+			if (wb[r][c]) {
+				dp[r][c] = (r === 0 || c === 0) ? 1 : Math.min(dp[r - 1][c], dp[r][c - 1], dp[r - 1][c - 1]) + 1
+				if (dp[r][c] > best) { best = dp[r][c]; bestR = r; bestC = c }
+			}
+		}
 	}
 
-	const { FabricImage } = await import('fabric')
+	if (best < 4) return null
 
-	FabricImage.fromURL(customQRCodeUrl.value, { crossOrigin: 'anonymous' }).then((img) => {
-		if (!canvas.value) return
+	// Coordinates in retina pixel space → convert back to logical canvas space
+	const sizeRetina = best * BLOCK
+	const cxRetina = (bestC - best + 1) * BLOCK + sizeRetina / 2
+	const cyRetina = (bestR - best + 1) * BLOCK + sizeRetina / 2
 
-		img.scale(0.4)
-		img.set({
-			left: CANVAS_WIDTH / 2 - 60,
-			top: CANVAS_HEIGHT - 180,
-		})
+	const cx = cxRetina / dprX
+	const cy = cyRetina / dprY
+	const size = (sizeRetina / dprX) * 0.92
 
-		configureObjectControls(img)
+	// Sanity check: zone must be within logical canvas bounds
+	if (cx < 0 || cy < 0 || cx > logW || cy > logH || size < 30) return null
 
-		canvas.value.add(img)
-		canvas.value.setActiveObject(img)
-		canvas.value.renderAll()
+	// Detect rotation angle via PCA on white block positions
+	let sumBX = 0, sumBY = 0, cnt = 0
+	const positions: [number, number][] = []
+	for (let r = 0; r < rows; r++) {
+		for (let c = 0; c < cols; c++) {
+			if (wb[r][c]) { sumBX += c; sumBY += r; cnt++; positions.push([c, r]) }
+		}
+	}
+	let angle = 0
+	if (cnt > 6) {
+		const mX = sumBX / cnt, mY = sumBY / cnt
+		let covXX = 0, covYY = 0, covXY = 0
+		for (const [c, r] of positions) {
+			const dx = c - mX, dy = r - mY
+			covXX += dx * dx; covYY += dy * dy; covXY += dx * dy
+		}
+		// First principal component angle in degrees
+		angle = 0.5 * Math.atan2(2 * covXY, covXX - covYY) * (180 / Math.PI)
+		// Clamp to reasonable range (-30° to +30°)
+		angle = Math.max(-30, Math.min(30, angle))
+	}
 
-		showToast('QR code ajouté au flyer', 'success')
-		closeQRCodeModal()
-	})
+	return { cx, cy, size, angle }
+}
+
+// Handle QR customization save - update existing QR on canvas
+const handleQRCodeSave = async (_data: { color: string; bgColor: string; logoUrl: string | null }) => {
+	if (!canvas.value || !customQRCodeUrl.value) {
+		showToast('Erreur lors de la mise à jour du QR code', 'error')
+		return
+	}
+	await placeQROnCanvas(customQRCodeUrl.value)
+	showToast('QR code mis à jour', 'success')
+	closeQRCodeModal()
 }
 
 // Add QR code to canvas (opens modal for customization)

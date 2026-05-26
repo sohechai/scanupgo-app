@@ -441,25 +441,25 @@ const saveGame = async () => {
 					class="grid grid-cols-2 md:flex md:w-fit gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200/60 dark:border-slate-700 w-full">
 					<button @click="activeTab = 'content'"
 						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'content' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						:class="activeTab === 'content' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 font-semibold shadow-sm hover:bg-white hover:text-slate-900'">
 						<Icon name="ph:pencil-simple-bold" size="15" />
 						<span>{{ $t('games.detail.tab_content') }}</span>
 					</button>
 					<button @click="activeTab = 'appearance'"
 						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'appearance' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						:class="activeTab === 'appearance' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 font-semibold shadow-sm hover:bg-white hover:text-slate-900'">
 						<Icon name="ph:paint-brush-broad-bold" size="15" />
 						<span>{{ $t('games.detail.tab_appearance') }}</span>
 					</button>
 					<button @click="activeTab = 'prizes'"
 						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'prizes' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						:class="activeTab === 'prizes' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 font-semibold shadow-sm hover:bg-white hover:text-slate-900'">
 						<Icon name="ph:gift-bold" size="15" />
 						<span>{{ $t('games.detail.tab_prizes') }}</span>
 					</button>
 					<button @click="activeTab = 'flyers'"
 						class="px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2"
-						:class="activeTab === 'flyers' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+						:class="activeTab === 'flyers' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 font-semibold shadow-sm hover:bg-white hover:text-slate-900'">
 						<Icon name="ph:qr-code-bold" size="15" />
 						<span>{{ $t('games.detail.tab_flyers') }}</span>
 					</button>

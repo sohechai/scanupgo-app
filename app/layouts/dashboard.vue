@@ -58,9 +58,7 @@ watch(
 )
 
 const colorMode = useColorMode()
-const toggleTheme = () => {
-	colorMode.preference = colorMode.value === 'light' ? 'dark' : 'light'
-}
+colorMode.preference = 'light'
 </script>
 
 <template>
@@ -144,13 +142,6 @@ const toggleTheme = () => {
 
 					<div class="flex items-center gap-2">
 						<LanguageSelector />
-						<ClientOnly>
-							<button @click="toggleTheme"
-								class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-								:title="colorMode.value === 'dark' ? $t('dashboard.light_mode') : $t('dashboard.dark_mode')">
-								<Icon :name="colorMode.value === 'dark' ? 'ph:sun-bold' : 'ph:moon-bold'" size="16" />
-							</button>
-						</ClientOnly>
 						<NotificationDropdown />
 					</div>
 				</header>
