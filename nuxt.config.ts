@@ -4,6 +4,9 @@ export default defineNuxtConfig({
 		port: 3001,
 	},
 	css: ['~/assets/css/rtl.css'],
+	tailwindcss: {
+		cssPath: '~/assets/css/tailwind.css',
+	},
 	modules: [
 		'@nuxt/icon',
 		'@nuxt/image',
@@ -42,6 +45,20 @@ export default defineNuxtConfig({
 	// because user/subscription data is only available client-side.
 	routeRules: {
 		'/dashboard/**': { ssr: false },
+	},
+	vite: {
+		optimizeDeps: {
+			include: [
+				'@tanstack/vue-query',
+				'@vue/devtools-core',
+				'@vue/devtools-kit',
+				'file-saver',
+				'jsqr',
+				'jszip',
+				'node-vibrant/browser',
+				'qrcode',
+			]
+		}
 	},
 	compatibilityDate: '2025-07-15',
 	hooks: {

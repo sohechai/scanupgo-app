@@ -74,10 +74,10 @@ colorMode.preference = 'light'
 			:class="isSidebarOpen ? 'translate-x-0 rtl:-translate-x-0 shadow-xl' : '-translate-x-full rtl:translate-x-full lg:translate-x-0 rtl:lg:-translate-x-0'">
 
 			<!-- Brand -->
-			<div class="h-14 flex items-center px-4">
+			<div class="h-14 flex items-center px-4 pt-2">
 				<div class="flex items-center">
-					<AppLogo variant="light" :size="32" class="dark:hidden" />
-					<AppLogo variant="dark" :size="32" class="hidden dark:inline-flex" />
+					<AppLogo variant="light" :size="24" class="dark:hidden" />
+					<AppLogo variant="dark" :size="24" class="hidden dark:inline-flex" />
 				</div>
 			</div>
 

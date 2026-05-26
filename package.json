@@ -12,6 +12,9 @@
   "dependencies": {
     "@nuxt/icon": "^2.1.1",
     "@nuxt/image": "^2.0.0",
+    "@oxc-minify/binding-darwin-x64": "^0.133.0",
+    "@oxc-parser/binding-darwin-x64": "^0.133.0",
+    "@oxc-transform/binding-darwin-x64": "^0.133.0",
     "@pinia/nuxt": "^0.11.3",
     "@stripe/stripe-js": "^8.6.4",
     "@tanstack/vue-query": "^5.99.0",
@@ -29,9 +32,12 @@
     "jspdf": "^3.0.4",
     "jsqr": "^1.4.0",
     "jszip": "^3.10.1",
+    "node-vibrant": "^4.0.4",
     "nuxt": "^4.4.2",
+    "oxc-parser": "^0.133.0",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",
+    "tailwindcss": "^3.4.13",
     "vue": "^3.5.25",
     "vue-router": "^4.6.4"
   },

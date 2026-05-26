@@ -126,6 +126,43 @@ const handleSave = async () => {
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const logoUploadError = ref<string | null>(null)
 const logoUploading = ref(false)
+const extractColorFromFile = async (file: File): Promise<string | null> => {
+	try {
+		const { Vibrant } = await import('node-vibrant/browser')
+		const url = URL.createObjectURL(file)
+		const palette = await Vibrant.from(url).getPalette()
+		URL.revokeObjectURL(url)
+		const swatch = palette.Vibrant ?? palette.LightVibrant ?? palette.Muted ?? palette.DarkVibrant
+		return swatch?.hex ?? null
+	} catch {
+		return null
+	}
+}
+
+const squarifyImage = (file: File): Promise<File> => {
+	return new Promise((resolve) => {
+		const img = new Image()
+		const objectUrl = URL.createObjectURL(file)
+		img.onload = () => {
+			URL.revokeObjectURL(objectUrl)
+			const size = Math.min(img.width, img.height)
+			const canvas = document.createElement('canvas')
+			canvas.width = size
+			canvas.height = size
+			const ctx = canvas.getContext('2d')!
+			// center-crop: cut excess width or height
+			const sx = (img.width - size) / 2
+			const sy = (img.height - size) / 2
+			ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size)
+			canvas.toBlob((blob) => {
+				if (!blob) return resolve(file)
+				resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.png'), { type: 'image/png' }))
+			}, 'image/png')
+		}
+		img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file) }
+		img.src = objectUrl
+	})
+}
 
 const triggerFileInput = () => {
 	fileInputRef.value?.click()
@@ -133,31 +170,34 @@ const triggerFileInput = () => {
 const handleLogoUpload = async (event: Event) => {
 	const input = event.target as HTMLInputElement
 	if (!input.files?.[0]) return
-	const file = input.files[0]
+	const originalFile = input.files[0]
 
 	logoUploadError.value = null
 
 	const MAX_MB = 5
-	if (file.size > MAX_MB * 1024 * 1024) {
+	if (originalFile.size > MAX_MB * 1024 * 1024) {
 		logoUploadError.value = t('components.file_upload.error_too_large', { size: MAX_MB })
 		return
 	}
-	if (!file.type.startsWith('image/')) {
+	if (!originalFile.type.startsWith('image/')) {
 		logoUploadError.value = t('components.file_upload.error_wrong_type')
 		return
 	}
 
 	logoUploading.value = true
+	const file = await squarifyImage(originalFile)
 	const formData = new FormData()
 	formData.append('file', file)
 	try {
-		const response = await $api<{ url: string }>('/uploads/logo', {
-			method: 'POST',
-			body: formData
-		})
+		const [response, color] = await Promise.all([
+			$api<{ url: string }>('/uploads/logo', { method: 'POST', body: formData }),
+			extractColorFromFile(file),
+		])
 		if (response?.url) {
 			business.value.logo = response.url
+			if (color) business.value.primaryColor = color
 			await handleSave()
+			if (color) useToast().show(t('profile.color_auto_detected'), 'info')
 		}
 	} catch (e: any) {
 		console.error(e)
@@ -364,6 +404,7 @@ onMounted(() => {
 								<p v-else class="text-[11px] text-slate-400 leading-relaxed">{{ $t('profile.logo_recommendation') }}</p>
 							</div>
 						</div>
+
 					</div>
 
 					<div class="h-px bg-slate-100 dark:bg-slate-700/40"></div>
@@ -381,6 +422,7 @@ onMounted(() => {
 								class="bg-transparent font-mono text-slate-700 dark:text-slate-200 outline-none w-full text-xs uppercase disabled:opacity-50"
 								maxlength="7">
 						</div>
+						<p class="text-[11px] text-slate-400 mt-1.5">{{ $t('profile.color_hint') }}</p>
 					</div>
 
 				</div>
