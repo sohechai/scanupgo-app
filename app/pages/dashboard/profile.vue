@@ -139,35 +139,15 @@ const extractColorFromFile = async (file: File): Promise<string | null> => {
 	}
 }
 
-const squarifyImage = (file: File): Promise<File> => {
-	return new Promise((resolve) => {
-		const img = new Image()
-		const objectUrl = URL.createObjectURL(file)
-		img.onload = () => {
-			URL.revokeObjectURL(objectUrl)
-			const size = Math.min(img.width, img.height)
-			const canvas = document.createElement('canvas')
-			canvas.width = size
-			canvas.height = size
-			const ctx = canvas.getContext('2d')!
-			// center-crop: cut excess width or height
-			const sx = (img.width - size) / 2
-			const sy = (img.height - size) / 2
-			ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size)
-			canvas.toBlob((blob) => {
-				if (!blob) return resolve(file)
-				resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.png'), { type: 'image/png' }))
-			}, 'image/png')
-		}
-		img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file) }
-		img.src = objectUrl
-	})
-}
+// Logo cropper modal
+const cropperFile = ref<File | null>(null)
+const showCropper = ref(false)
 
 const triggerFileInput = () => {
 	fileInputRef.value?.click()
 }
-const handleLogoUpload = async (event: Event) => {
+
+const handleLogoUpload = (event: Event) => {
 	const input = event.target as HTMLInputElement
 	if (!input.files?.[0]) return
 	const originalFile = input.files[0]
@@ -177,21 +157,32 @@ const handleLogoUpload = async (event: Event) => {
 	const MAX_MB = 5
 	if (originalFile.size > MAX_MB * 1024 * 1024) {
 		logoUploadError.value = t('components.file_upload.error_too_large', { size: MAX_MB })
+		if (fileInputRef.value) fileInputRef.value.value = ''
 		return
 	}
 	if (!originalFile.type.startsWith('image/')) {
 		logoUploadError.value = t('components.file_upload.error_wrong_type')
+		if (fileInputRef.value) fileInputRef.value.value = ''
 		return
 	}
 
+	// Open crop modal instead of auto-squarifying
+	cropperFile.value = originalFile
+	showCropper.value = true
+	if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+const handleCropConfirm = async (croppedFile: File) => {
+	showCropper.value = false
+	cropperFile.value = null
+
 	logoUploading.value = true
-	const file = await squarifyImage(originalFile)
 	const formData = new FormData()
-	formData.append('file', file)
+	formData.append('file', croppedFile)
 	try {
 		const [response, color] = await Promise.all([
 			$api<{ url: string }>('/uploads/logo', { method: 'POST', body: formData }),
-			extractColorFromFile(file),
+			extractColorFromFile(croppedFile),
 		])
 		if (response?.url) {
 			business.value.logo = response.url
@@ -204,8 +195,12 @@ const handleLogoUpload = async (event: Event) => {
 		logoUploadError.value = e?.data?.message || t('profile.upload_error')
 	} finally {
 		logoUploading.value = false
-		if (fileInputRef.value) fileInputRef.value.value = ''
 	}
+}
+
+const handleCropCancel = () => {
+	showCropper.value = false
+	cropperFile.value = null
 }
 
 const handlePlaceSelect = (details: any) => {
@@ -430,4 +425,12 @@ onMounted(() => {
 
 		</div>
 	</div>
+
+	<!-- Logo Cropper Modal -->
+	<LogoCropper
+		v-if="showCropper && cropperFile"
+		:file="cropperFile"
+		@confirm="handleCropConfirm"
+		@cancel="handleCropCancel"
+	/>
 </template>
