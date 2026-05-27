@@ -269,7 +269,7 @@ const onSpinEnd = () => {
   <!-- Splash screen -->
   <Transition name="splash">
     <div v-if="showSplash" class="fixed inset-0 z-[500] flex items-center justify-center" style="background: rgba(255,255,255,0.94);">
-      <img v-if="business?.logo" :src="business.logo" class="h-32 max-w-[260px] object-contain logo-spin drop-shadow-2xl" />
+      <img v-if="business?.logo" :src="business.logo" class="h-32 max-w-[260px] object-contain rounded-2xl logo-spin drop-shadow-2xl" />
       <div v-else class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </Transition>
