@@ -26,6 +26,8 @@ const business = ref({
 	addressCountry: '',
 	googlePlaceId: null as string | null,
 	googleReviewUrl: null as string | null,
+	googleRating: null as number | null,
+	googleReviewCount: null as number | null,
 	primary_color: '#00E5FF',
 	logo: null as string | null
 })
@@ -83,6 +85,8 @@ const selectPlace = async (prediction: typeof predictions.value[0]) => {
 		business.value.phone = business.value.phone || details.phone || ''
 		business.value.googlePlaceId = details.placeId
 		business.value.googleReviewUrl = details.googleReviewUrl
+		business.value.googleRating = details.rating ?? null
+		business.value.googleReviewCount = details.reviewCount ?? null
 		confirmedPlace.value = {
 			name: details.name || prediction.mainText,
 			address: [details.addressStreet, details.addressCity, details.addressCountry].filter(Boolean).join(', '),
@@ -151,7 +155,9 @@ const handleSubmit = async () => {
 				logo: business.value.logo,
 				...(business.value.googlePlaceId ? {
 					googlePlaceId: business.value.googlePlaceId,
-					googleReviewUrl: business.value.googleReviewUrl
+					googleReviewUrl: business.value.googleReviewUrl,
+					...(business.value.googleRating != null ? { googleRating: business.value.googleRating } : {}),
+					...(business.value.googleReviewCount != null ? { googleReviewCount: business.value.googleReviewCount } : {}),
 				} : {})
 			}
 		})
