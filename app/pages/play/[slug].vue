@@ -205,7 +205,7 @@ const onSpinEnd = () => {
     <div class="absolute inset-0 z-0" :style="{ backgroundColor: primaryColor }"></div>
 
     <!-- Langue -->
-    <div class="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
+    <div class="fixed top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
       <button v-for="lang in playerLocales" :key="lang.code" @click="switchLocale(lang.code)"
         class="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all"
         :class="locale === lang.code ? 'bg-white/40 shadow-md scale-110' : 'bg-white/10 hover:bg-white/25 opacity-60 hover:opacity-100'">
@@ -253,7 +253,7 @@ const onSpinEnd = () => {
       </template>
     </div>
 
-    <div v-if="step === 'form' || step === 'result'" class="absolute bottom-4 text-[10px] opacity-40 z-10">
+    <div v-if="step === 'form' || step === 'result'" class="fixed bottom-4 text-[10px] opacity-40 z-10">
       {{ $t('play.powered_by') }}
     </div>
   </div>
