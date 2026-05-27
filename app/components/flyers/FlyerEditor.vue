@@ -4,6 +4,7 @@ import FlyerSidebar from './FlyerSidebar.vue'
 import FlyerSmartControls from './FlyerSmartControls.vue'
 import FlyerModals from './FlyerModals.vue'
 import FlyerToolbar from './FlyerToolbar.vue'
+import SmartFlyerOnboarding from './SmartFlyerOnboarding.vue'
 import { nextTick } from 'vue' // Import nextTick
 
 const props = defineProps<{
@@ -90,6 +91,9 @@ const loadingTemplate = ref(false)
 const converting = ref(false)
 const mode = ref<'canvas' | 'smart'>('canvas') // New: Mode for editor
 const smartFlyerRef = ref<any>(null) // New: Ref for SmartFlyer component
+
+// Onboarding modal — shown when user selects smart template
+const showOnboarding = ref(false)
 
 // Confirmation modal before smart→canvas conversion
 const showConversionModal = ref(false)
@@ -200,6 +204,9 @@ const loadTemplate = async (templateId: string) => {
 			}
 		}
 		showToast(t('flyers.editor.template_smart_loaded'), 'success')
+		if (!localStorage.getItem('smart-flyer-onboarding-seen')) {
+			showOnboarding.value = true
+		}
 		return
 	}
 
@@ -1211,6 +1218,8 @@ const previewFlyer = async () => {
 				<p class="text-white text-sm font-bold tracking-wide">Conversion en cours…</p>
 			</div>
 		</Transition>
+
+		<SmartFlyerOnboarding v-if="showOnboarding" @close="showOnboarding = false" />
 
 		<FlyerModals
 			:show-qr-modal="showQRCodeModal"
