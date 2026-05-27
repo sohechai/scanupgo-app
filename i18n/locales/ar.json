@@ -206,6 +206,7 @@
       "players": "اللاعبون",
       "marketing": "التسويق",
       "redeem": "التحقق من الجوائز",
+      "prizes": "جوائزي",
       "subscription": "اشتراكي",
       "account": "حسابي"
     },
@@ -339,6 +340,8 @@
     "upload_logo": "استيراد شعار",
     "delete_logo": "حذف",
     "brand_color": "لون علامتك التجارية",
+    "color_auto_detected": "تم اكتشاف اللون تلقائيًا من شعارك",
+    "color_hint": "يتم اكتشافه تلقائيًا من شعارك — يمكنك تعديله يدويًا.",
     "success_message": "تم تحديث الملف التعريفي بنجاح",
     "error_message": "خطأ أثناء الحفظ",
     "upload_error": "خطأ أثناء الرفع",
@@ -420,7 +423,12 @@
       "appearance_title": "مظهر اللعبة",
       "appearance_subtitle": "خصص الألوان",
       "background_color": "لون الخلفية",
-      "background_image": "صورة الخلفية",
+      "background_none": "بدون",
+      "background_label": "الخلفية",
+      "background_themes": "الثيمات",
+      "background_image": "صورة",
+      "background_upload_label": "استيراد صورة خلفية",
+      "background_remove": "حذف الصورة",
       "recommended_format": "الصيغة المُوصى بها: JPG أو PNG. نسبة عمودية (9:16) للهاتف. الحد الأقصى 5 ميغا.",
       "upload_image": "استيراد صورة",
       "change_image": "تغيير الصورة",
@@ -1784,13 +1792,26 @@
       "inactive": "غير نشط",
       "no_description": "بدون وصف",
       "edit_modal": "تعديل",
-      "delete_button": "حذف"
+      "delete_button": "حذف",
+      "tab_flyers": "الفلايرات",
+      "tab_themes": "ثيمات الخلفية",
+      "no_themes": "لا توجد ثيمات",
+      "add_first_theme": "إضافة أول ثيم",
+      "theme_modal_add_title": "ثيم جديد",
+      "theme_modal_edit_title": "تعديل الثيم",
+      "theme_name_placeholder": "مثال: ليل عميق",
+      "theme_type_label": "النوع",
+      "theme_type_gradient": "تدرج CSS",
+      "theme_type_image": "صورة",
+      "theme_gradient_label": "قيمة CSS"
     },
     "pricing": {
       "title": "إدارة الأسعار",
       "description": "تكوين أسعار المنشورات وحزم الأرصدة.",
       "new_button": "سعر جديد",
       "new_button_credit": "حزمة جديدة",
+      "new_button_plan": "خطة جديدة",
+      "tab_plans": "الخطط",
       "tab_flyers": "أسعار المنشورات",
       "tab_credits": "حزم الأرصدة",
       "flyers_info_title": "منشورات بتنسيق A6 - ورق مصقول 135 غرام",
@@ -2293,7 +2314,7 @@
       "add_logo": "إضافة شعار",
       "logo_hint": "سيتم عرض الشعار في مركز رمز QR. استخدم صورة مربعة للحصول على أفضل نتيجة.",
       "preview_label": "معاينة",
-      "add_to_flyer": "أضف إلى المنشور",
+      "add_to_flyer": "تطبيق التغييرات",
       "alert_image_only": "يرجى اختيار صورة",
       "alert_too_large": "يجب ألا تتجاوز الصورة 2 ميغابايت",
       "error_upload_logo": "خطأ أثناء رفع الشعار"
@@ -2315,7 +2336,10 @@
     "loading": "جاري تحميل اللعبة...",
     "intro": {
       "play_button": "العب الآن",
-      "powered_by": "مدعوم من ScanUpGo"
+      "powered_by": "مدعوم من ScanUpGo",
+      "default_tagline": "جرب حظك واربح هدية!",
+      "rules": "القانون الأساسي",
+      "contact": "اتصل بنا"
     },
     "steps": {
       "heading": "اتبع الخطوات:",
@@ -2333,7 +2357,8 @@
       "step_opened": "تم فتح Google في علامة تبويب جديدة",
       "step_review": "اترك تقييمك ⭐⭐⭐⭐⭐",
       "step_return": "عد إلى هنا للعب",
-      "already_reviewed": "لقد تركت تقييمي بالفعل ←"
+      "already_reviewed": "لقد تركت تقييمي بالفعل ←",
+      "verifying_action": "شكراً! جارٍ التحقق من مشاركتك…"
     },
     "form": {
       "heading": "احصل على جائزتك",
@@ -2349,7 +2374,10 @@
       "spinning": "العجلة تدور...",
       "good_luck_prefix": "حظاً سعيداً ",
       "good_luck_suffix": "!",
-      "fingers_crossed": "أصابعنا مشبوكة..."
+      "fingers_crossed": "أصابعنا مشبوكة...",
+      "merci": "شكراً لك!",
+      "bonne_chance": "حظاً موفقاً!",
+      "spin_button": "أدر العجلة"
     },
     "result": {
       "win": {

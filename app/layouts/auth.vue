@@ -9,9 +9,7 @@
 
 			<!-- Brand Logo (Top) -->
 			<div class="relative z-10">
-				<div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/10">
-					<span class="font-display font-bold text-white text-lg">B.</span>
-				</div>
+				<AppLogo variant="dark" :size="36" />
 			</div>
 
 			<!-- Hero Content (Middle/Bottom) -->

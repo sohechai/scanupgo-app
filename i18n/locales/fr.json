@@ -206,6 +206,7 @@
       "players": "Joueurs",
       "marketing": "Marketing",
       "redeem": "Validation des lots",
+      "prizes": "Mes Lots",
       "subscription": "Mon Abonnement",
       "account": "Mon Compte"
     },
@@ -339,10 +340,15 @@
     "upload_logo": "Importer un logo",
     "delete_logo": "Supprimer",
     "brand_color": "Couleur de votre marque",
+    "color_auto_detected": "Couleur détectée automatiquement depuis votre logo",
+    "color_hint": "Détectée automatiquement depuis votre logo — modifiable manuellement.",
     "success_message": "Profil mis à jour avec succès",
     "error_message": "Erreur lors de la sauvegarde",
     "upload_error": "Erreur lors de l'upload",
-    "upload_success": "Logo uploadé"
+    "upload_success": "Logo uploadé",
+    "google_search_label": "Rechercher votre établissement sur Google",
+    "google_search_placeholder": "Ex: Chicken Street Paris...",
+    "google_search_hint": "Sélectionnez votre établissement pour remplir automatiquement les informations."
   },
   "games": {
     "title": "Mes Jeux",
@@ -421,7 +427,17 @@
       "appearance_title": "Apparence du Jeu",
       "appearance_subtitle": "Personnalisez les couleurs",
       "background_color": "Couleur de fond",
-      "background_image": "Image de fond",
+      "button_color": "Couleur des boutons",
+      "wheel_lost_color": "Cases « Perdu »",
+      "wheel_prize_color": "Cases cadeaux",
+      "wheel_border_color": "Bordures de la roue",
+      "wheel_pointer_color": "Curseur (flèche)",
+      "background_none": "Aucun",
+      "background_label": "Arrière-plan",
+      "background_themes": "Thèmes",
+      "background_image": "Image",
+      "background_upload_label": "Importer une image de fond",
+      "background_remove": "Supprimer l'image",
       "recommended_format": "Format recommandé: JPG ou PNG. Ratio vertical (9:16) pour le mobile. Max 5 Mo.",
       "upload_image": "Importer une image",
       "change_image": "Changer l'image",
@@ -1813,7 +1829,7 @@
       "modal_image_upload_text": "Cliquer pour choisir une image",
       "modal_image_upload_hint": "PNG ou JPEG uniquement · max 3 Mo · format portrait recommandé",
       "modal_error_type": "Format non accepté. Utilisez uniquement des fichiers PNG ou JPEG.",
-      "modal_error_size": "Image trop lourde ({size} Mo). La taille maximum est de 3 Mo.",
+      "modal_error_size": "Fichier trop lourd : {size} Mo (limite : 3 Mo). Compressez l'image avant de réessayer.",
       "modal_error_upload": "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
       "modal_uploading": "Téléchargement...",
       "modal_cancel": "Annuler",
@@ -1828,13 +1844,26 @@
       "inactive": "Inactif",
       "no_description": "Pas de description",
       "edit_modal": "Modifier",
-      "delete_button": "Supprimer"
+      "delete_button": "Supprimer",
+      "tab_flyers": "Flyers",
+      "tab_themes": "Thèmes d'arrière-plan",
+      "no_themes": "Aucun thème",
+      "add_first_theme": "Ajouter un premier thème",
+      "theme_modal_add_title": "Nouveau thème",
+      "theme_modal_edit_title": "Modifier le thème",
+      "theme_name_placeholder": "Ex: Nuit profonde",
+      "theme_type_label": "Type",
+      "theme_type_gradient": "Dégradé CSS",
+      "theme_type_image": "Image",
+      "theme_gradient_label": "Valeur CSS"
     },
     "pricing": {
       "title": "Gestion des Tarifs",
       "description": "Configurez les tarifs flyers et packs de crédits.",
       "new_button": "Nouveau tarif",
       "new_button_credit": "Nouveau pack",
+      "new_button_plan": "Nouveau plan",
+      "tab_plans": "Plans",
       "tab_flyers": "Tarifs Flyers",
       "tab_credits": "Packs de Crédits",
       "flyers_info_title": "Flyers Format A6 - 135g couché",
@@ -2345,7 +2374,7 @@
       "add_logo": "Ajouter un logo",
       "logo_hint": "Le logo sera affiché au centre du QR code. Utilisez une image carrée pour un meilleur rendu.",
       "preview_label": "Aperçu",
-      "add_to_flyer": "Ajouter au flyer",
+      "add_to_flyer": "Appliquer les modifications",
       "alert_image_only": "Veuillez sélectionner une image",
       "alert_too_large": "L'image ne doit pas dépasser 2 Mo",
       "error_upload_logo": "Erreur lors du téléchargement du logo"
@@ -2367,7 +2396,10 @@
     "loading": "Chargement du jeu...",
     "intro": {
       "play_button": "Jouer la partie",
-      "powered_by": "Propulsé par ScanUpGo"
+      "powered_by": "Propulsé par ScanUpGo",
+      "default_tagline": "Tentez votre chance et gagnez un cadeau !",
+      "rules": "Règlement",
+      "contact": "Contact"
     },
     "steps": {
       "heading": "Suivez les étapes :",
@@ -2379,6 +2411,8 @@
       "back": "Retour"
     },
     "review_timer": {
+      "not_done": "Pas encore fait ?",
+      "verifying_action": "Merci ! Votre participation est en cours de vérification…",
       "title": "Laissez votre avis ⭐",
       "subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
       "seconds": "sec",
@@ -2401,7 +2435,10 @@
       "spinning": "La roue tourne...",
       "good_luck_prefix": "Bonne chance ",
       "good_luck_suffix": " !",
-      "fingers_crossed": "Croisons les doigts..."
+      "fingers_crossed": "Croisons les doigts...",
+      "merci": "MERCI",
+      "bonne_chance": "BONNE CHANCE !",
+      "spin_button": "Lancer la roue"
     },
     "result": {
       "win": {

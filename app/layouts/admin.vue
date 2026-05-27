@@ -71,7 +71,7 @@ watch(() => route.path, () => {
 
 			<!-- Logo -->
 			<div class="h-14 flex items-center px-5 border-b border-white/[0.06]">
-				<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-7" />
+				<AppLogo variant="dark" :size="28" />
 			</div>
 
 			<!-- Navigation -->

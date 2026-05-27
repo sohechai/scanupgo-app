@@ -231,12 +231,12 @@ defineExpose({
 			<div class="absolute inset-0" :style="{ background: `linear-gradient(180deg, ${backgroundColor} 0%, #000000 100%)` }"></div>
 
 			<!-- Top LOGO Section -->
-			<div class="absolute top-0 left-0 right-0 h-[140px] flex items-center justify-center z-20">
+			<div class="absolute top-0 left-0 right-0 h-[140px] flex items-start justify-center pt-4 z-20">
 				<img
 					v-if="displayLogo"
 					:src="displayLogo"
 					crossorigin="anonymous"
-					class="h-28 object-contain"
+					class="h-16 object-contain"
 					style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));"
 					@error="(e: Event) => { console.warn('Logo failed to load:', displayLogo); (e.target as HTMLImageElement).style.display = 'none' }"
 				/>
@@ -244,7 +244,7 @@ defineExpose({
 			</div>
 
 			<!-- Main Title -->
-			<div class="absolute top-[140px] left-0 right-0 z-30 text-center">
+			<div class="absolute top-[110px] left-0 right-0 z-30 text-center">
 				<h1 class="font-black text-4xl text-white uppercase leading-none stroke-text-black"
 					:style="{ fontFamily: currentFont }">
 					{{ $t('flyers.smart_flyer.scan_win') }}
@@ -256,8 +256,8 @@ defineExpose({
 				</h2>
 			</div>
 
-			<!-- Wheel Background (Dynamic SVG) - Fixed left position instead of translateX -->
-			<div class="absolute z-10" style="top: 180px; left: 20px; width: 380px; height: 380px; opacity: 0.9;">
+			<!-- Wheel Background (Dynamic SVG) - Centered hero -->
+			<div class="absolute z-10" style="top: 150px; left: 60px; width: 300px; height: 300px; opacity: 0.95;">
 				<svg viewBox="0 0 100 100" class="w-full h-full" style="filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));">
 					<circle cx="50" cy="50" r="48" fill="#333" />
 					<g transform="rotate(-22.5 50 50)">
@@ -266,10 +266,11 @@ defineExpose({
 								:fill="i % 2 === 0 ? '#ffffff' : lostSegmentColor" stroke="#000"
 								stroke-width="0.5" />
 							<g :transform="`rotate(${i * 45 + 22.5} 50 50)`">
-								<text x="50" y="20" text-anchor="middle" :fill="i % 2 === 0 ? '#000' : '#fff'"
+								<image v-if="i % 2 === 0" :href="'/images/game-gift-v2.png'" x="43" y="11" width="14" height="14" />
+								<text v-else x="50" y="20" text-anchor="middle" fill="#fff"
 									class="font-display font-black text-[5px] uppercase"
 									style="font-family: 'Luckiest Guy', cursive;">
-									{{ i % 2 === 0 ? $t('flyers.smart_flyer.won') : $t('flyers.smart_flyer.lost') }}
+									{{ $t('flyers.smart_flyer.lost') }}
 								</text>
 							</g>
 						</template>
@@ -279,25 +280,20 @@ defineExpose({
 				</svg>
 			</div>
 
-			<!-- 3D Gifts (Left) - No transform rotate -->
-			<div class="absolute z-20" style="left: -10px; bottom: 160px; width: 192px; height: 192px;">
-				<img src="/images/game-gifts-v2.png" class="w-full h-full object-contain" />
-			</div>
 
 			<!-- QR Code Card -->
-			<div class="absolute z-30 bg-white rounded-xl p-3" style="right: 30px; bottom: 130px; transform: rotate(-5deg); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-				<div class="w-40 h-40 bg-white flex items-center justify-center">
+			<div class="absolute z-30 rounded-xl p-2" :style="{ right: '40px', bottom: '148px', transform: 'rotate(-5deg)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', background: props.qrBgColor || '#ffffff' }">
+				<div class="w-[105px] h-[105px] flex items-center justify-center" :style="{ background: props.qrBgColor || '#ffffff' }">
 					<img v-if="displayQrCodeUrl" :src="displayQrCodeUrl" crossorigin="anonymous" class="w-full h-full object-contain" />
 					<div v-else class="text-slate-300">QR Code</div>
 				</div>
 			</div>
 
 			<!-- CTA Button - Centered -->
-			<div class="absolute z-30 w-full flex justify-center" style="bottom: 100px;">
-				<div class="border-2 border-black text-white px-8 py-2 rounded-xl uppercase font-black text-xl tracking-wide"
-					:style="{ backgroundColor: buttonColor, fontFamily: currentFont, boxShadow: '4px 4px 0px rgba(0,0,0,1)' }">
-					{{ $t('flyers.smart_flyer.scan_to_play') }}
-				</div>
+			<div class="border-2 border-black text-white px-8 pt-3 pb-1 rounded-xl uppercase font-black text-xl tracking-wide"
+				style="position: absolute; z-index: 30; bottom: 91px; left: 0; right: 0; margin-left: auto; margin-right: auto; width: fit-content;"
+				:style="{ backgroundColor: buttonColor, fontFamily: currentFont, boxShadow: '4px 4px 0px rgba(0,0,0,1)' }">
+				{{ $t('flyers.smart_flyer.scan_to_play') }}
 			</div>
 
 			<!-- Bottom Steps - No mix-blend-mode -->

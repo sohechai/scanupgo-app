@@ -206,6 +206,7 @@
       "players": "Players",
       "marketing": "Marketing",
       "redeem": "Prize Validation",
+      "prizes": "My Prizes",
       "subscription": "My Subscription",
       "account": "My Account"
     },
@@ -339,6 +340,8 @@
     "upload_logo": "Upload a logo",
     "delete_logo": "Delete",
     "brand_color": "Brand color",
+    "color_auto_detected": "Color automatically detected from your logo",
+    "color_hint": "Auto-detected from your logo — you can edit it manually.",
     "success_message": "Profile updated successfully",
     "error_message": "Error saving profile",
     "upload_error": "Upload error",
@@ -420,7 +423,12 @@
       "appearance_title": "Game Appearance",
       "appearance_subtitle": "Customize the colors",
       "background_color": "Background color",
-      "background_image": "Background image",
+      "background_none": "None",
+      "background_label": "Background",
+      "background_themes": "Themes",
+      "background_image": "Image",
+      "background_upload_label": "Upload a background image",
+      "background_remove": "Remove image",
       "recommended_format": "Recommended format: JPG or PNG. Vertical ratio (9:16) for mobile. Max 5 MB.",
       "upload_image": "Upload an image",
       "change_image": "Change image",
@@ -1811,6 +1819,9 @@
       "modal_image_change": "Change image",
       "modal_image_upload_text": "Click to choose an image",
       "modal_image_upload_hint": "PNG, JPG — portrait format recommended",
+      "modal_error_type": "Format not accepted. Please use PNG or JPEG files only.",
+      "modal_error_size": "File too large: {size} MB — limit is 3 MB. Compress the image before retrying.",
+      "modal_error_upload": "Upload failed. Check your connection and try again.",
       "modal_uploading": "Uploading...",
       "modal_cancel": "Cancel",
       "modal_create": "Create template",
@@ -1824,13 +1835,26 @@
       "inactive": "Inactive",
       "no_description": "No description",
       "edit_modal": "Edit",
-      "delete_button": "Delete"
+      "delete_button": "Delete",
+      "tab_flyers": "Flyers",
+      "tab_themes": "Background Themes",
+      "no_themes": "No themes",
+      "add_first_theme": "Add first theme",
+      "theme_modal_add_title": "New theme",
+      "theme_modal_edit_title": "Edit theme",
+      "theme_name_placeholder": "E.g. Deep Night",
+      "theme_type_label": "Type",
+      "theme_type_gradient": "CSS Gradient",
+      "theme_type_image": "Image",
+      "theme_gradient_label": "CSS value"
     },
     "pricing": {
       "title": "Pricing Management",
       "description": "Configure flyer pricing and credit packs.",
       "new_button": "New pricing",
       "new_button_credit": "New pack",
+      "new_button_plan": "New plan",
+      "tab_plans": "Plans",
       "tab_flyers": "Flyer Pricing",
       "tab_credits": "Credit Packs",
       "flyers_info_title": "Flyers A6 Format - 135g coated",
@@ -2341,7 +2365,7 @@
       "add_logo": "Add a logo",
       "logo_hint": "The logo will be displayed in the center of the QR code. Use a square image for best results.",
       "preview_label": "Preview",
-      "add_to_flyer": "Add to flyer",
+      "add_to_flyer": "Apply changes",
       "alert_image_only": "Please select an image",
       "alert_too_large": "Image must not exceed 2MB",
       "error_upload_logo": "Error uploading logo"
@@ -2363,7 +2387,10 @@
     "loading": "Loading game...",
     "intro": {
       "play_button": "Play",
-      "powered_by": "Powered by ScanUpGo"
+      "powered_by": "Powered by ScanUpGo",
+      "default_tagline": "Try your luck and win a gift!",
+      "rules": "Rules",
+      "contact": "Contact"
     },
     "steps": {
       "heading": "Follow the steps:",
@@ -2381,7 +2408,8 @@
       "step_opened": "Google opened in a new tab",
       "step_review": "Leave your review ⭐⭐⭐⭐⭐",
       "step_return": "Come back here to play",
-      "already_reviewed": "I already left my review →"
+      "already_reviewed": "I already left my review →",
+      "verifying_action": "Thank you! Your participation is being verified…"
     },
     "form": {
       "heading": "Claim your prize",
@@ -2397,7 +2425,10 @@
       "spinning": "The wheel is spinning...",
       "good_luck_prefix": "Good luck ",
       "good_luck_suffix": "!",
-      "fingers_crossed": "Fingers crossed..."
+      "fingers_crossed": "Fingers crossed...",
+      "merci": "THANK YOU!",
+      "bonne_chance": "GOOD LUCK!",
+      "spin_button": "Spin the wheel"
     },
     "result": {
       "win": {

@@ -20,7 +20,12 @@ const uploading = ref(false)
 const error = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement>()
 
-const currentUrl = computed(() => props.modelValue || null)
+const currentUrl = computed(() => {
+	const val = props.modelValue
+	if (!val) return null
+	if (val.startsWith('http') || val.startsWith('/') || val.startsWith('data:')) return val
+	return null
+})
 
 const handleFileSelect = async (event: Event) => {
 	const target = event.target as HTMLInputElement
@@ -64,6 +69,7 @@ const handleFileSelect = async (event: Event) => {
 
 		emit('update:modelValue', response.url)
 		showToast(t('components.file_upload.success'), 'success')
+		if (fileInput.value) fileInput.value.value = ''
 	} catch (e: any) {
 		console.error('Upload error:', e)
 		error.value = e?.data?.message || t('components.file_upload.error_upload')

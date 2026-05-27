@@ -1,23 +1,4 @@
 <script setup lang="ts">
-interface SubscriptionPlan {
-	id: string
-	name: string
-	description: string | null
-	priceMonthly: number
-	priceAnnual: number
-	priceLifetime: number
-	stripePriceIdMonthly: string | null
-	stripePriceIdAnnual: string | null
-	stripePriceIdLifetime: string | null
-	features: any
-	active: boolean
-	sortOrder: number
-	isDefault: boolean
-	createdAt: string
-	updatedAt: string
-	_count: { subscriptions: number }
-}
-
 definePageMeta({ layout: 'admin', middleware: ['admin'] })
 
 const { t } = useI18n()
@@ -31,7 +12,6 @@ const toast = useToast()
 const activeTab = ref('subscriptions')
 const tabs = computed(() => [
 	{ id: 'subscriptions', label: t('admin.subscriptions.tab_subscriptions'), icon: 'ph:crown-bold' },
-	{ id: 'plans', label: t('admin.subscriptions.tab_plans'), icon: 'ph:gear-six-bold' },
 	{ id: 'manual', label: 'Accès manuels', icon: 'ph:user-circle-gear-bold' },
 ])
 
@@ -39,6 +19,7 @@ const tabs = computed(() => [
 const subscriptions = ref<any[]>([])
 const loadingSubs = ref(true)
 const refundModalOpen = ref(false)
+const showStripeInfoModal = ref(false)
 const selectedSubscription = ref<any>(null)
 const refundLoading = ref(false)
 
@@ -75,7 +56,15 @@ const getPeriodLabel = (period: string) => {
 	}
 }
 
-const openRefundModal = (sub: any) => { selectedSubscription.value = sub; refundModalOpen.value = true }
+const openRefundModal = (sub: any) => {
+	if (sub.stripeSubscriptionId || sub.stripeCustomerId) {
+		selectedSubscription.value = sub
+		showStripeInfoModal.value = true
+		return
+	}
+	selectedSubscription.value = sub
+	refundModalOpen.value = true
+}
 const closeRefundModal = () => { refundModalOpen.value = false; selectedSubscription.value = null }
 
 const confirmRefund = async () => {
@@ -93,56 +82,11 @@ const confirmRefund = async () => {
 	} finally { refundLoading.value = false }
 }
 
-// Plans
-const plans = ref<SubscriptionPlan[]>([])
-const loadingPlans = ref(true)
-const showPlanModal = ref(false)
-const editingPlan = ref<SubscriptionPlan | null>(null)
-const showAdvancedPlan = ref(false)
-
-const planForm = ref({ name: '', description: '', priceMonthly: 0, priceAnnual: 0, priceLifetime: 0, features: '[]', isDefault: false, active: true, stripePriceIdMonthly: '', stripePriceIdAnnual: '', stripePriceIdLifetime: '' })
-
+// Plans (for grant modal selector only)
+const plans = ref<{ id: string; name: string }[]>([])
 const fetchPlans = async () => {
-	loadingPlans.value = true
 	try { plans.value = await $api('/admin/plans') }
-	catch { toast.show(t('admin.subscriptions.modal_cancel'), 'error') }
-	finally { loadingPlans.value = false }
-}
-
-const openNewPlanModal = () => {
-	editingPlan.value = null; showAdvancedPlan.value = false
-	planForm.value = { name: '', description: '', priceMonthly: 0, priceAnnual: 0, priceLifetime: 0, features: '[]', isDefault: false, active: true, stripePriceIdMonthly: '', stripePriceIdAnnual: '', stripePriceIdLifetime: '' }
-	showPlanModal.value = true
-}
-
-const openEditPlanModal = (plan: SubscriptionPlan) => {
-	editingPlan.value = plan; showAdvancedPlan.value = false
-	planForm.value = { name: plan.name, description: plan.description || '', priceMonthly: Number(plan.priceMonthly), priceAnnual: Number(plan.priceAnnual), priceLifetime: Number(plan.priceLifetime), features: JSON.stringify(plan.features, null, 2), isDefault: plan.isDefault, active: plan.active, stripePriceIdMonthly: plan.stripePriceIdMonthly || '', stripePriceIdAnnual: plan.stripePriceIdAnnual || '', stripePriceIdLifetime: plan.stripePriceIdLifetime || '' }
-	showPlanModal.value = true
-}
-
-const savePlan = async () => {
-	try {
-		let features: any
-		try { features = JSON.parse(planForm.value.features) } catch { toast.show(t('admin.subscriptions.modal_features'), 'error'); return }
-		const payload = { name: planForm.value.name, description: planForm.value.description || undefined, priceMonthly: planForm.value.priceMonthly, priceAnnual: planForm.value.priceAnnual, priceLifetime: planForm.value.priceLifetime, features, isDefault: planForm.value.isDefault, active: planForm.value.active, stripePriceIdMonthly: planForm.value.stripePriceIdMonthly || undefined, stripePriceIdAnnual: planForm.value.stripePriceIdAnnual || undefined, stripePriceIdLifetime: planForm.value.stripePriceIdLifetime || undefined }
-		if (editingPlan.value) { await $api(`/admin/plans/${editingPlan.value.id}`, { method: 'PUT', body: payload }); toast.show(t('admin.subscriptions.modal_save'), 'success') }
-		else { await $api('/admin/plans', { method: 'POST', body: payload }); toast.show(t('admin.subscriptions.modal_create'), 'success') }
-		showPlanModal.value = false
-		await fetchPlans()
-	} catch { toast.show(t('admin.subscriptions.modal_save'), 'error') }
-}
-
-const deletePlan = (plan: SubscriptionPlan) => {
-	openConfirm(
-		`Supprimer le plan "${plan.name}" ?`,
-		'Cette action est irréversible. Le plan sera retiré définitivement.',
-		'Supprimer',
-		async () => {
-			try { await $api(`/admin/plans/${plan.id}`, { method: 'DELETE' }); toast.show(t('admin.subscriptions.plans_delete'), 'success'); await fetchPlans() }
-			catch (error: any) { toast.show(error?.data?.message || t('admin.subscriptions.plans_delete'), 'error') }
-		}
-	)
+	catch { /* silently fail */ }
 }
 
 // Manual access
@@ -176,8 +120,20 @@ const submitGrant = async () => {
 		toast.show("Accès accordé avec succès", 'success')
 		showGrantModal.value = false
 		await fetchSubscriptions()
-	} catch (e: any) { toast.show(e?.data?.message || "Erreur lors de l'attribution", 'error') }
-	finally { grantLoading.value = false }
+	} catch (e: any) {
+		if (e?.status === 409) {
+			toast.show("Cet utilisateur a déjà un abonnement Stripe actif. Annulez-le depuis le dashboard Stripe avant d'accorder un abonnement manuel.", 'error')
+		} else {
+			toast.show(e?.data?.message || "Erreur lors de l'attribution", 'error')
+		}
+	} finally { grantLoading.value = false }
+}
+
+const formatDateShort = (d: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
+const daysUntil = (d: string | null) => {
+	if (!d) return null
+	const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000)
+	return diff > 0 ? diff : 0
 }
 
 // --- CONFIRM MODAL ---
@@ -211,7 +167,7 @@ const revokeSubscription = (sub: any) => {
 	)
 }
 
-const handleNew = () => { if (activeTab.value === 'plans') openNewPlanModal(); if (activeTab.value === 'manual') openGrantModal() }
+const handleNew = () => { if (activeTab.value === 'manual') openGrantModal() }
 
 onMounted(() => { fetchSubscriptions(); fetchPlans() })
 </script>
@@ -231,12 +187,7 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 					<Icon name="ph:download-bold" size="14" />
 					{{ $t('admin.subscriptions.export_button') }}
 				</button>
-				<button v-if="activeTab === 'plans'" @click="openNewPlanModal"
-					class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 text-sm font-medium rounded-md transition-colors">
-					<Icon name="ph:plus-bold" size="15" />
-					{{ $t('admin.subscriptions.new_plan_button') }}
-				</button>
-				<button v-if="activeTab === 'manual'" @click="openGrantModal"
+<button v-if="activeTab === 'manual'" @click="openGrantModal"
 					class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 text-sm font-medium rounded-md transition-colors">
 					<Icon name="ph:plus-bold" size="15" />
 					Accorder l'accès
@@ -252,7 +203,6 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 				<Icon :name="tab.icon" size="15" />
 				{{ tab.label }}
 				<span v-if="tab.id === 'subscriptions' && subscriptions.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ subscriptions.length }}</span>
-				<span v-if="tab.id === 'plans' && plans.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ plans.length }}</span>
 				<span v-if="tab.id === 'manual' && manualSubs.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ manualSubs.length }}</span>
 			</button>
 		</div>
@@ -343,95 +293,6 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 			</div>
 		</div>
 
-		<!-- ===== TAB: PLANS ===== -->
-		<div v-if="activeTab === 'plans'" class="space-y-4">
-			<div v-if="loadingPlans" class="flex items-center justify-center py-12 text-slate-600">
-				<Icon name="svg-spinners:ring-resize" size="28" />
-			</div>
-			<div v-else-if="plans.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
-				<Icon name="ph:crown-duotone" size="32" class="mb-2" />
-				<p class="text-sm font-medium text-slate-400 mb-1">{{ $t('admin.subscriptions.no_plans') }}</p>
-				<p class="text-xs text-slate-600 mb-4">{{ $t('admin.subscriptions.no_plans_description') }}</p>
-				<button @click="openNewPlanModal" class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 text-sm font-medium rounded-md transition-colors">
-					<Icon name="ph:plus-bold" size="14" />
-					{{ $t('admin.subscriptions.create_plan') }}
-				</button>
-			</div>
-			<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-				<div v-for="plan in plans" :key="plan.id"
-					class="bg-[#161920] border border-white/[0.07] rounded-lg overflow-hidden flex flex-col hover:border-white/[0.14] transition-colors">
-					<!-- Header -->
-					<div class="px-4 pt-4 pb-3 border-b border-white/[0.06]">
-						<div class="flex items-start justify-between gap-2">
-							<div class="min-w-0">
-								<div class="flex items-center gap-2 flex-wrap">
-									<h3 class="text-sm font-semibold text-white">{{ plan.name }}</h3>
-									<span v-if="plan.isDefault" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-brand-500/15 text-brand-400 border border-brand-500/20">
-										{{ $t('admin.subscriptions.plans_default') }}
-									</span>
-									<span class="inline-flex items-center gap-1 text-[10px] font-medium"
-										:class="plan.active ? 'text-emerald-400' : 'text-slate-500'">
-										<span class="w-1.5 h-1.5 rounded-full" :class="plan.active ? 'bg-emerald-400' : 'bg-slate-600'"></span>
-										{{ plan.active ? $t('admin.subscriptions.plans_active') : $t('admin.subscriptions.plans_inactive') }}
-									</span>
-								</div>
-								<p v-if="plan.description" class="text-xs text-slate-500 mt-0.5 truncate">{{ plan.description }}</p>
-							</div>
-							<div class="flex items-center gap-0.5 shrink-0">
-								<button @click="openEditPlanModal(plan)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors">
-									<Icon name="ph:pencil-line-bold" size="14" />
-								</button>
-								<button @click="deletePlan(plan)" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
-									<Icon name="ph:trash-bold" size="14" />
-								</button>
-							</div>
-						</div>
-						<div class="flex items-center gap-1.5 mt-2">
-							<Icon name="ph:users-three-bold" size="13" class="text-slate-600" />
-							<span class="text-xs text-slate-500"><span class="text-white font-medium">{{ plan._count.subscriptions }}</span> abonné{{ plan._count.subscriptions !== 1 ? 's' : '' }}</span>
-						</div>
-					</div>
-					<!-- Pricing -->
-					<div class="px-4 py-3 border-b border-white/[0.06] space-y-2">
-						<div class="flex items-center justify-between">
-							<span class="text-xs text-slate-500">{{ $t('admin.subscriptions.plans_table_monthly') }}</span>
-							<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceMonthly).toFixed(2) }} <span class="text-xs font-normal text-slate-500">MAD</span></span>
-						</div>
-						<div class="flex items-center justify-between">
-							<span class="text-xs text-slate-500">{{ $t('admin.subscriptions.plans_table_annual') }}</span>
-							<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceAnnual).toFixed(2) }} <span class="text-xs font-normal text-slate-500">MAD</span></span>
-						</div>
-						<div class="flex items-center justify-between">
-							<span class="text-xs text-slate-500">{{ $t('admin.subscriptions.plans_table_lifetime') }}</span>
-							<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceLifetime).toFixed(2) }} <span class="text-xs font-normal text-slate-500">MAD</span></span>
-						</div>
-					</div>
-					<!-- Features -->
-					<div class="px-4 py-3 flex-1">
-						<p class="text-[10px] font-medium text-slate-600 uppercase tracking-wider mb-2">{{ $t('admin.subscriptions.modal_features') }}</p>
-						<ul class="space-y-1.5">
-							<li v-if="plan.features?.max_games" class="flex items-center gap-2 text-xs text-slate-400">
-								<Icon name="ph:game-controller-bold" size="12" class="text-slate-600 shrink-0" />
-								{{ plan.features.max_games }} jeu{{ plan.features.max_games !== 1 ? 'x' : '' }} actif{{ plan.features.max_games !== 1 ? 's' : '' }}
-							</li>
-							<li v-if="plan.features?.max_players" class="flex items-center gap-2 text-xs text-slate-400">
-								<Icon name="ph:users-bold" size="12" class="text-slate-600 shrink-0" />
-								{{ plan.features.max_players.toLocaleString() }} joueurs max
-							</li>
-							<li v-if="plan.features?.email_credits_per_month" class="flex items-center gap-2 text-xs text-slate-400">
-								<Icon name="ph:envelope-bold" size="12" class="text-slate-600 shrink-0" />
-								{{ plan.features.email_credits_per_month }} emails/mois
-							</li>
-							<li v-if="plan.features?.sms_credits_per_month" class="flex items-center gap-2 text-xs text-slate-400">
-								<Icon name="ph:chat-circle-bold" size="12" class="text-slate-600 shrink-0" />
-								{{ plan.features.sms_credits_per_month }} SMS/mois
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-
 		<!-- ===== TAB: ACCÈS MANUELS ===== -->
 		<div v-if="activeTab === 'manual'" class="space-y-4">
 			<div v-if="loadingSubs" class="flex items-center justify-center py-12 text-slate-600">
@@ -509,105 +370,37 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 			</template>
 		</div>
 
-		<!-- MODAL: PLAN -->
+		<!-- MODAL: STRIPE INFO (abonnement géré par Stripe) -->
 		<Teleport to="body">
-			<div v-if="showPlanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-				<div class="fixed inset-0 bg-black/70" @click="showPlanModal = false"></div>
-				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-					<div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-						<h2 class="text-base font-semibold text-white">{{ editingPlan ? $t('admin.subscriptions.modal_edit_title') : $t('admin.subscriptions.modal_add_title') }}</h2>
-						<button @click="showPlanModal = false" class="p-1.5 hover:bg-white/[0.06] rounded text-slate-400 hover:text-white transition-colors">
-							<Icon name="ph:x-bold" size="16" />
-						</button>
-					</div>
-					<div class="flex-1 overflow-y-auto p-5 space-y-4">
-						<div>
-							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_name') }}</label>
-							<input v-model="planForm.name" type="text" required :placeholder="$t('admin.subscriptions.modal_name_placeholder')"
-								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
-						</div>
-						<div>
-							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_description') }}</label>
-							<textarea v-model="planForm.description" rows="2" :placeholder="$t('admin.subscriptions.modal_description_placeholder')"
-								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors resize-none"></textarea>
-						</div>
-						<div class="grid grid-cols-3 gap-3">
-							<div>
-								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_monthly') }}</label>
-								<input v-model.number="planForm.priceMonthly" type="number" min="0" step="0.01" required class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+			<Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+				<div v-if="showStripeInfoModal" class="fixed inset-0 z-[100] flex items-center justify-center px-4" @click.self="showStripeInfoModal = false">
+					<div class="absolute inset-0 bg-black/70"></div>
+					<div class="relative w-full max-w-md bg-[#111318] border border-white/[0.09] rounded-xl shadow-2xl overflow-hidden">
+						<div class="h-0.5 w-full bg-gradient-to-r from-violet-500 to-blue-500"></div>
+						<div class="p-6">
+							<div class="flex flex-col items-center text-center mb-5">
+								<div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-3">
+									<Icon name="ph:stripe-logo-bold" class="text-violet-400" size="24" />
+								</div>
+								<h3 class="text-base font-semibold text-white mb-1">Abonnement Stripe</h3>
+								<p class="text-sm text-slate-400 leading-relaxed">
+									Pour annuler ou rembourser cet abonnement, rendez-vous sur le <strong class="text-white">Dashboard Stripe</strong>.
+								</p>
 							</div>
-							<div>
-								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_annual') }}</label>
-								<input v-model.number="planForm.priceAnnual" type="number" min="0" step="0.01" required class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
-							</div>
-							<div>
-								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_lifetime') }}</label>
-								<input v-model.number="planForm.priceLifetime" type="number" min="0" step="0.01" required class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+							<div class="flex gap-2">
+								<button @click="showStripeInfoModal = false" class="flex-1 py-2 bg-white/[0.04] border border-white/[0.08] text-slate-300 font-medium rounded-md hover:bg-white/[0.08] transition-colors text-sm">
+									Fermer
+								</button>
+								<a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener"
+									class="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-md transition-colors text-sm flex items-center justify-center gap-2">
+									<Icon name="ph:arrow-square-out-bold" size="15" />
+									Dashboard Stripe
+								</a>
 							</div>
 						</div>
-						<div>
-							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.subscriptions.modal_features') }}</label>
-							<textarea v-model="planForm.features" rows="4" :placeholder="$t('admin.subscriptions.modal_features_placeholder')"
-								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white font-mono placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors resize-none"></textarea>
-						</div>
-						<div class="space-y-2">
-							<label class="flex items-center gap-3 cursor-pointer p-3 border border-white/[0.06] rounded-md hover:bg-white/[0.02] transition-colors">
-								<div class="relative w-10 h-6 bg-white/[0.08] rounded-full">
-									<input v-model="planForm.isDefault" type="checkbox" class="sr-only peer" />
-									<div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm peer-checked:bg-brand-400"></div>
-								</div>
-								<div>
-									<p class="text-xs font-medium text-white">{{ $t('admin.subscriptions.modal_default') }}</p>
-									<p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.subscriptions.modal_default_description') }}</p>
-								</div>
-							</label>
-							<label class="flex items-center gap-3 cursor-pointer p-3 border border-white/[0.06] rounded-md hover:bg-white/[0.02] transition-colors">
-								<div class="relative w-10 h-6 bg-white/[0.08] rounded-full">
-									<input v-model="planForm.active" type="checkbox" class="sr-only peer" />
-									<div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm peer-checked:bg-emerald-400"></div>
-								</div>
-								<div>
-									<p class="text-xs font-medium text-white">{{ $t('admin.subscriptions.modal_active') }}</p>
-									<p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.subscriptions.modal_active_description') }}</p>
-								</div>
-							</label>
-						</div>
-						<!-- Stripe IDs -->
-						<div>
-							<button type="button" @click="showAdvancedPlan = !showAdvancedPlan"
-								class="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-300 transition-colors">
-								<Icon :name="showAdvancedPlan ? 'ph:caret-down-bold' : 'ph:caret-right-bold'" size="12" class="rtl:rotate-180" />
-								{{ $t('admin.subscriptions.modal_stripe_config') }}
-							</button>
-							<div v-if="showAdvancedPlan" class="mt-3 space-y-3">
-								<div>
-									<label class="block text-xs font-medium text-slate-500 mb-1.5">{{ $t('admin.subscriptions.modal_stripe_monthly') }}</label>
-									<input v-model="planForm.stripePriceIdMonthly" type="text" :placeholder="$t('admin.subscriptions.modal_stripe_placeholder')"
-										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-xs text-white font-mono placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
-								</div>
-								<div>
-									<label class="block text-xs font-medium text-slate-500 mb-1.5">{{ $t('admin.subscriptions.modal_stripe_annual') }}</label>
-									<input v-model="planForm.stripePriceIdAnnual" type="text" :placeholder="$t('admin.subscriptions.modal_stripe_placeholder')"
-										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-xs text-white font-mono placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
-								</div>
-								<div>
-									<label class="block text-xs font-medium text-slate-500 mb-1.5">{{ $t('admin.subscriptions.modal_stripe_lifetime') }}</label>
-									<input v-model="planForm.stripePriceIdLifetime" type="text" :placeholder="$t('admin.subscriptions.modal_stripe_placeholder')"
-										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-xs text-white font-mono placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="px-5 py-4 border-t border-white/[0.06] flex justify-end gap-2">
-						<button @click="showPlanModal = false" class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors">
-							{{ $t('admin.subscriptions.modal_cancel') }}
-						</button>
-						<button @click="savePlan" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
-							{{ editingPlan ? $t('admin.subscriptions.modal_save') : $t('admin.subscriptions.modal_create') }}
-						</button>
 					</div>
 				</div>
-			</div>
+			</Transition>
 		</Teleport>
 
 		<!-- MODAL: REFUND -->

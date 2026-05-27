@@ -168,6 +168,7 @@ const handleLogoUpload = async (event: Event) => {
 		showToast(t('components.qr_customizer.error_upload_logo'), 'error')
 	} finally {
 		isUploading.value = false
+		;(event.target as HTMLInputElement).value = ''
 	}
 }
 

@@ -162,6 +162,105 @@ const saveNotifPrefs = async (key: keyof typeof notifPrefs.value, val: boolean) 
 onMounted(() => initNotifPrefs())
 watch(user, () => initNotifPrefs())
 
+// Google Review URL — Places API autocomplete
+const googleReviewUrl = ref('')
+const googleReviewLoading = ref(false)
+const businessId = ref<string | null>(null)
+
+const placeSearchQuery = ref('')
+const placePredictions = ref<any[]>([])
+const placeSearchLoading = ref(false)
+const showPlacePredictions = ref(false)
+const placeSearchMode = ref(false)
+const placeManualMode = ref(false)
+const placeManualUrl = ref('')
+const placeSessionToken = ref(crypto.randomUUID())
+
+let placeSearchTimer: ReturnType<typeof setTimeout> | null = null
+
+const searchPlaces = async () => {
+	const q = placeSearchQuery.value.trim()
+	if (!q || q.length < 2) { placePredictions.value = []; showPlacePredictions.value = false; return }
+	placeSearchLoading.value = true
+	try {
+		const res = await $api<any>('/places/autocomplete', {
+			params: { input: q, sessiontoken: placeSessionToken.value }
+		})
+		placePredictions.value = res.predictions || []
+		showPlacePredictions.value = placePredictions.value.length > 0
+	} catch { placePredictions.value = [] }
+	finally { placeSearchLoading.value = false }
+}
+
+watch(placeSearchQuery, () => {
+	if (placeSearchTimer) clearTimeout(placeSearchTimer)
+	placeSearchTimer = setTimeout(searchPlaces, 350)
+})
+
+const hidePlacePredictions = () => {
+	setTimeout(() => { showPlacePredictions.value = false }, 150)
+}
+
+const confirmPlaceAndSave = async (prediction: any) => {
+	showPlacePredictions.value = false
+	placeSearchLoading.value = true
+	try {
+		const details = await $api<any>(`/places/details/${prediction.placeId}`, {
+			params: { sessiontoken: placeSessionToken.value }
+		})
+		placeSessionToken.value = crypto.randomUUID()
+		const url = details.googleReviewUrl || ''
+		googleReviewUrl.value = url
+		placeSearchQuery.value = ''
+		placeSearchMode.value = false
+		// Save immediately
+		if (businessId.value) {
+			googleReviewLoading.value = true
+			await $api(`/businesses/${businessId.value}`, {
+				method: 'PATCH',
+				body: { googleReviewUrl: url || null, googlePlaceId: prediction.placeId }
+			})
+			showToast(t('common.saved'), 'success')
+		}
+	} catch (e: any) {
+		showToast(e?.data?.message || t('common.error'), 'error')
+	} finally { placeSearchLoading.value = false; googleReviewLoading.value = false }
+}
+
+const saveManualUrl = async () => {
+	if (!businessId.value || !placeManualUrl.value) return
+	googleReviewLoading.value = true
+	try {
+		await $api(`/businesses/${businessId.value}`, {
+			method: 'PATCH',
+			body: { googleReviewUrl: placeManualUrl.value }
+		})
+		googleReviewUrl.value = placeManualUrl.value
+		placeManualUrl.value = ''
+		placeSearchMode.value = false
+		placeManualMode.value = false
+		showToast(t('common.saved'), 'success')
+	} catch (e: any) {
+		showToast(e?.data?.message || t('common.error'), 'error')
+	} finally { googleReviewLoading.value = false }
+}
+
+const clearGoogleReviewUrl = async () => {
+	if (!businessId.value) return
+	googleReviewLoading.value = true
+	try {
+		await $api(`/businesses/${businessId.value}`, {
+			method: 'PATCH',
+			body: { googleReviewUrl: null, googlePlaceId: null }
+		})
+		googleReviewUrl.value = ''
+		placeSearchMode.value = true
+		showToast(t('common.saved'), 'success')
+	} catch (e: any) {
+		showToast(e?.data?.message || t('common.error'), 'error')
+	} finally { googleReviewLoading.value = false }
+}
+
 const deleteLoading = ref(false)
 const deleteConfirmText = ref('')
 const deleteAccount = async () => {
@@ -178,13 +277,21 @@ const deleteAccount = async () => {
 	} finally { deleteLoading.value = false }
 }
 
-onMounted(() => {
+onMounted(async () => {
 	if (user.value) {
 		form.value.email = user.value.email || ''
 		profileForm.value.firstName = user.value.firstName || ''
 		profileForm.value.lastName = user.value.lastName || ''
 		profileOriginal.value = { firstName: user.value.firstName || '', lastName: user.value.lastName || '' }
 	}
+	try {
+		const biz = await $api<any>('/businesses/me')
+		if (biz) {
+			businessId.value = biz.id
+			googleReviewUrl.value = biz.googleReviewUrl || ''
+			placeSearchMode.value = !biz.googleReviewUrl
+		}
+	} catch {}
 })
 
 watch(user, (newUser) => {
@@ -302,6 +409,109 @@ watch(user, (newUser) => {
 						class="text-[#007AFF] text-xs font-medium hover:opacity-70 transition-opacity shrink-0">
 						{{ $t('account.password_button') }}
 					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Google Avis Section -->
+		<div>
+			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">Google Avis</p>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+				<!-- Confirmed state -->
+				<div v-if="googleReviewUrl && !placeSearchMode" class="flex items-center gap-3.5 px-5 py-3.5">
+					<div class="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
+						<Icon name="ph:check-circle-fill" class="text-emerald-500" size="14" />
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="text-sm font-medium text-slate-900 dark:text-white">Lien de dépôt d'avis Google</p>
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate font-mono">{{ googleReviewUrl }}</p>
+					</div>
+					<button @click="placeSearchMode = true; placeManualMode = false; placeManualUrl = ''" :disabled="googleReviewLoading"
+						class="text-[#007AFF] text-xs font-medium hover:opacity-70 transition-opacity shrink-0 disabled:opacity-30">
+						Changer
+					</button>
+				</div>
+
+				<!-- Search mode -->
+				<div v-else class="px-5 py-4 space-y-3">
+					<div class="flex items-center gap-3">
+						<div class="w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+							<Icon name="ph:google-logo-bold" class="text-blue-500" size="14" />
+						</div>
+						<p class="text-sm font-medium text-slate-900 dark:text-white">Rechercher votre commerce Google</p>
+						<button v-if="googleReviewUrl" type="button" @click="placeSearchMode = false"
+							class="ml-auto text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1">
+							<Icon name="ph:x-bold" size="12" />
+							Annuler
+						</button>
+					</div>
+
+					<div class="relative">
+						<div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2.5">
+							<Icon v-if="placeSearchLoading" name="ph:spinner-gap-bold" size="15" class="animate-spin text-slate-400 shrink-0" />
+							<Icon v-else name="ph:magnifying-glass-bold" size="15" class="text-slate-400 shrink-0" />
+							<input
+								v-model="placeSearchQuery"
+								type="text"
+								placeholder="Ex: Boulangerie Martin, Paris..."
+								@blur="hidePlacePredictions"
+								@focus="showPlacePredictions = placePredictions.length > 0"
+								class="flex-1 bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none"
+							/>
+						</div>
+
+						<!-- Dropdown -->
+						<div v-if="showPlacePredictions && placePredictions.length"
+							class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg z-20 overflow-hidden">
+							<button
+								v-for="p in placePredictions" :key="p.place_id"
+								type="button"
+								@mousedown.prevent="confirmPlaceAndSave(p)"
+								class="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+								<Icon name="ph:map-pin-bold" size="14" class="text-slate-400 mt-0.5 shrink-0" />
+								<div class="min-w-0">
+									<p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ p.mainText || p.description }}</p>
+									<p class="text-xs text-slate-400 dark:text-slate-500 truncate">{{ p.secondaryText }}</p>
+								</div>
+							</button>
+						</div>
+					</div>
+					<!-- Manual fallback toggle -->
+				<div v-if="!placeManualMode" class="flex items-center justify-between">
+					<p class="text-xs text-slate-400 dark:text-slate-500">Sélectionnez votre commerce pour obtenir automatiquement le lien d'avis Google.</p>
+					<button type="button" @click="placeManualMode = true"
+						class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline shrink-0 ml-3">
+						Saisir manuellement
+					</button>
+				</div>
+
+				<!-- Manual URL input -->
+				<div v-else class="space-y-2">
+					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Coller le lien Google Avis</p>
+					<div class="flex gap-2">
+						<input
+							v-model="placeManualUrl"
+							type="url"
+							placeholder="https://search.google.com/local/writereview?placeid=..."
+							class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10"
+						/>
+						<button type="button" @click="saveManualUrl" :disabled="googleReviewLoading || !placeManualUrl"
+							class="px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white font-medium rounded-md text-sm disabled:opacity-40 transition-all flex items-center gap-1.5">
+							<Icon v-if="googleReviewLoading" name="ph:spinner-gap-bold" size="13" class="animate-spin" />
+							<span v-else>Enregistrer</span>
+						</button>
+					</div>
+					<button type="button" @click="placeManualMode = false"
+						class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline">
+						← Rechercher via Google
+					</button>
+				</div>
+				</div>
+
+				<!-- Loading overlay -->
+				<div v-if="googleReviewLoading" class="px-5 py-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+					<Icon name="ph:spinner-gap-bold" size="13" class="animate-spin" />
+					Enregistrement...
 				</div>
 			</div>
 		</div>

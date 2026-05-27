@@ -32,6 +32,39 @@ const players = ref<any[]>([])
 const playersLoading = ref(true)
 const playerSearchQuery = ref('')
 
+// --- STATE: GOOGLE STATS ---
+const googleStats = ref<{
+  rating: number | null
+  reviewCount: number | null
+  reviewCountAtTrackingStart: number | null
+  trackingStartedAt: string | null
+  reviewUrl: string | null
+} | null>(null)
+
+const googleReviewsSinceTracking = computed(() => {
+  if (!googleStats.value) return null
+  if (googleStats.value.reviewCount == null || googleStats.value.reviewCountAtTrackingStart == null) return null
+  return googleStats.value.reviewCount - googleStats.value.reviewCountAtTrackingStart
+})
+
+const trackingStartLabel = computed(() => {
+  if (!googleStats.value?.trackingStartedAt) return null
+  return formatDate(new Date(googleStats.value.trackingStartedAt), { day: 'numeric', month: 'long' })
+})
+
+const fetchGoogleStats = async () => {
+  try {
+    const data = await $api<any>('/businesses/me')
+    googleStats.value = {
+      rating: data.googleRating ?? null,
+      reviewCount: data.googleReviewCount ?? null,
+      reviewCountAtTrackingStart: data.googleReviewCountAtTrackingStart ?? null,
+      trackingStartedAt: data.googleTrackingStartedAt ?? null,
+      reviewUrl: data.googleReviewUrl ?? null,
+    }
+  } catch { /* silently fail */ }
+}
+
 // --- STATE: CHART TOOLTIP ---
 const hoveredIdx = ref<number | null>(null)
 
@@ -422,6 +455,31 @@ const exportPlayersCSV = () => {
 	document.body.removeChild(link)
 }
 
+// Recent activity feed from sessions
+const recentActivity = computed(() =>
+	[...sessions.value]
+		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+		.slice(0, 8)
+		.map(s => {
+			const hasEmail = !!(s.player?.email)
+			const hasPrize = !!(s.prize)
+			const type = hasPrize ? 'won' : hasEmail ? 'contact' : 'played'
+			const detail = hasPrize
+				? `A joué et gagné ${s.prizeName || s.prize?.name || 'un lot'}`
+				: hasEmail
+					? `Nouveau contact — ${s.player.email}`
+					: 'A participé au jeu'
+			return {
+				id: s.id,
+				name: [s.player?.firstName, s.player?.lastName].filter(Boolean).join(' ') || 'Anonyme',
+				initials: (s.player?.firstName?.[0] || 'A').toUpperCase(),
+				type,
+				detail,
+				date: s.createdAt,
+			}
+		})
+)
+
 // Lifecycle
 onMounted(() => {
 	fetchSubscription() // non-blocking
@@ -439,29 +497,24 @@ onMounted(() => {
 	fetchPlayers()
 	fetchDashboardStats()
 	fetchAnalyticsEvents()
+	fetchGoogleStats()
 })
 </script>
 
 <template>
 	<div class="space-y-6 relative">
 
-		<!-- ========================================== -->
-		<!-- 1. HEADER (Minimal)                    -->
-		<!-- ========================================== -->
+		<!-- 1. HEADER -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
-				<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{{ $t('dashboard.title') }}</h1>
-				<p class="text-slate-400 dark:text-slate-400 text-sm mt-0.5">{{ formatDate(new Date(), {
-						weekday:
-							'long', year: 'numeric', month: 'long', day: 'numeric'
-					}) }}</p>
+				<h1 class="text-xl font-semibold text-slate-900 tracking-tight">Bonjour, {{ user?.firstName || 'vous' }} 👋</h1>
+				<p class="text-slate-400 text-sm mt-0.5">{{ formatDate(new Date(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
 			</div>
 			<div v-if="hasActiveSubscription" class="flex items-center gap-3">
-				<!-- Period Selector -->
 				<div class="relative flex items-center">
 					<Icon name="ph:calendar-blank" size="16" class="absolute left-3 rtl:left-auto rtl:right-3 text-slate-400 pointer-events-none z-10" />
 					<select v-model="selectedPeriod"
-						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 text-sm font-semibold hover:border-slate-300 dark:hover:border-slate-600 shadow-sm transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40">
+						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white border border-slate-200 rounded-md text-slate-600 text-sm font-semibold shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 transition-all">
 						<option value="7d">{{ $t('dashboard.period_label.7d') }}</option>
 						<option value="30d">{{ $t('dashboard.period_label.30d') }}</option>
 						<option value="this_month">{{ $t('dashboard.period_label.this_month') }}</option>
@@ -470,363 +523,222 @@ onMounted(() => {
 					</select>
 					<Icon name="ph:caret-down-bold" size="12" class="absolute right-2 text-slate-400 pointer-events-none" />
 				</div>
-				</div>
+			</div>
 		</div>
 
-		<!-- ========================================== -->
-		<!-- 2. STATS BLOCK (2 rows grouped)         -->
-		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription" class="space-y-2">
-
-			<!-- Row 1 — Main KPIs -->
-			<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.players') }}</p>
-					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}</p>
-					<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.view_all') }}</NuxtLink>
+		<!-- 2. HERO — Google Avis -->
+		<div v-if="hasActiveSubscription"
+			class="relative overflow-hidden rounded-lg bg-gradient-to-br from-[#1e3a8a] via-[#1d4ed8] to-[#2563eb] px-5 py-4 text-white">
+			<div class="relative flex items-center justify-between gap-4">
+				<div class="flex-1 min-w-0">
+					<p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">
+						Nouveaux avis Google{{ trackingStartLabel ? ` depuis le ${trackingStartLabel}` : '' }}
+					</p>
+					<div class="flex items-baseline gap-3">
+						<p class="text-3xl font-bold tabular-nums leading-none">
+							{{ googleReviewsSinceTracking != null ? `+${googleReviewsSinceTracking}` : '—' }}
+						</p>
+					</div>
+					<p class="text-blue-200 text-xs mt-1.5 truncate">
+						{{ user?.business?.name }}
+						<span class="mx-1 opacity-50">·</span>
+						QR code actif
+						<span class="mx-1 opacity-50">·</span>
+						{{ analyticsEvents.page_visit || 0 }} scans ce mois
+					</p>
 				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.participations') }}</p>
-					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalSessions || 0) }}</p>
-					<p v-if="dashboardStats?.winRate" class="text-[10px] text-slate-400 mt-1">{{ dashboardStats.winRate }}{{ $t('dashboard.stats.winners_rate') }}</p>
-				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.prizes_won') }}</p>
-					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : (dashboardStats?.totalPrizesWon || 0) }}</p>
-					<p class="text-[10px] text-slate-400 mt-1">{{ dashboardStats?.totalPrizesRedeemed || 0 }} {{ $t('dashboard.stats.prizes_collected') }}</p>
-				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-700/40">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-1">{{ $t('dashboard.stats.pending_prizes') }}</p>
-					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statsLoading ? '—' : ((dashboardStats?.totalPrizesWon || 0) - (dashboardStats?.totalPrizesRedeemed || 0)) }}</p>
-					<NuxtLink to="/dashboard/redeem" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.stats.validate_prize') }}</NuxtLink>
-				</div>
+				<a v-if="googleStats?.reviewUrl" :href="googleStats.reviewUrl" target="_blank" rel="noopener noreferrer"
+					class="shrink-0 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-all">
+					<Icon name="ph:arrow-square-out-bold" size="13" />
+					Voir mes avis
+				</a>
 			</div>
-
-			<!-- Row 2 — Analytics events (secondary) -->
-			<div v-if="analyticsEvents.page_visit || analyticsEvents.game_start || analyticsEvents.game_complete || analyticsEvents.prize_claim"
-				class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center gap-2">
-					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.page_visit || 0 }}</p>
-					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.page_views') }}</p>
-				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center gap-2">
-					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.game_start || 0 }}</p>
-					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.games_started') }}</p>
-				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center gap-2">
-					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.game_complete || 0 }}</p>
-					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.games_completed') }}</p>
-				</div>
-				<div class="bg-white dark:bg-[#1C1C1E] px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700/40 flex items-center gap-2">
-					<p class="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{{ analyticsEvents.prize_claim || 0 }}</p>
-					<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('dashboard.analytics.prizes_claimed') }}</p>
-				</div>
-			</div>
-
 		</div>
 
-		<!-- ========================================== -->
-		<!-- 3. MAIN ACTIVITY (Split: Chart & Actions) -->
-		<!-- ========================================== -->
+		<!-- 3. KPI CARDS -->
+		<div v-if="hasActiveSubscription" class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+				<div class="flex items-center justify-between mb-1">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Note Google</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+						<Icon name="ph:star-fill" size="12" class="text-amber-400" />
+					</div>
+				</div>
+				<div class="flex items-baseline gap-1.5">
+					<p class="text-xl font-semibold text-slate-900 tabular-nums">
+						{{ googleStats?.rating != null ? googleStats.rating.toFixed(1) : '—' }}
+					</p>
+					<Icon v-if="googleStats?.rating != null" name="ph:star-fill" class="text-yellow-400 mb-0.5" size="11" />
+				</div>
+				<p class="text-[10px] text-slate-400 mt-1">sur 5.0</p>
+			</div>
+			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+				<div class="flex items-center justify-between mb-1">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Scans QR</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+						<Icon name="ph:qr-code-bold" size="12" class="text-[#007AFF]" />
+					</div>
+				</div>
+				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+					{{ statsLoading ? '—' : (analyticsEvents.page_visit || 0) }}
+				</p>
+				<p class="text-[10px] text-slate-400 mt-1">{{ periodLabel }}</p>
+			</div>
+			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+				<div class="flex items-center justify-between mb-1">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Emails captés</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+						<Icon name="ph:envelope-bold" size="12" class="text-emerald-500" />
+					</div>
+				</div>
+				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+					{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}
+				</p>
+				<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">Voir tout →</NuxtLink>
+			</div>
+			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+				<div class="flex items-center justify-between mb-1">
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Fidélisation</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+						<Icon name="ph:chart-line-up-bold" size="12" class="text-purple-500" />
+					</div>
+				</div>
+				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+					{{ playersLoading ? '—' : `${playerStats.loyaltyRate}%` }}
+				</p>
+				<p class="text-[10px] text-slate-400 mt-1">joueurs fidèles</p>
+			</div>
+		</div>
+
+		<!-- 4. CHART + ACTIVITÉ RÉCENTE -->
 		<div v-if="hasActiveSubscription" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-			<!-- Chart Area -->
-			<div class="lg:col-span-2 bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 p-5 relative overflow-hidden">
+			<!-- Chart -->
+			<div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-5 relative overflow-hidden">
 				<div class="flex items-center justify-between mb-6">
 					<div>
-						<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.activity.title') }}</h3>
+						<h3 class="font-bold text-slate-900 text-sm">{{ $t('dashboard.activity.title') }}</h3>
 						<p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ periodLabel }}</p>
 					</div>
-					<!-- Legend -->
-					<div class="flex items-center gap-3">
-						<div class="flex items-center gap-1.5">
-							<span class="w-2 h-2 rounded-full bg-[#007AFF]"></span>
-							<span class="text-[11px] text-slate-500 dark:text-slate-400">{{ $t('dashboard.activity.participations') }}</span>
-						</div>
-						<div class="flex items-center gap-1.5">
-							<span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-							<span class="text-[11px] text-slate-500 dark:text-slate-400">{{ $t('dashboard.activity.wins') }}</span>
-						</div>
+					<div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md">
+						<button @click="selectedPeriod = '7d'"
+							:class="selectedPeriod === '7d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							class="px-2.5 py-1 rounded text-xs font-medium transition-all">7j</button>
+						<button @click="selectedPeriod = '30d'"
+							:class="selectedPeriod === '30d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							class="px-2.5 py-1 rounded text-xs font-medium transition-all">30j</button>
+						<button @click="selectedPeriod = '90d'"
+							:class="selectedPeriod === '90d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							class="px-2.5 py-1 rounded text-xs font-medium transition-all">3 mois</button>
 					</div>
 				</div>
-
-				<!-- Loading state -->
 				<div v-if="statsLoading" class="h-64 w-full flex items-center justify-center">
 					<Icon name="ph:spinner-gap-bold" size="32" class="animate-spin text-slate-300" />
 				</div>
-
-				<!-- Empty state -->
 				<div v-else-if="!dashboardStats?.chartData?.length" class="h-64 w-full flex flex-col items-center justify-center text-slate-400">
 					<Icon name="ph:chart-bar-duotone" size="48" class="mb-2 opacity-50" />
 					<p class="text-sm font-medium">{{ $t('dashboard.activity.no_data') }}</p>
 					<p class="text-xs">{{ $t('dashboard.activity.no_data_hint') }}</p>
 				</div>
-
-				<!-- Chart Visualization -->
-				<template v-else>
-					<!-- Line Chart -->
-					<template v-if="lineChartData">
-						<div class="h-64 w-full px-2 relative" @mouseleave="hoveredIdx = null">
-							<svg :viewBox="`0 0 ${lineChartData.w} ${lineChartData.h}`" class="w-full h-full">
-								<!-- Grid lines -->
-								<line v-for="i in 4" :key="'grid'+i"
-									:x1="20" :x2="780"
-									:y1="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
-									:y2="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
-									stroke="currentColor" stroke-width="0.5" class="text-slate-100 dark:text-slate-700" />
-
-								<defs>
-									<linearGradient id="sessionGradient" x1="0" y1="0" x2="0" y2="1">
-										<stop offset="0%" stop-color="#007AFF" stop-opacity="0.12" />
-										<stop offset="100%" stop-color="#007AFF" stop-opacity="0.01" />
-									</linearGradient>
-									<linearGradient id="winGradient" x1="0" y1="0" x2="0" y2="1">
-										<stop offset="0%" stop-color="#8E8E93" stop-opacity="0.10" />
-										<stop offset="100%" stop-color="#8E8E93" stop-opacity="0.01" />
-									</linearGradient>
-								</defs>
-
-								<path :d="lineChartData.sessionArea" fill="url(#sessionGradient)" />
-								<path :d="lineChartData.winArea" fill="url(#winGradient)" />
-
-								<polyline :points="lineChartData.sessionLine"
-									fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-								<polyline :points="lineChartData.winLine"
-									fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-
-								<!-- Hover zones + dots per point -->
-								<g v-for="(p, i) in lineChartData.points" :key="'pt'+i"
-									@mouseenter="hoveredIdx = i" style="cursor:pointer">
-									<!-- Invisible wide hit area -->
-									<rect
-										:x="i === 0 ? 0 : (lineChartData.points[i-1].x + p.x) / 2"
-										y="0"
-										:width="i === 0
-											? (lineChartData.points.length > 1 ? (lineChartData.points[1].x + p.x) / 2 : lineChartData.w)
-											: (i === lineChartData.points.length - 1 ? lineChartData.w - (lineChartData.points[i-1].x + p.x) / 2 : ((lineChartData.points[i+1]?.x ?? p.x) + p.x) / 2 - (lineChartData.points[i-1].x + p.x) / 2)"
-										:height="lineChartData.h"
-										fill="transparent" />
-									<!-- Session dot -->
-									<circle :cx="p.x" :cy="p.sessionY" :r="hoveredIdx === i ? 5 : 3.5" fill="#007AFF" stroke="white" stroke-width="1.5" />
-									<!-- Win dot -->
-									<circle :cx="p.x" :cy="p.winY" :r="hoveredIdx === i ? 5 : 3.5" fill="#8E8E93" stroke="white" stroke-width="1.5" />
-									<!-- Vertical line on hover -->
-									<line v-if="hoveredIdx === i"
-										:x1="p.x" :x2="p.x" :y1="lineChartData.padY" :y2="lineChartData.padY + lineChartData.usableH"
-										stroke="#007AFF" stroke-width="1" stroke-dasharray="3,3" opacity="0.4" />
-								</g>
-							</svg>
-
-							<!-- HTML Tooltip -->
-							<div v-if="hoveredIdx !== null && lineChartData.points[hoveredIdx]"
-								class="absolute top-0 pointer-events-none z-10"
-								:style="{
-									left: `${(lineChartData.points[hoveredIdx].x / lineChartData.w) * 100}%`,
-									transform: (lineChartData.points[hoveredIdx].x / lineChartData.w) > 0.75
-										? 'translateX(-100%)'
-										: (lineChartData.points[hoveredIdx].x / lineChartData.w) < 0.25
-											? 'translateX(0%)'
-											: 'translateX(-50%)'
-								}">
-								<div class="bg-slate-900 dark:bg-slate-800 text-white rounded-lg px-3 py-2 text-xs shadow-xl border border-white/10 whitespace-nowrap">
-									<p class="font-semibold text-slate-300 mb-1">{{ dashboardStats.chartData[hoveredIdx]?.label }}</p>
-									<div class="flex items-center gap-1.5 mb-0.5">
-										<span class="w-2 h-2 rounded-full bg-[#007AFF] shrink-0"></span>
-										<span>{{ lineChartData.points[hoveredIdx].sessions }} participation(s)</span>
-									</div>
-									<div class="flex items-center gap-1.5">
-										<span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
-										<span>{{ lineChartData.points[hoveredIdx].wins }} gain(s)</span>
-									</div>
+				<template v-else-if="lineChartData">
+					<div class="h-64 w-full px-2 relative" @mouseleave="hoveredIdx = null">
+						<svg :viewBox="`0 0 ${lineChartData.w} ${lineChartData.h}`" class="w-full h-full">
+							<line v-for="i in 4" :key="'grid'+i"
+								:x1="20" :x2="780"
+								:y1="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
+								:y2="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
+								stroke="currentColor" stroke-width="0.5" class="text-slate-100" />
+							<defs>
+								<linearGradient id="sessionGradient" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" stop-color="#007AFF" stop-opacity="0.12" />
+									<stop offset="100%" stop-color="#007AFF" stop-opacity="0.01" />
+								</linearGradient>
+								<linearGradient id="winGradient" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" stop-color="#8E8E93" stop-opacity="0.10" />
+									<stop offset="100%" stop-color="#8E8E93" stop-opacity="0.01" />
+								</linearGradient>
+							</defs>
+							<path :d="lineChartData.sessionArea" fill="url(#sessionGradient)" />
+							<path :d="lineChartData.winArea" fill="url(#winGradient)" />
+							<polyline :points="lineChartData.sessionLine"
+								fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+							<polyline :points="lineChartData.winLine"
+								fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+							<g v-for="(p, i) in lineChartData.points" :key="'pt'+i" @mouseenter="hoveredIdx = i" style="cursor:pointer">
+								<rect
+									:x="i === 0 ? 0 : (lineChartData.points[i-1].x + p.x) / 2"
+									y="0"
+									:width="i === 0
+										? (lineChartData.points.length > 1 ? (lineChartData.points[1].x + p.x) / 2 : lineChartData.w)
+										: (i === lineChartData.points.length - 1 ? lineChartData.w - (lineChartData.points[i-1].x + p.x) / 2 : ((lineChartData.points[i+1]?.x ?? p.x) + p.x) / 2 - (lineChartData.points[i-1].x + p.x) / 2)"
+									:height="lineChartData.h" fill="transparent" />
+								<circle :cx="p.x" :cy="p.sessionY" :r="hoveredIdx === i ? 5 : 3.5" fill="#007AFF" stroke="white" stroke-width="1.5" />
+								<circle :cx="p.x" :cy="p.winY" :r="hoveredIdx === i ? 5 : 3.5" fill="#8E8E93" stroke="white" stroke-width="1.5" />
+								<line v-if="hoveredIdx === i"
+									:x1="p.x" :x2="p.x" :y1="lineChartData.padY" :y2="lineChartData.padY + lineChartData.usableH"
+									stroke="#007AFF" stroke-width="1" stroke-dasharray="3,3" opacity="0.4" />
+							</g>
+						</svg>
+						<div v-if="hoveredIdx !== null && lineChartData.points[hoveredIdx]"
+							class="absolute top-0 pointer-events-none z-10"
+							:style="{
+								left: `${(lineChartData.points[hoveredIdx].x / lineChartData.w) * 100}%`,
+								transform: (lineChartData.points[hoveredIdx].x / lineChartData.w) > 0.75 ? 'translateX(-100%)' : (lineChartData.points[hoveredIdx].x / lineChartData.w) < 0.25 ? 'translateX(0%)' : 'translateX(-50%)'
+							}">
+							<div class="bg-slate-900 text-white rounded-lg px-3 py-2 text-xs shadow-xl border border-white/10 whitespace-nowrap">
+								<p class="font-semibold text-slate-300 mb-1">{{ dashboardStats.chartData[hoveredIdx]?.label }}</p>
+								<div class="flex items-center gap-1.5 mb-0.5">
+									<span class="w-2 h-2 rounded-full bg-[#007AFF] shrink-0"></span>
+									<span>{{ lineChartData.points[hoveredIdx].sessions }} participation(s)</span>
+								</div>
+								<div class="flex items-center gap-1.5">
+									<span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
+									<span>{{ lineChartData.points[hoveredIdx].wins }} gain(s)</span>
 								</div>
 							</div>
 						</div>
-					</template>
-
-					<!-- Labels -->
+					</div>
 					<div class="flex justify-between mt-4 px-2 text-xs font-bold text-slate-400 uppercase">
-						<span v-for="(day, index) in dashboardStats.chartData" :key="index" class="text-center flex-1">
-							{{ day.label }}
-						</span>
+						<span v-for="(day, index) in dashboardStats.chartData" :key="index" class="text-center flex-1">{{ day.label }}</span>
 					</div>
 				</template>
 			</div>
 
-			<!-- Quick Actions / Support -->
-			<div class="space-y-6">
-				<!-- Quick Validate Widget -->
-				<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 p-5">
-					<div class="flex items-center gap-3 mb-4">
-						<div class="w-9 h-9 rounded-lg bg-[#F2F2F7] dark:bg-[#2C2C2E] flex items-center justify-center">
-							<Icon name="ph:qr-code-bold" size="17" class="text-slate-500 dark:text-slate-400" />
-						</div>
-						<div>
-							<h3 class="font-semibold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.quick_validate.title') }}</h3>
-							<p class="text-[11px] text-slate-400 dark:text-slate-500">{{ $t('dashboard.quick_validate.subtitle') }}</p>
-						</div>
-					</div>
-
-					<!-- Success State -->
-					<div v-if="redeemResult" class="bg-[#34C759]/10 rounded-lg p-4 border border-[#34C759]/20 mb-2">
-						<div class="flex items-center gap-2 text-[#34C759] font-semibold text-sm mb-1">
-							<Icon name="ph:check-circle-fill" />
-							<span>{{ $t('dashboard.quick_validate.success') }}</span>
-						</div>
-						<p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
-							<span class="font-semibold">{{ redeemResult.prize?.name }}</span> {{ $t('dashboard.quick_validate.for_player') }} {{ redeemResult.player?.firstName }}
-						</p>
-						<button @click="resetRedeem" class="text-xs font-semibold text-[#007AFF] hover:opacity-70 transition-opacity">{{ $t('dashboard.quick_validate.new_validation') }}</button>
-					</div>
-
-					<!-- Scanner State -->
-					<div v-else-if="showScanner" class="relative rounded-lg overflow-hidden bg-black aspect-video mb-4">
-						<video id="qr-video" autoplay playsinline @play="onVideoPlay"
-							class="w-full h-full object-cover opacity-80"></video>
-						<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-							<div class="w-32 h-32 border-2 border-white/50 rounded-lg relative">
-								<div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white"></div>
-								<div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white"></div>
-								<div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white"></div>
-								<div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white"></div>
-							</div>
-						</div>
-						<button @click="stopScanning"
-							class="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors backdrop-blur-sm z-10">
-							<Icon name="ph:x-bold" size="14" />
-						</button>
-						<p class="absolute bottom-2 left-0 right-0 text-center text-[10px] text-white/80 font-medium">
-							{{ $t('dashboard.quick_validate.position_qr') }}</p>
-					</div>
-
-					<!-- Form -->
-					<div v-else>
-						<div class="relative flex items-center gap-2">
-							<div class="relative flex-grow">
-								<input v-model="redeemCode" @keyup.enter="validatePrize" type="text"
-									:placeholder="$t('dashboard.quick_validate.code_placeholder')"
-									class="w-full pl-3 pr-10 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all uppercase"
-									:class="{ 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800': redeemError }" />
-								<button @click="validatePrize" :disabled="redeemLoading || !redeemCode"
-									class="absolute right-1 top-1 bottom-1 aspect-square bg-white dark:bg-slate-800 rounded-md text-[#007AFF] dark:text-slate-400 hover:text-[#007AFF] hover:bg-[#007AFF]/5 dark:hover:bg-[#007AFF]/50/10 disabled:opacity-50 transition-all border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center">
-									<Icon v-if="redeemLoading" name="ph:spinner-gap-bold" class="animate-spin" />
-									<Icon v-else name="ph:arrow-right-bold" class="rtl:rotate-180" />
-								</button>
-							</div>
-							<button @click="startScanning"
-								class="p-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-slate-900 transition-colors flex-shrink-0"
-								:title="$t('dashboard.quick_validate.position_qr')">
-								<Icon name="ph:qr-code-bold" size="20" />
-							</button>
-						</div>
-						<p v-if="redeemError" class="text-xs text-red-500 font-bold mt-2 ml-1 flex items-center gap-1">
-							<Icon name="ph:warning-circle-fill" /> {{ redeemError }}
-						</p>
-					</div>
+			<!-- Activité récente -->
+			<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+				<div class="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
+					<h3 class="font-medium text-slate-900 text-sm">Activité récente</h3>
+					<NuxtLink to="/dashboard/players" class="text-xs text-[#007AFF] font-medium hover:opacity-70">Voir tout →</NuxtLink>
 				</div>
-
-				<!-- Quick Links -->
-				<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
-					<p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider px-4 pt-4 pb-2">{{ $t('dashboard.quick_links.title') }}</p>
-					<div class="divide-y divide-slate-100 dark:divide-slate-700/40">
-						<NuxtLink to="/dashboard/games"
-							class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors group">
-							<div class="w-7 h-7 rounded-md bg-slate-100 dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
-								<Icon name="ph:game-controller-bold" size="14" class="text-slate-500 dark:text-slate-400" />
-							</div>
-							<span class="text-sm font-medium text-slate-700 dark:text-slate-200 flex-1">{{ $t('dashboard.quick_links.my_games') }}</span>
-							<Icon name="ph:caret-right-bold" size="10" class="text-slate-300 dark:text-slate-600 rtl:rotate-180" />
-						</NuxtLink>
-						<NuxtLink to="/dashboard/profile"
-							class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors group">
-							<div class="w-7 h-7 rounded-md bg-slate-100 dark:bg-[#2C2C2E] flex items-center justify-center shrink-0">
-								<Icon name="ph:storefront-bold" size="14" class="text-slate-500 dark:text-slate-400" />
-							</div>
-							<span class="text-sm font-medium text-slate-700 dark:text-slate-200 flex-1">{{ $t('dashboard.quick_links.my_business') }}</span>
-							<Icon name="ph:caret-right-bold" size="10" class="text-slate-300 dark:text-slate-600 rtl:rotate-180" />
-						</NuxtLink>
+				<div v-if="sessionsLoading" class="p-8 flex justify-center">
+					<Icon name="ph:spinner-gap-bold" size="24" class="animate-spin text-slate-300" />
+				</div>
+				<div v-else-if="recentActivity.length === 0" class="p-8 text-center text-slate-400 text-sm">
+					Aucune activité récente
+				</div>
+				<div v-else class="divide-y divide-slate-100">
+					<div v-for="item in recentActivity" :key="item.id"
+						class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+						<div class="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold text-white shrink-0"
+							:class="{
+								'bg-purple-400': item.type === 'won',
+								'bg-emerald-400': item.type === 'contact',
+								'bg-slate-400': item.type === 'played',
+							}">
+							{{ item.initials }}
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="text-sm text-slate-700 font-medium truncate">{{ item.name }}</p>
+							<p class="text-[11px] text-slate-400 truncate">{{ item.detail }}</p>
+						</div>
+						<span class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
+							:class="{
+								'bg-purple-50 text-purple-600': item.type === 'won',
+								'bg-emerald-50 text-emerald-600': item.type === 'contact',
+								'bg-slate-100 text-slate-500': item.type === 'played',
+							}">
+							{{ item.type === 'won' ? 'Récompense' : item.type === 'contact' ? 'Nouveau contact' : 'Joué' }}
+						</span>
 					</div>
-				</div>
-			</div>
-		</div>
-
-		<!-- ========================================== -->
-		<!-- 4. TABLE SECTION (Full Width)          -->
-		<!-- ========================================== -->
-		<div v-if="hasActiveSubscription"
-			class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
-			<!-- Table Header -->
-			<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/40 flex items-center justify-between">
-				<h3 class="font-medium text-slate-900 dark:text-white text-sm">{{ $t('dashboard.sessions_table.title') }}</h3>
-				<div class="flex gap-1 p-0.5 bg-slate-100 dark:bg-[#2C2C2E] rounded-md">
-					<button @click="sessionFilter = 'all'"
-						:class="sessionFilter === 'all' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'"
-						class="text-xs font-medium px-2.5 py-1 rounded transition-all">{{ $t('dashboard.sessions_table.filter_all') }}</button>
-					<button @click="sessionFilter = 'won'"
-						:class="sessionFilter === 'won' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'"
-						class="text-xs font-medium px-2.5 py-1 rounded transition-all">{{ $t('dashboard.sessions_table.filter_won') }}</button>
-				</div>
-			</div>
-
-			<!-- Loading / Empty -->
-			<div v-if="sessionsLoading" class="p-12 text-center">
-				<Icon name="ph:spinner-gap-bold" size="32" class="mx-auto text-slate-300 animate-spin" />
-			</div>
-
-			<div v-else-if="filteredSessions.length === 0" class="p-12 text-center text-slate-500 text-sm">
-				{{ $t('dashboard.sessions_table.no_sessions') }}
-			</div>
-
-			<!-- Table Content -->
-			<div v-else class="overflow-x-auto">
-				<table class="w-full text-left text-sm">
-					<thead class="border-b border-slate-100 dark:border-slate-700/40">
-						<tr>
-							<th class="px-5 py-3 font-medium text-slate-400 dark:text-slate-500 text-xs">{{ $t('dashboard.sessions_table.header_id') }}</th>
-							<th class="px-5 py-3 font-medium text-slate-400 dark:text-slate-500 text-xs">{{ $t('dashboard.sessions_table.header_status') }}</th>
-							<th class="px-5 py-3 font-medium text-slate-400 dark:text-slate-500 text-xs">{{ $t('dashboard.sessions_table.header_player') }}</th>
-							<th class="px-5 py-3 font-medium text-slate-400 dark:text-slate-500 text-xs">{{ $t('dashboard.sessions_table.header_date') }}</th>
-							<th class="px-5 py-3 font-medium text-slate-400 dark:text-slate-500 text-xs text-right rtl:text-left">{{ $t('dashboard.sessions_table.header_prize') }}</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-slate-100 dark:divide-slate-700/40">
-						<tr v-for="session in paginatedSessions" :key="session.id"
-							class="hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
-							<td class="px-5 py-3 font-mono text-xs text-slate-400">#{{ session.id.slice(0, 6) }}</td>
-							<td class="px-5 py-3">
-								<span v-if="session.prize" class="inline-flex items-center gap-1.5 text-xs font-medium text-[#34C759]">
-									<span class="w-1.5 h-1.5 rounded-full bg-[#34C759] shrink-0"></span>{{ $t('dashboard.sessions_table.status_won') }}
-								</span>
-								<span v-else class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
-									<span class="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0"></span>{{ $t('dashboard.sessions_table.status_lost') }}
-								</span>
-							</td>
-							<td class="px-5 py-3">
-								<div class="flex items-center gap-2">
-									<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-[#2C2C2E] flex items-center justify-center text-[10px] font-semibold text-slate-500">
-										{{ (session.player?.firstName?.[0] || 'A') }}
-									</div>
-									<span class="text-sm text-slate-700 dark:text-slate-200">{{ session.player?.firstName || $t('dashboard.sessions_table.anonymous') }}</span>
-								</div>
-							</td>
-							<td class="px-5 py-3 text-slate-400 text-xs">{{ formatDate(session.createdAt, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</td>
-							<td class="px-5 py-3 text-right rtl:text-left font-medium text-sm text-slate-900 dark:text-white">{{ session.prize ? session.prizeName : '—' }}</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-			<div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700/40 flex items-center justify-between">
-				<NuxtLink to="/dashboard/players" class="text-xs font-medium text-[#007AFF] hover:opacity-70 transition-opacity">
-					{{ $t('dashboard.sessions_table.view_history') }}
-				</NuxtLink>
-				<div v-if="sessionsTotalPages > 1" class="flex items-center gap-1">
-					<button @click="sessionsPage--" :disabled="sessionsPage === 1"
-						class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
-						<Icon name="ph:caret-left-bold" size="13" />
-					</button>
-					<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 px-1.5">{{ sessionsPage }} / {{ sessionsTotalPages }}</span>
-					<button @click="sessionsPage++" :disabled="sessionsPage === sessionsTotalPages"
-						class="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors">
-						<Icon name="ph:caret-right-bold" size="13" />
-					</button>
 				</div>
 			</div>
 		</div>

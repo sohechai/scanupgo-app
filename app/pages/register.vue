@@ -104,7 +104,7 @@ const loginWithGoogle = () => {
 					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
 						<Icon name="ph:envelope-simple" size="18" />
 					</div>
-					<input id="email" v-model="email" type="email" required
+					<input id="email" v-model="email" type="email" required @keyup.enter="handleRegister"
 						class="block w-full pl-10 rtl:pl-3 pr-3 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
 						:placeholder="$t('auth.register.email_placeholder')">
 				</div>
@@ -117,7 +117,7 @@ const loginWithGoogle = () => {
 					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
 						<Icon name="ph:lock-key" size="18" />
 					</div>
-					<input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
+					<input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required @keyup.enter="handleRegister"
 						class="block w-full pl-10 rtl:pl-10 pr-10 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
 						:placeholder="$t('auth.register.password_placeholder')">
 					<button type="button" @click="showPassword = !showPassword"
@@ -135,7 +135,7 @@ const loginWithGoogle = () => {
 					<div class="absolute inset-y-0 left-0 rtl:left-auto rtl:right-0 pl-3 rtl:pl-0 rtl:pr-3 flex items-center pointer-events-none text-slate-400">
 						<Icon name="ph:check-circle" size="18" />
 					</div>
-					<input id="confirm-password" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required
+					<input id="confirm-password" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required @keyup.enter="handleRegister"
 						class="block w-full pl-10 rtl:pl-10 pr-10 rtl:pr-10 py-2.5 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all sm:text-sm"
 						:placeholder="$t('auth.register.confirm_password_placeholder')">
 					<button type="button" @click="showConfirmPassword = !showConfirmPassword"

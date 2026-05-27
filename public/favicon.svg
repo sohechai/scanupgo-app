@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    .sqbr { fill: #0E2F80 }
+    .arrow { stroke: #0E2F80 }
+    @media (prefers-color-scheme: dark) {
+      .sqbr { fill: #1A55C0 }
+      .arrow { stroke: #ffffff }
+    }
+  </style>
+  <rect x="4" y="4" width="40" height="40" rx="9" fill="#C8E6FF"/>
+  <rect x="4" y="56" width="40" height="40" rx="9" fill="#3B8EE8"/>
+  <rect class="sqbr" x="56" y="56" width="40" height="40" rx="9"/>
+  <path class="arrow" d="M59 7 L93 7 L93 41" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <line class="arrow" x1="61" y1="39" x2="91" y2="9" stroke-width="9.5" stroke-linecap="round"/>
+</svg>

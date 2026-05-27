@@ -40,7 +40,7 @@ const navItems = computed(() => [
 	{ name: t('dashboard.nav.orders'), path: '/dashboard/orders', icon: 'ph:shopping-cart-duotone' },
 	{ name: t('dashboard.nav.players'), path: '/dashboard/players', icon: 'ph:users-three-duotone' },
 	{ name: t('dashboard.nav.marketing'), path: '/dashboard/marketing', icon: 'ph:megaphone-duotone' },
-	{ name: t('dashboard.nav.redeem'), path: '/dashboard/redeem', icon: 'ph:check-circle-duotone' },
+	{ name: t('dashboard.nav.prizes'), path: '/dashboard/redeem', icon: 'ph:gift-duotone' },
 	{ name: t('dashboard.nav.subscription'), path: '/dashboard/subscription', icon: 'ph:crown-duotone' },
 	{ name: t('dashboard.nav.account'), path: '/dashboard/account', icon: 'ph:user-circle-duotone' },
 ])
@@ -58,9 +58,7 @@ watch(
 )
 
 const colorMode = useColorMode()
-const toggleTheme = () => {
-	colorMode.preference = colorMode.value === 'light' ? 'dark' : 'light'
-}
+colorMode.preference = 'light'
 </script>
 
 <template>
@@ -76,15 +74,15 @@ const toggleTheme = () => {
 			:class="isSidebarOpen ? 'translate-x-0 rtl:-translate-x-0 shadow-xl' : '-translate-x-full rtl:translate-x-full lg:translate-x-0 rtl:lg:-translate-x-0'">
 
 			<!-- Brand -->
-			<div class="h-14 flex items-center px-4">
+			<div class="h-14 flex items-center px-4 pt-2">
 				<div class="flex items-center">
-					<img src="/images/scanupgo-logo-transparent-clair.png" alt="ScanUpGo" class="h-8 dark:hidden" />
-					<img src="/images/scanupgo-logo-transparent-sombre.png" alt="ScanUpGo" class="h-8 hidden dark:block" />
+					<AppLogo variant="light" :size="24" class="dark:hidden" />
+					<AppLogo variant="dark" :size="24" class="hidden dark:inline-flex" />
 				</div>
 			</div>
 
 			<!-- Navigation -->
-			<nav class="flex-1 overflow-y-auto px-2 space-y-0.5">
+			<nav class="flex-1 overflow-y-auto px-2 space-y-1">
 				<NuxtLink v-for="item in navItems" :key="item.path" :to="item.path"
 					class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors group"
 					:class="isActive(item.path)
@@ -97,7 +95,7 @@ const toggleTheme = () => {
 			</nav>
 
 			<!-- User Footer -->
-			<div class="p-2 mt-auto space-y-0.5">
+			<div class="p-2 mt-auto space-y-1">
 				<NuxtLink to="/dashboard/account"
 					class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/60 dark:hover:bg-slate-800/50 transition-colors group">
 					<img v-if="user?.business?.logo" :src="user.business.logo" :alt="user.business.name"
@@ -144,13 +142,6 @@ const toggleTheme = () => {
 
 					<div class="flex items-center gap-2">
 						<LanguageSelector />
-						<ClientOnly>
-							<button @click="toggleTheme"
-								class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-								:title="colorMode.value === 'dark' ? $t('dashboard.light_mode') : $t('dashboard.dark_mode')">
-								<Icon :name="colorMode.value === 'dark' ? 'ph:sun-bold' : 'ph:moon-bold'" size="16" />
-							</button>
-						</ClientOnly>
 						<NotificationDropdown />
 					</div>
 				</header>

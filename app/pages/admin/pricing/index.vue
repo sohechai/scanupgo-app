@@ -1,4 +1,24 @@
 <script setup lang="ts">
+interface SubscriptionPlan {
+	id: string
+	name: string
+	description: string | null
+	priceMonthly: number
+	priceAnnual: number
+	priceLifetime: number
+	stripePriceIdMonthly: string | null
+	stripePriceIdAnnual: string | null
+	stripePriceIdLifetime: string | null
+	stripeProductId: string | null
+	features: any
+	active: boolean
+	sortOrder: number
+	trialDays: number
+	isDefault: boolean
+	createdAt: string
+	updatedAt: string
+}
+
 interface FlyerPricing {
 	id: string
 	productType: string
@@ -41,11 +61,106 @@ const { $api } = useNuxtApp()
 const toast = useToast()
 
 // Tabs
-const activeTab = ref('flyers')
+const activeTab = ref('plans')
 const tabs = computed(() => [
+	{ id: 'plans', label: t('admin.pricing.tab_plans'), icon: 'ph:stack-bold' },
 	{ id: 'flyers', label: t('admin.pricing.tab_flyers'), icon: 'ph:files-bold' },
 	{ id: 'credits', label: t('admin.pricing.tab_credits'), icon: 'ph:coins-bold' },
 ])
+
+// Plans
+const plans = ref<SubscriptionPlan[]>([])
+const loadingPlans = ref(true)
+const showPlanModal = ref(false)
+const editingPlan = ref<SubscriptionPlan | null>(null)
+const planError = ref<string | null>(null)
+const featuresTab = ref<'monthly' | 'annual' | 'lifetime'>('monthly')
+
+const defaultFeatures = () => ({ max_games: 1, email_credits_per_month: 100 })
+const parseFeatures = (f: any) => ({
+	max_games: f?.max_games ?? 1,
+	email_credits_per_month: f?.email_credits_per_month ?? 100,
+})
+
+const planForm = ref({
+	name: '',
+	description: '',
+	stripePriceIdMonthly: '',
+	stripePriceIdAnnual: '',
+	stripePriceIdLifetime: '',
+	stripeProductId: '',
+	featuresMonthly: defaultFeatures(),
+	featuresAnnual: defaultFeatures(),
+	featuresLifetime: defaultFeatures(),
+	trialDays: 0,
+	isDefault: false,
+	active: true,
+})
+
+const fetchPlans = async () => {
+	loadingPlans.value = true
+	try { plans.value = await $api('/admin/plans') }
+	catch { toast.show(t('admin.pricing.loading'), 'error') }
+	finally { loadingPlans.value = false }
+}
+
+const openEditPlanModal = (plan: SubscriptionPlan) => {
+	editingPlan.value = plan
+	featuresTab.value = 'monthly'
+	planForm.value = {
+		name: plan.name,
+		description: plan.description || '',
+		stripePriceIdMonthly: plan.stripePriceIdMonthly || '',
+		stripePriceIdAnnual: plan.stripePriceIdAnnual || '',
+		stripePriceIdLifetime: plan.stripePriceIdLifetime || '',
+		stripeProductId: plan.stripeProductId || '',
+		featuresMonthly: parseFeatures((plan as any).featuresMonthly ?? plan.features),
+		featuresAnnual: parseFeatures((plan as any).featuresAnnual ?? plan.features),
+		featuresLifetime: parseFeatures((plan as any).featuresLifetime ?? plan.features),
+		trialDays: plan.trialDays,
+		isDefault: plan.isDefault,
+		active: plan.active,
+	}
+	planError.value = null
+	showPlanModal.value = true
+}
+
+const savePlan = async () => {
+	try {
+		const payload = {
+			name: planForm.value.name,
+			description: planForm.value.description || undefined,
+			stripePriceIdMonthly: planForm.value.stripePriceIdMonthly || undefined,
+			stripePriceIdAnnual: planForm.value.stripePriceIdAnnual || undefined,
+			stripePriceIdLifetime: planForm.value.stripePriceIdLifetime || undefined,
+			stripeProductId: planForm.value.stripeProductId || undefined,
+			featuresMonthly: planForm.value.featuresMonthly,
+			featuresAnnual: planForm.value.featuresAnnual,
+			featuresLifetime: planForm.value.featuresLifetime,
+			trialDays: planForm.value.trialDays,
+			isDefault: planForm.value.isDefault,
+			active: planForm.value.active,
+		}
+		if (editingPlan.value) {
+			await $api(`/admin/plans/${editingPlan.value.id}`, { method: 'PUT', body: payload })
+			toast.show(t('admin.pricing.modal_save'), 'success')
+		}
+		showPlanModal.value = false
+		await fetchPlans()
+	} catch (e: any) {
+		const msg = e?.data?.message || e?.message
+		planError.value = Array.isArray(msg) ? msg.join(' — ') : (msg || t('admin.pricing.modal_save'))
+	}
+}
+
+const deletePlan = async (plan: SubscriptionPlan) => {
+	if (!confirm(`Supprimer le plan "${plan.name}" ?`)) return
+	try { await $api(`/admin/plans/${plan.id}`, { method: 'DELETE' }); toast.show(t('admin.pricing.delete'), 'success'); await fetchPlans() }
+	catch { toast.show(t('admin.pricing.delete'), 'error') }
+}
+
+const stripeProductUrl = (productId: string) => `https://dashboard.stripe.com/test/products/${productId}`
+const stripePriceUrl = (priceId: string) => `https://dashboard.stripe.com/test/prices/${priceId}`
 
 // Flyers
 const pricings = ref<FlyerPricing[]>([])
@@ -161,10 +276,17 @@ const toggleCreditActive = async (pack: CreditPack) => {
 	catch { toast.show('Error', 'error') }
 }
 
-const handleNew = () => activeTab.value === 'flyers' ? openNewFlyerModal() : openNewCreditModal()
-const newButtonLabel = computed(() => activeTab.value === 'flyers' ? t('admin.pricing.new_button') : t('admin.pricing.new_button_credit'))
+const handleNew = () => {
+	if (activeTab.value === 'flyers') openNewFlyerModal()
+	else if (activeTab.value === 'credits') openNewCreditModal()
+}
+const newButtonLabel = computed(() => {
+	if (activeTab.value === 'flyers') return t('admin.pricing.new_button')
+	if (activeTab.value === 'credits') return t('admin.pricing.new_button_credit')
+	return null
+})
 
-onMounted(() => { fetchPricings(); fetchCreditPacks() })
+onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 </script>
 
 <template>
@@ -176,7 +298,7 @@ onMounted(() => { fetchPricings(); fetchCreditPacks() })
 				<h1 class="text-xl font-semibold text-white">{{ $t('admin.pricing.title') }}</h1>
 				<p class="text-sm text-slate-500 mt-0.5">{{ $t('admin.pricing.description') }}</p>
 			</div>
-			<button @click="handleNew"
+			<button v-if="newButtonLabel" @click="handleNew"
 				class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 text-sm font-medium rounded-md transition-colors">
 				<Icon name="ph:plus-bold" size="15" />
 				{{ newButtonLabel }}
@@ -190,9 +312,106 @@ onMounted(() => { fetchPricings(); fetchCreditPacks() })
 				:class="activeTab === tab.id ? 'bg-white/[0.1] text-white' : 'text-slate-500 hover:text-slate-300'">
 				<Icon :name="tab.icon" size="15" />
 				{{ tab.label }}
+				<span v-if="tab.id === 'plans' && plans.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ plans.length }}</span>
 				<span v-if="tab.id === 'flyers' && pricings.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ pricings.length }}</span>
 				<span v-if="tab.id === 'credits' && creditPacks.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ creditPacks.length }}</span>
 			</button>
+		</div>
+
+		<!-- ===== TAB: PLANS ===== -->
+		<div v-if="activeTab === 'plans'" class="space-y-4">
+
+			<!-- Stripe sync banner -->
+			<div class="flex items-center gap-3 bg-violet-500/5 border border-violet-500/20 rounded-lg px-4 py-3">
+				<Icon name="ph:lightning-bold" size="16" class="text-violet-400 shrink-0" />
+				<p class="text-xs text-slate-400">Prix synchronisés automatiquement depuis Stripe via webhook. <span class="text-slate-500">Modifiez les prix uniquement dans le Dashboard Stripe.</span></p>
+			</div>
+
+			<!-- Loading -->
+			<div v-if="loadingPlans" class="flex items-center justify-center py-12 text-slate-600">
+				<Icon name="svg-spinners:ring-resize" size="28" />
+			</div>
+
+			<!-- Empty -->
+			<div v-else-if="plans.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
+				<Icon name="ph:stack-duotone" size="32" class="mb-2" />
+				<p class="text-sm font-medium text-slate-400 mb-1">Aucun plan</p>
+				<p class="text-xs text-slate-600">Créez un produit Stripe — il apparaîtra ici automatiquement</p>
+			</div>
+
+			<!-- Plans list -->
+			<div v-else class="space-y-3">
+				<div v-for="plan in plans" :key="plan.id"
+					class="bg-[#161920] border border-white/[0.07] rounded-lg p-4">
+					<div class="flex items-start justify-between gap-4">
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center gap-2 mb-1">
+								<h3 class="text-sm font-semibold text-white">{{ plan.name }}</h3>
+								<span v-if="plan.isDefault" class="px-1.5 py-0.5 bg-brand-500/15 text-brand-400 text-[10px] font-medium rounded border border-brand-500/20">Défaut</span>
+								<span class="inline-flex items-center gap-1 text-xs font-medium" :class="plan.active ? 'text-emerald-400' : 'text-slate-500'">
+									<span class="w-1.5 h-1.5 rounded-full" :class="plan.active ? 'bg-emerald-400' : 'bg-slate-600'"></span>
+									{{ plan.active ? 'Actif' : 'Inactif' }}
+								</span>
+							</div>
+							<p v-if="plan.description" class="text-xs text-slate-500 mb-3">{{ plan.description }}</p>
+
+							<!-- Prices (read-only) -->
+							<div class="flex flex-wrap gap-2 mb-3">
+								<div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-md">
+									<span class="text-xs text-slate-500">Mensuel</span>
+									<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceMonthly).toFixed(2) }}</span>
+									<a v-if="plan.stripePriceIdMonthly" :href="stripePriceUrl(plan.stripePriceIdMonthly)" target="_blank"
+										class="ml-1 text-violet-400 hover:text-violet-300 transition-colors" title="Modifier sur Stripe">
+										<Icon name="ph:arrow-square-out-bold" size="12" />
+									</a>
+									<span v-else class="ml-1 text-[10px] text-slate-600">non lié</span>
+								</div>
+								<div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-md">
+									<span class="text-xs text-slate-500">Annuel</span>
+									<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceAnnual).toFixed(2) }}</span>
+									<a v-if="plan.stripePriceIdAnnual" :href="stripePriceUrl(plan.stripePriceIdAnnual)" target="_blank"
+										class="ml-1 text-violet-400 hover:text-violet-300 transition-colors" title="Modifier sur Stripe">
+										<Icon name="ph:arrow-square-out-bold" size="12" />
+									</a>
+									<span v-else class="ml-1 text-[10px] text-slate-600">non lié</span>
+								</div>
+								<div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-md">
+									<span class="text-xs text-slate-500">À vie</span>
+									<span class="text-sm font-semibold text-white tabular-nums">{{ Number(plan.priceLifetime).toFixed(2) }}</span>
+									<a v-if="plan.stripePriceIdLifetime" :href="stripePriceUrl(plan.stripePriceIdLifetime)" target="_blank"
+										class="ml-1 text-violet-400 hover:text-violet-300 transition-colors" title="Modifier sur Stripe">
+										<Icon name="ph:arrow-square-out-bold" size="12" />
+									</a>
+									<span v-else class="ml-1 text-[10px] text-slate-600">non lié</span>
+								</div>
+								<div v-if="plan.trialDays > 0" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/20 rounded-md">
+									<Icon name="ph:clock-countdown-bold" size="12" class="text-amber-400" />
+									<span class="text-xs text-amber-400">{{ plan.trialDays }}j trial</span>
+								</div>
+							</div>
+
+							<!-- Stripe IDs -->
+							<div v-if="plan.stripeProductId" class="flex items-center gap-1.5 text-xs text-slate-600">
+								<Icon name="ph:lightning-bold" size="12" class="text-violet-500" />
+								<span class="font-mono">{{ plan.stripeProductId }}</span>
+								<a :href="stripeProductUrl(plan.stripeProductId)" target="_blank" class="text-violet-500 hover:text-violet-400 transition-colors">
+									<Icon name="ph:arrow-square-out-bold" size="11" />
+								</a>
+							</div>
+						</div>
+
+						<!-- Actions -->
+						<div class="flex items-center gap-1 shrink-0">
+							<button @click="openEditPlanModal(plan)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors">
+								<Icon name="ph:pencil-line-bold" size="14" />
+							</button>
+							<button @click="deletePlan(plan)" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors">
+								<Icon name="ph:trash-bold" size="14" />
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!-- ===== TAB: FLYERS ===== -->
@@ -370,6 +589,144 @@ onMounted(() => { fetchPricings(); fetchCreditPacks() })
 				</table>
 			</div>
 		</div>
+
+		<!-- ===== MODAL: PLAN ===== -->
+		<Teleport to="body">
+			<div v-if="showPlanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+				<div class="fixed inset-0 bg-black/70" @click="showPlanModal = false"></div>
+				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+					<div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+						<h2 class="text-base font-semibold text-white">{{ editingPlan ? 'Modifier le plan' : 'Nouveau plan' }}</h2>
+						<button @click="showPlanModal = false" class="p-1.5 hover:bg-white/[0.06] rounded text-slate-400 hover:text-white transition-colors">
+							<Icon name="ph:x-bold" size="16" />
+						</button>
+					</div>
+					<div class="flex-1 overflow-y-auto p-5 space-y-4">
+
+						<!-- Prix read-only si édition -->
+						<div v-if="editingPlan" class="flex items-start gap-3 bg-violet-500/5 border border-violet-500/20 rounded-md px-3 py-2.5">
+							<Icon name="ph:lock-bold" size="14" class="text-violet-400 shrink-0 mt-0.5" />
+							<div>
+								<p class="text-xs font-medium text-violet-300">Prix gérés par Stripe</p>
+								<p class="text-[11px] text-slate-500 mt-0.5">Mensuel: <span class="text-white font-mono">{{ Number(editingPlan.priceMonthly).toFixed(2) }}</span> · Annuel: <span class="text-white font-mono">{{ Number(editingPlan.priceAnnual).toFixed(2) }}</span> · À vie: <span class="text-white font-mono">{{ Number(editingPlan.priceLifetime).toFixed(2) }}</span></p>
+							</div>
+						</div>
+
+						<div>
+							<label class="block text-xs font-medium text-slate-400 mb-1.5">Nom</label>
+							<input v-model="planForm.name" type="text" required placeholder="Ex: Pro"
+								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
+						</div>
+
+						<div>
+							<label class="block text-xs font-medium text-slate-400 mb-1.5">Description</label>
+							<input v-model="planForm.description" type="text" placeholder="Optionnel"
+								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
+						</div>
+
+						<!-- Stripe IDs -->
+						<div class="space-y-3">
+							<p class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+								<Icon name="ph:lightning-bold" size="13" class="text-violet-400" />
+								Liaisons Stripe
+							</p>
+							<div>
+								<label class="block text-[11px] text-slate-500 mb-1">Product ID</label>
+								<input v-model="planForm.stripeProductId" type="text" placeholder="prod_..."
+									class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-xs text-white font-mono placeholder-slate-600 focus:border-violet-500/40 focus:outline-none transition-colors" />
+							</div>
+							<div class="grid grid-cols-3 gap-2">
+								<div>
+									<label class="block text-[11px] text-slate-500 mb-1">Price mensuel</label>
+									<input v-model="planForm.stripePriceIdMonthly" type="text" placeholder="price_..."
+										class="w-full px-2 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-[11px] text-white font-mono placeholder-slate-600 focus:border-violet-500/40 focus:outline-none transition-colors" />
+								</div>
+								<div>
+									<label class="block text-[11px] text-slate-500 mb-1">Price annuel</label>
+									<input v-model="planForm.stripePriceIdAnnual" type="text" placeholder="price_..."
+										class="w-full px-2 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-[11px] text-white font-mono placeholder-slate-600 focus:border-violet-500/40 focus:outline-none transition-colors" />
+								</div>
+								<div>
+									<label class="block text-[11px] text-slate-500 mb-1">Price à vie</label>
+									<input v-model="planForm.stripePriceIdLifetime" type="text" placeholder="price_..."
+										class="w-full px-2 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-[11px] text-white font-mono placeholder-slate-600 focus:border-violet-500/40 focus:outline-none transition-colors" />
+								</div>
+							</div>
+						</div>
+
+						<div>
+							<label class="block text-xs font-medium text-slate-400 mb-2">Features par période</label>
+							<div class="flex gap-1 mb-2">
+								<button v-for="tab in [{ id: 'monthly', label: 'Mensuel' }, { id: 'annual', label: 'Annuel' }, { id: 'lifetime', label: 'À vie' }]"
+									:key="tab.id" type="button" @click="featuresTab = tab.id as any"
+									class="px-3 py-1 rounded text-xs font-medium transition-colors border"
+									:class="featuresTab === tab.id ? 'bg-white/[0.12] text-white border-white/[0.2]' : 'bg-white/[0.03] text-slate-500 border-white/[0.06] hover:text-slate-300'">
+									{{ tab.label }}
+								</button>
+							</div>
+							<div class="space-y-3 p-3 bg-white/[0.02] border border-white/[0.06] rounded-md">
+								<div>
+									<label class="block text-[11px] font-medium text-slate-400 mb-1.5">Jeux actifs max</label>
+									<input v-if="featuresTab === 'monthly'" v-model.number="planForm.featuresMonthly.max_games" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+									<input v-else-if="featuresTab === 'annual'" v-model.number="planForm.featuresAnnual.max_games" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+									<input v-else v-model.number="planForm.featuresLifetime.max_games" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+								</div>
+								<div>
+									<label class="block text-[11px] font-medium text-slate-400 mb-1.5">Emails inclus / mois</label>
+									<input v-if="featuresTab === 'monthly'" v-model.number="planForm.featuresMonthly.email_credits_per_month" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+									<input v-else-if="featuresTab === 'annual'" v-model.number="planForm.featuresAnnual.email_credits_per_month" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+									<input v-else v-model.number="planForm.featuresLifetime.email_credits_per_month" type="number" min="0"
+										class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+								</div>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-2 gap-3">
+							<div>
+								<label class="block text-xs font-medium text-slate-400 mb-1.5">Jours de trial</label>
+								<input v-model.number="planForm.trialDays" type="number" min="0"
+									class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+							</div>
+							<div class="flex flex-col justify-end gap-2">
+								<label class="flex items-center gap-2 cursor-pointer">
+									<div class="relative w-8 h-5">
+										<input v-model="planForm.isDefault" type="checkbox" class="sr-only peer" />
+										<div class="w-8 h-5 bg-white/[0.08] rounded-full peer-checked:bg-brand-500 transition-colors"></div>
+										<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-3 shadow-sm"></div>
+									</div>
+									<span class="text-xs text-slate-400">Plan par défaut</span>
+								</label>
+								<label class="flex items-center gap-2 cursor-pointer">
+									<div class="relative w-8 h-5">
+										<input v-model="planForm.active" type="checkbox" class="sr-only peer" />
+										<div class="w-8 h-5 bg-white/[0.08] rounded-full peer-checked:bg-emerald-500 transition-colors"></div>
+										<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-3 shadow-sm"></div>
+									</div>
+									<span class="text-xs text-slate-400">Actif</span>
+								</label>
+							</div>
+						</div>
+
+					</div>
+					<div v-if="planError" class="mx-5 mb-3 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-md text-xs text-red-400">
+						{{ planError }}
+					</div>
+					<div class="px-5 py-4 border-t border-white/[0.06] flex justify-end gap-2">
+						<button @click="showPlanModal = false" class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors">
+							Annuler
+						</button>
+						<button @click="savePlan" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
+							{{ editingPlan ? 'Enregistrer' : 'Créer' }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
 
 		<!-- ===== MODAL: FLYER ===== -->
 		<Teleport to="body">

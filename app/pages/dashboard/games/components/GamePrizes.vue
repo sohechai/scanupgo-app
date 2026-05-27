@@ -19,17 +19,6 @@ interface Prize {
 	status: string
 }
 
-// Emoji categories for prizes
-const emojiCategories = computed(() => [
-	{
-		name: t('games.prizes.food_category'),
-		emojis: ['☕', '🍕', '🍔', '🍟', '🌮', '🌯', '🥗', '🍜', '🍣', '🍰', '🧁', '🍩', '🍪', '🍦', '🥤', '🍺', '🍷', '🥐', '🥖', '🍫', '🍬']
-	},
-	{
-		name: t('games.prizes.discount_category'),
-		emojis: ['💰', '🏷️', '💵', '💸', '🎫', '🎟️', '💳', '🪙', '💎', '⭐', '🌟', '✨', '🔥', '💯', '🎁', '🎀', '🏆', '🥇', '👑', '💝']
-	}
-])
 
 const prizes = ref<Prize[]>([])
 const loading = ref(false)
@@ -39,12 +28,10 @@ const editingPrize = ref<Prize | null>(null)
 const prizeToDelete = ref<string | null>(null)
 const saving = ref(false)
 const deleting = ref(false)
-const showEmojiPicker = ref(false)
 
 const form = ref<Prize>({
 	name: '',
 	description: '',
-	imageUrl: '',
 	rank: 1,
 	quantity: 10,
 	probability: 20,
@@ -74,7 +61,6 @@ const openModal = (prize?: Prize) => {
 		form.value = {
 			name: '',
 			description: '',
-			imageUrl: '',
 			rank: 1,
 			quantity: 10,
 			probability: 20,
@@ -82,23 +68,12 @@ const openModal = (prize?: Prize) => {
 			status: 'active'
 		}
 	}
-	showEmojiPicker.value = false
 	modalOpen.value = true
 }
 
 const closeModal = () => {
 	modalOpen.value = false
 	editingPrize.value = null
-	showEmojiPicker.value = false
-}
-
-const selectEmoji = (emoji: string) => {
-	form.value.imageUrl = emoji
-	showEmojiPicker.value = false
-}
-
-const removeEmoji = () => {
-	form.value.imageUrl = ''
 }
 
 const savePrize = async () => {
@@ -196,25 +171,12 @@ watch(() => props.gameId, (newId) => {
 
 		<div v-else-if="prizes.length === 0"
 			class="text-center py-12 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-600">
-			<div
-				class="w-12 h-12 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center mx-auto mb-3 text-slate-400 dark:text-slate-500">
-				<Icon name="ph:gift-duotone" size="24" />
-			</div>
 			<p class="text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.prizes.no_prizes') }}</p>
 		</div>
 
 		<div v-else class="grid gap-4">
 			<div v-for="prize in prizes" :key="prize.id"
 				class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">
-				<!-- Prize Emoji or fallback icon -->
-				<div v-if="prize.imageUrl"
-					class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-2xl shrink-0">
-					{{ prize.imageUrl }}
-				</div>
-				<div v-else
-					class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
-					<Icon name="ph:gift-duotone" class="text-slate-400 dark:text-slate-500" size="22" />
-				</div>
 
 				<div class="flex-1 min-w-0">
 					<h4 class="font-bold text-slate-900 dark:text-white truncate">{{ prize.name }}</h4>
@@ -265,58 +227,6 @@ watch(() => props.gameId, (newId) => {
 							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.name') }}</label>
 						<input v-model="form.name" type="text" :placeholder="$t('games.prizes.name_placeholder')" required
 							class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none placeholder-slate-400 dark:placeholder-slate-500">
-					</div>
-
-					<!-- Emoji Selection -->
-					<div>
-						<label
-							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-							{{ $t('games.prizes.icon') }}
-						</label>
-
-						<!-- Selected Emoji Display -->
-						<div v-if="form.imageUrl && !showEmojiPicker" class="flex items-center gap-3">
-							<div
-								class="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-4xl shrink-0">
-								{{ form.imageUrl }}
-							</div>
-							<div class="flex-1">
-								<p class="text-sm text-slate-600 dark:text-slate-300">{{ $t('games.prizes.icon_selected') }}</p>
-								<div class="flex gap-2 mt-1">
-									<button type="button" @click="showEmojiPicker = true"
-										class="text-xs text-[#007AFF] dark:text-slate-400 hover:underline">
-										{{ $t('games.prizes.icon_change') }}
-									</button>
-									<button type="button" @click="removeEmoji"
-										class="text-xs text-red-500 hover:underline">
-										{{ $t('games.prizes.icon_remove') }}
-									</button>
-								</div>
-							</div>
-						</div>
-
-						<!-- Emoji Picker -->
-						<div v-else
-							class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
-							<div v-for="category in emojiCategories" :key="category.name" class="mb-4 last:mb-0">
-								<p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
-									{{ category.name }}
-								</p>
-								<div class="flex flex-wrap gap-2">
-									<button v-for="emoji in category.emojis" :key="emoji" type="button"
-										@click="selectEmoji(emoji)"
-										class="w-10 h-10 text-2xl rounded-lg hover:bg-white dark:hover:bg-slate-600 hover:shadow-md transition-all flex items-center justify-center"
-										:class="{ 'bg-[#007AFF]/10 dark:bg-[#007AFF]/50/20 ring-2 ring-[#007AFF]': form.imageUrl === emoji }">
-										{{ emoji }}
-									</button>
-								</div>
-							</div>
-
-							<button v-if="form.imageUrl" type="button" @click="showEmojiPicker = false"
-								class="mt-3 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
-								{{ $t('games.prizes.return_link') }}
-							</button>
-						</div>
 					</div>
 
 					<div class="grid grid-cols-2 gap-4">
