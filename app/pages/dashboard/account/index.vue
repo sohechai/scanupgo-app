@@ -8,6 +8,7 @@ useHead({ title: 'Mon compte' })
 
 const { t, locale, setLocale } = useI18n()
 const { user, signOut } = useAuth()
+const { reset: resetNotifications } = useNotifications()
 
 const languages = [
 	{ code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -270,6 +271,7 @@ const deleteAccount = async () => {
 	deleteLoading.value = true
 	try {
 		await $api('/auth/delete-account', { method: 'DELETE' })
+		resetNotifications()
 		showToast(t('common.success'), 'success')
 		await signOut()
 	} catch (e: any) {

@@ -294,58 +294,94 @@ const previewPrizes = computed(() => {
 				</div>
 
 				<!-- STEP 4: PLAYING -->
-				<div v-else-if="currentStep === 'playing'"
-					class="relative z-10 h-full flex flex-col items-center justify-center p-4"
-					:style="{ color: textColor }">
-					<div class="text-center mb-4">
-						<p class="text-[10px] uppercase tracking-widest opacity-60 mb-1">{{ $t('play.playing.spinning') }}</p>
-						<h2 class="text-lg font-black italic">{{ $t('play.playing.good_luck_prefix') }}✨{{ $t('play.playing.good_luck_suffix') }}</h2>
+				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
+					<!-- Logo -->
+					<div class="relative z-10 flex justify-center px-3 shrink-0">
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
+						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
-					<div class="flex-1 flex items-center justify-center overflow-hidden w-full">
-						<div class="wheel-preview-container-playing">
-							<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
-								:wheel-lost-color="props.wheelLostColor" :wheel-prize-color="props.wheelPrizeColor" :wheel-border-color="props.wheelBorderColor" :wheel-pointer-color="props.wheelPointerColor"
-								:target-prize-index="targetPrizeIndex" :is-spinning="isSpinning" :has-lost="hasLost"
-								@spin-end="onSpinEnd" />
+					<!-- Tagline "MERCI, BONNE CHANCE!" -->
+					<div class="relative z-10 px-3 mt-3 shrink-0 mx-auto w-full max-w-[90%]">
+						<div class="rounded-xl px-2 py-2 text-center shadow-xl border border-white/20"
+							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							<p class="text-[10px] uppercase leading-[1.1]"
+								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.3px;">
+								{{ $t('play.playing.merci') }}<br>{{ $t('play.playing.bonne_chance') }}
+							</p>
 						</div>
 					</div>
 
-					<div class="mt-4 flex items-center gap-2 opacity-70">
-						<span class="text-base">🤞</span>
-						<span class="text-[10px] font-medium">{{ $t('play.playing.fingers_crossed') }}</span>
+					<!-- Bouton Lancer -->
+					<div class="relative z-20 w-full flex justify-end px-4 mt-4 shrink-0">
+						<div class="text-[14px] uppercase px-4 py-2 rounded-lg font-black shadow-lg animate-wizz"
+							:style="{ backgroundColor: props.buttonColor || '#ffffff', color: ctaButtonTextColor, fontFamily: `'Impact', 'Arial Black', sans-serif`, letterSpacing: '0.3px' }">
+							{{ $t('play.playing.spin_button') }}
+						</div>
+					</div>
+
+					<!-- Roue débordant à gauche -->
+					<div class="absolute top-[60%] -translate-y-1/2 -left-[110px] z-10 w-[280px] aspect-square">
+						<FortuneWheel :prizes="previewPrizes" :primary-color="primaryColor || '#00e5ff'"
+							:wheel-lost-color="props.wheelLostColor" :wheel-prize-color="props.wheelPrizeColor"
+							:wheel-border-color="props.wheelBorderColor" :wheel-pointer-color="props.wheelPointerColor"
+							:target-prize-index="targetPrizeIndex" :is-spinning="isSpinning" :has-lost="hasLost"
+							:preview-mode="true" pointer-position="right"
+							@spin-end="onSpinEnd" />
+					</div>
+
+					<!-- Footer bar -->
+					<div class="absolute bottom-0 left-0 right-0 h-[45px] bg-[#2a2a2a] flex justify-between items-center px-8 z-30 shadow-[0_-3px_8px_rgba(0,0,0,0.4)]">
+						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.rules') }}</span>
+						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.contact') }}</span>
 					</div>
 				</div>
 
 				<!-- STEP 5: RESULT -->
-				<div v-else-if="currentStep === 'result'"
-					class="relative z-10 h-full flex flex-col items-center justify-center p-4"
-					:style="{ color: textColor }">
-					<div class="relative mb-6">
-						<div class="absolute inset-0 bg-yellow-400 blur-2xl opacity-50"></div>
-						<Icon name="ph:trophy-fill" class="text-yellow-400 relative z-10" size="64" />
+				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-7">
+					<!-- Logo -->
+					<div class="relative z-10 flex justify-center px-3 shrink-0">
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
+						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
-					<h2 class="text-2xl font-black mb-1">{{ $t('play.result.win.title') }}</h2>
-					<p class="text-xs opacity-90 mb-6">{{ $t('play.result.win.subtitle') }}</p>
-
-					<div class="bg-white text-slate-900 rounded-2xl p-6 shadow-2xl w-full text-center rotate-1">
-						<h3 class="text-2xl font-display font-bold text-brand-600 mb-2">
-							{{ previewPrizes[0]?.name || '-10%' }}
-						</h3>
-						<p class="text-slate-500 text-[10px] mb-4">
-							{{ winningMessage || $t('play.result.win.default_message') }}
-						</p>
-
-						<div class="pt-4 border-t border-slate-100">
-							<div
-								class="w-24 h-24 bg-slate-50 border-2 border-slate-200 rounded-lg mx-auto mb-3 flex items-center justify-center opacity-30">
-								<Icon name="ph:qr-code" size="48" class="text-slate-400" />
-							</div>
-							<p class="text-[8px] uppercase font-bold text-slate-400 tracking-wider mb-1">CODE</p>
-							<p class="font-mono text-sm font-bold tracking-widest bg-slate-50 py-2 rounded">ABCD-1234
+					<!-- Tagline "FÉLICITATIONS!" -->
+					<div class="relative z-10 px-3 mt-2 shrink-0 mx-auto w-full max-w-[90%]">
+						<div class="rounded-xl px-2 py-2 text-center shadow-xl border border-white/20"
+							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							<p class="text-[10px] uppercase leading-[1.1]"
+								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4); letter-spacing: 0.3px;">
+								{{ $t('play.result.win.title') }}
 							</p>
 						</div>
+					</div>
+
+					<!-- Card résultat -->
+					<div class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[48px] overflow-hidden min-h-0">
+						<div class="bg-[#2a2a2a] rounded-2xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0">
+							<!-- Prix gagné -->
+							<div class="shrink-0">
+								<p class="text-white/60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
+								<h2 class="text-white text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>
+							</div>
+							<!-- QR Code placeholder -->
+							<div class="w-16 h-16 bg-white rounded-lg mx-auto flex items-center justify-center opacity-40 shrink-0">
+								<Icon name="ph:qr-code" size="32" class="text-slate-400" />
+							</div>
+							<!-- Code texte -->
+							<div class="w-full bg-[#1a1a1a] rounded-xl px-2 py-2 shrink-0">
+								<p class="text-white/40 text-[8px] uppercase tracking-widest mb-0.5">CODE</p>
+								<p class="font-mono text-xs font-black tracking-widest text-white">ABCD-1234</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Footer bar -->
+					<div class="absolute bottom-0 left-0 right-0 h-[45px] bg-[#2a2a2a] flex justify-between items-center px-8 z-30 shadow-[0_-3px_8px_rgba(0,0,0,0.4)]">
+						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.rules') }}</span>
+						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.contact') }}</span>
 					</div>
 				</div>
 			</div>
@@ -354,11 +390,6 @@ const previewPrizes = computed(() => {
 </template>
 
 <style scoped>
-.wheel-preview-container-playing {
-	transform: scale(0.38);
-	transform-origin: center center;
-}
-
 .animate-fade-in-up {
 	animation: fadeInUp 0.5s ease-out forwards;
 }

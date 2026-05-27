@@ -40,7 +40,7 @@ const buttonTextColor = computed(() => {
       {{ error }}
     </div>
 
-    <div class="relative z-10 w-full h-full flex flex-col pt-12">
+    <div class="relative z-10 w-full h-full flex flex-col pt-6">
       <!-- Logo -->
       <div class="flex justify-center px-8 shrink-0">
         <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[280px] object-contain drop-shadow-2xl" />
@@ -48,7 +48,7 @@ const buttonTextColor = computed(() => {
       </div>
 
       <!-- Tagline -->
-      <div class="px-5 mt-6 shrink-0 w-full max-w-sm mx-auto">
+      <div class="w-full px-5 mt-3 shrink-0 z-20">
         <div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
           style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
           <p class="text-[22px] uppercase leading-[1.1]"
@@ -60,16 +60,16 @@ const buttonTextColor = computed(() => {
       </div>
 
       <!-- Bouton Jouer -->
-      <div class="w-full flex justify-end px-5 mt-6 shrink-0 z-20">
+      <div class="w-full flex justify-end px-5 mt-4 shrink-0 z-20">
         <button @click="emit('go-to-steps')"
-          class="text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz"
+          class="text-[22px] uppercase px-6 py-3 rounded-lg shadow-xl transform transition active:scale-95 animate-wizz whitespace-nowrap"
           :style="{ backgroundColor: buttonColor, color: buttonTextColor, fontFamily: `'Impact', 'Arial Black', sans-serif`, letterSpacing: '0.5px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2)' }">
           {{ $t('play.intro.play_button') }}
         </button>
       </div>
 
       <!-- Roue débordant à gauche -->
-      <div class="absolute top-1/2 -translate-y-1/2 -left-[150px] md:-left-[210px] z-10 w-[380px] md:w-[500px] aspect-square">
+      <div class="absolute top-[62%] -translate-y-1/2 -left-[32vw] md:-left-[210px] z-10 w-[90vw] md:w-[500px] aspect-square">
         <FortuneWheel :prizes="game.prizes" :primary-color="primaryColor" :target-prize-index="null"
           :wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor" :wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor"
           :is-spinning="false" :preview-mode="true" pointer-position="right" />

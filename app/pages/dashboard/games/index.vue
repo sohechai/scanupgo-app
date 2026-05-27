@@ -136,8 +136,16 @@ const fetchGames = async () => {
 }
 
 onMounted(async () => {
-	await fetchSubscription()
-	if (hasActiveSubscription.value) fetchGames()
+	try {
+		await fetchSubscription()
+	} catch (e) {
+		console.error(e)
+	}
+	if (hasActiveSubscription.value) {
+		await fetchGames()
+	} else {
+		loading.value = false
+	}
 })
 </script>
 

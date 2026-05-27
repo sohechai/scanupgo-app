@@ -60,8 +60,13 @@ export const useNotifications = () => {
 			if (result.count > previousCount && isDropdownOpen.value) {
 				await fetchNotifications({ limit: 10 })
 			}
-		} catch (error) {
-			console.error('Error fetching unread count:', error)
+		} catch (error: any) {
+			const status = error?.status ?? error?.statusCode ?? error?.response?.status
+			if (status === 401) {
+				stopPolling()
+			} else {
+				console.error('Error fetching unread count:', error)
+			}
 		}
 	}
 

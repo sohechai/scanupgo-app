@@ -116,8 +116,16 @@ const exportToPDF = async () => {
 }
 
 onMounted(async () => {
-	await fetchSubscription()
-	if (hasActiveSubscription.value) fetchPlayers()
+	try {
+		await fetchSubscription()
+	} catch (e) {
+		console.error(e)
+	}
+	if (hasActiveSubscription.value) {
+		await fetchPlayers()
+	} else {
+		loading.value = false
+	}
 })
 </script>
 
