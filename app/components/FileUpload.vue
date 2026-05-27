@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	'update:modelValue': [value: string | null]
+	'color-extracted': [color: string]
 }>()
 
 const { $api } = useNuxtApp()
@@ -20,12 +21,38 @@ const uploading = ref(false)
 const error = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement>()
 
+// Logo cropper state — shown when uploadType === 'logo'
+const cropperFile = ref<File | null>(null)
+const showCropper = ref(false)
+
 const currentUrl = computed(() => {
 	const val = props.modelValue
 	if (!val) return null
 	if (val.startsWith('http') || val.startsWith('/') || val.startsWith('data:')) return val
 	return null
 })
+
+const uploadFile = async (file: File) => {
+	error.value = null
+	uploading.value = true
+	try {
+		const formData = new FormData()
+		formData.append('file', file)
+		const endpoint = props.uploadType ? `/uploads/${props.uploadType}` : '/uploads/image'
+		const response = await $api<{ url: string }>(endpoint, {
+			method: 'POST',
+			body: formData
+		})
+		emit('update:modelValue', response.url)
+		showToast(t('components.file_upload.success'), 'success')
+	} catch (e: any) {
+		console.error('Upload error:', e)
+		error.value = e?.data?.message || t('components.file_upload.error_upload')
+		showToast(error.value, 'error')
+	} finally {
+		uploading.value = false
+	}
+}
 
 const handleFileSelect = async (event: Event) => {
 	const target = event.target as HTMLInputElement
@@ -52,31 +79,44 @@ const handleFileSelect = async (event: Event) => {
 		return
 	}
 
-	error.value = null
-	uploading.value = true
+	if (fileInput.value) fileInput.value.value = ''
 
-	try {
-		const formData = new FormData()
-		formData.append('file', file)
-
-		// Determine endpoint based on upload type
-		const endpoint = props.uploadType ? `/uploads/${props.uploadType}` : '/uploads/image'
-
-		const response = await $api<{ url: string }>(endpoint, {
-			method: 'POST',
-			body: formData
-		})
-
-		emit('update:modelValue', response.url)
-		showToast(t('components.file_upload.success'), 'success')
-		if (fileInput.value) fileInput.value.value = ''
-	} catch (e: any) {
-		console.error('Upload error:', e)
-		error.value = e?.data?.message || t('components.file_upload.error_upload')
-		showToast(error.value, 'error')
-	} finally {
-		uploading.value = false
+	// Logo uploads go through cropper first
+	if (props.uploadType === 'logo') {
+		cropperFile.value = file
+		showCropper.value = true
+		return
 	}
+
+	await uploadFile(file)
+}
+
+const extractColor = async (file: File): Promise<string | null> => {
+	try {
+		const { Vibrant } = await import('node-vibrant/browser')
+		const url = URL.createObjectURL(file)
+		const palette = await Vibrant.from(url).getPalette()
+		URL.revokeObjectURL(url)
+		const swatch = palette.Vibrant ?? palette.LightVibrant ?? palette.Muted ?? palette.DarkVibrant
+		return swatch?.hex ?? null
+	} catch {
+		return null
+	}
+}
+
+const handleCropConfirm = async (croppedFile: File) => {
+	showCropper.value = false
+	cropperFile.value = null
+	const [, color] = await Promise.all([
+		uploadFile(croppedFile),
+		extractColor(croppedFile),
+	])
+	if (color) emit('color-extracted', color)
+}
+
+const handleCropCancel = () => {
+	showCropper.value = false
+	cropperFile.value = null
 }
 
 const triggerFileInput = () => {
@@ -92,6 +132,12 @@ const removeFile = () => {
 </script>
 
 <template>
+	<LogoCropper
+		v-if="showCropper && cropperFile"
+		:file="cropperFile"
+		@confirm="handleCropConfirm"
+		@cancel="handleCropCancel"
+	/>
 	<div class="space-y-2">
 		<label v-if="label" class="block text-sm font-bold text-slate-700">
 			{{ label }}

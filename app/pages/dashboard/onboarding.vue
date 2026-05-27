@@ -429,7 +429,8 @@ onMounted(() => fetchBusiness())
 									<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Logo</label>
 									<span class="text-xs text-slate-400">PNG, SVG recommandé</span>
 								</div>
-								<FileUpload v-model="business.logo" label="" upload-type="logo" :max-size="5" :preview="true" accept="image/*" />
+								<FileUpload v-model="business.logo" label="" upload-type="logo" :max-size="5" :preview="true" accept="image/*"
+									@color-extracted="(color: string) => business.primary_color = color" />
 							</div>
 							<div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
 								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Couleur principale</label>
