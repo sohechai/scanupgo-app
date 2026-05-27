@@ -12,9 +12,6 @@
   "dependencies": {
     "@nuxt/icon": "^2.1.1",
     "@nuxt/image": "^2.0.0",
-    "@oxc-minify/binding-darwin-x64": "^0.133.0",
-    "@oxc-parser/binding-darwin-x64": "^0.133.0",
-    "@oxc-transform/binding-darwin-x64": "^0.133.0",
     "@pinia/nuxt": "^0.11.3",
     "@stripe/stripe-js": "^8.6.4",
     "@tanstack/vue-query": "^5.99.0",
