@@ -1,9 +1,13 @@
 <script setup lang="ts">
+// FEATURE DISABLED — redirect to marketing page
+// To re-enable: remove this redirect + uncomment routes in backend/src/marketing/marketing.controller.ts
 definePageMeta({
 	middleware: 'auth',
 	layout: 'dashboard',
 	pageTransition: false
 })
+await navigateTo('/dashboard/marketing', { replace: true })
+
 useHead({ title: 'Automatisations' })
 
 const { t } = useI18n()
