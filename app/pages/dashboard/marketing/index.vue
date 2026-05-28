@@ -185,7 +185,6 @@ onMounted(async () => {
 			<div v-for="(val, key) in {
 				[t('marketing.index.stats.campaigns')]: statsLoading ? '—' : (stats?.totalCampaigns || 0),
 				[t('marketing.index.stats.sent')]: statsLoading ? '—' : (stats?.totalSent || 0),
-				[t('marketing.index.stats.open_rate')]: statsLoading ? '—' : `${stats?.openRate || 0}%`,
 				[t('marketing.index.stats.optin_players')]: statsLoading ? '—' : (stats?.optInPlayers || 0),
 			}" :key="key" class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
 				<p class="text-xs text-slate-400 dark:text-slate-500 mb-1">{{ key }}</p>

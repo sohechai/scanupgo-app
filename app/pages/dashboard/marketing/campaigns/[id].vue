@@ -224,8 +224,6 @@ onMounted(async () => {
 			<div v-for="(val, key) in {
 				[$t('marketing.campaign_detail.recipients')]: { value: campaign.recipientCount, color: 'text-slate-900 dark:text-white' },
 				[$t('marketing.campaign_detail.sent_count')]: { value: campaign.sentCount, color: 'text-emerald-600' },
-				[$t('marketing.campaign_detail.open_count')]: { value: campaign.openCount || 0, color: 'text-[#007AFF]' },
-				[$t('marketing.campaign_detail.open_rate')]: { value: (campaign.sentCount > 0 ? Math.round(((campaign.openCount || 0) / campaign.sentCount) * 100) : 0) + '%', color: 'text-violet-600' },
 				[$t('marketing.campaign_detail.bounce_count')]: { value: campaign.bounceCount, color: 'text-red-500' },
 			}" :key="key"
 				class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
