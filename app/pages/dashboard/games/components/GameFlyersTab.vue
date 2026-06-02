@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import QRCode from 'qrcode'
 import FlyerEditor from '~/components/flyers/FlyerEditor.vue'
+import { submitFlyerJob } from '~/composables/useFlyerJob'
 
 const props = defineProps<{
 	game: any
@@ -204,30 +205,22 @@ const downloadFlyerPDF = async () => {
 	downloadingPdf.value = true
 	try {
 		const business = user.value?.business
-		const result = await $api<{ url: string }>('/flyer-generator/generate-pdf', {
-			method: 'POST',
-			body: {
-				businessName: business?.name,
-				businessLogo: business?.logo,
-				qrCodeUrl: qrCodeUrl.value || undefined,
-				primaryColor: props.game.primaryColor || '#fb923c',
-				accentColor: props.game.primaryColor || '#fb923c',
-				buttonColor: props.game.primaryColor || '#fb923c',
-				fontFamily: 'Luckiest Guy',
-				prizes: (props.game.prizes || []).map((p: any) => ({
-					name: p.name,
-					rank: p.rank,
-					probability: p.probability
-				}))
-			}
+		const url = await submitFlyerJob($api, '/flyer-generator/generate-pdf', {
+			businessName: business?.name,
+			businessLogo: business?.logo,
+			qrCodeUrl: qrCodeUrl.value || undefined,
+			primaryColor: props.game.primaryColor || '#fb923c',
+			accentColor: props.game.primaryColor || '#fb923c',
+			buttonColor: props.game.primaryColor || '#fb923c',
+			fontFamily: 'Luckiest Guy',
+			prizes: (props.game.prizes || []).map((p: any) => ({
+				name: p.name,
+				rank: p.rank,
+				probability: p.probability
+			})),
 		})
 
-		if (!result?.url) {
-			showToast(t('games.detail.pdf_error'), 'error')
-			return
-		}
-
-		const response = await fetch(result.url)
+		const response = await fetch(url)
 		const blob = await response.blob()
 		const downloadUrl = URL.createObjectURL(blob)
 		const link = document.createElement('a')
