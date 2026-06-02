@@ -268,9 +268,12 @@ const deleteAccount = async () => {
 	if (deleteConfirmText.value !== t('account.delete_confirm_text_message')) {
 		showToast(t('account.delete_confirm_text'), 'error'); return
 	}
+	if (!businessId.value) {
+		showToast(t('common.error'), 'error'); return
+	}
 	deleteLoading.value = true
 	try {
-		await $api('/auth/delete-account', { method: 'DELETE' })
+		await $api(`/admin/businesses/${businessId.value}`, { method: 'DELETE' })
 		resetNotifications()
 		showToast(t('common.success'), 'success')
 		await signOut()
