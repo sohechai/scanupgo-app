@@ -274,7 +274,7 @@ onMounted(() => {
 		<div v-if="!loading" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
 			<!-- SECTION 1: Informations (Left Column) -->
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
+			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40">
 				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/40">
 					<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('profile.information_section') }}</h2>
 					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('profile.information_subtitle') }}</p>
@@ -377,7 +377,7 @@ onMounted(() => {
 							<div class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-[#2C2C2E] flex items-center justify-center p-2 relative group/logo overflow-hidden transition-colors hover:bg-white">
 								<img v-if="business.logo" :src="getAssetUrl(business.logo)" class="w-full h-full object-contain" />
 								<Icon v-else name="ph:storefront-duotone" class="text-slate-300" size="28" />
-								<button v-if="business.logo && canEdit" @click="business.logo = null"
+								<button v-if="business.logo && canEdit" type="button" @click="business.logo = null"
 									class="absolute top-1 right-1 p-1 bg-white text-red-500 rounded-md shadow-sm hover:bg-red-50 transition-all opacity-0 group-hover/logo:opacity-100 border border-slate-100"
 									:title="$t('profile.delete_logo')">
 									<Icon name="ph:trash-bold" size="12" />
