@@ -44,9 +44,7 @@ const cancelEdit = () => {
 }
 
 const isProfileComplete = computed(() => {
-	// Profile is complete if name and logo are present
-	// We also check if name is not empty string
-	return !!(business.value.name && business.value.name.trim() !== '' && business.value.logo)
+	return !!(business.value.name && business.value.name.trim() !== '')
 })
 
 const canEdit = computed(() => {
