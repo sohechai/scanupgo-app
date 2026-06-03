@@ -74,6 +74,12 @@ const logoUrl = computed(() => {
 	return props.logo
 })
 
+const isImageBackground = computed(() => {
+	const bg = props.backgroundImage
+	if (!bg) return false
+	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+})
+
 const displayTitle = computed(() => props.title || t('components.game_preview.default_title'))
 const displayTagline = computed(() => props.tagline || t('components.game_preview.default_tagline'))
 
@@ -158,11 +164,12 @@ const previewPrizes = computed(() => {
 				<!-- STEP 1: INTRO -->
 				<div v-if="currentStep === 'intro'" class="relative h-full overflow-hidden flex flex-col">
 
-					<!-- Logo -->
+					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
 						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
+							class="h-14 max-w-[180px] object-contain drop-shadow-xl"
+							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<h1 v-else-if="!isImageBackground" class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
 					<!-- Tagline -->
@@ -295,11 +302,12 @@ const previewPrizes = computed(() => {
 
 				<!-- STEP 4: PLAYING -->
 				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
-					<!-- Logo -->
+					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
 						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
+							class="h-10 max-w-[140px] object-contain drop-shadow-xl"
+							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<h1 v-else-if="!isImageBackground" class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
@@ -340,11 +348,12 @@ const previewPrizes = computed(() => {
 
 				<!-- STEP 5: RESULT -->
 				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-7">
-					<!-- Logo -->
+					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
 						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
+							class="h-10 max-w-[140px] object-contain drop-shadow-xl"
+							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<h1 v-else-if="!isImageBackground" class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
 					<!-- Tagline "FÉLICITATIONS!" -->
