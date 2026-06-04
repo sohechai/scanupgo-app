@@ -939,6 +939,8 @@
       "back_to_home": "Retour à l'accueil",
       "change_plan": "Changer de plan",
       "cancel": "Résilier",
+      "lifetime_access": "Accès à vie — aucun renouvellement",
+      "days_remaining": "{days} jour(s) restant(s)",
       "included_features": "Fonctionnalités incluses",
       "active_games": "{count} jeux actifs",
       "active_games_label": "Jeux actifs",

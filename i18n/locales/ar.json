@@ -896,6 +896,8 @@
       "back_to_home": "العودة للرئيسية",
       "change_plan": "تغيير الخطة",
       "cancel": "إلغاء",
+      "lifetime_access": "وصول مدى الحياة — بدون تجديد",
+      "days_remaining": "{days} يوم/أيام متبقية",
       "included_features": "الميزات المضمنة",
       "active_games": "{count} ألعاب نشطة",
       "active_games_label": "ألعاب نشطة",

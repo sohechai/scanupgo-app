@@ -930,6 +930,8 @@
       "back_to_home": "Back to home",
       "change_plan": "Change plan",
       "cancel": "Cancel",
+      "lifetime_access": "Lifetime access — no renewal",
+      "days_remaining": "{days} day(s) remaining",
       "included_features": "Included features",
       "active_games": "{count} active games",
       "active_games_label": "Active games",
