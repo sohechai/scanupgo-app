@@ -255,7 +255,7 @@ const statusInfo = computed(() => {
 					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
 						<Icon name="ph:users-bold" class="text-slate-400 dark:text-slate-500" size="15" />
 					</div>
-					<p class="text-2xl font-semibold text-slate-900 dark:text-white leading-none tabular-nums">{{ subscription.plan.features.max_players.toLocaleString() }}</p>
+					<p class="text-2xl font-semibold text-slate-900 dark:text-white leading-none tabular-nums">{{ (subscription.plan.features.max_players ?? 0).toLocaleString() }}</p>
 					<p class="text-xs font-medium text-slate-700 dark:text-slate-200 mt-1.5">{{ $t('subscription.current.players_label') }}</p>
 					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 leading-snug">{{ $t('subscription.current.players_description') }}</p>
 				</div>
@@ -264,7 +264,7 @@ const statusInfo = computed(() => {
 					<div class="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
 						<Icon name="ph:envelope-bold" class="text-slate-400 dark:text-slate-500" size="15" />
 					</div>
-					<p class="text-2xl font-semibold text-slate-900 dark:text-white leading-none tabular-nums">{{ subscription.plan.features.email_credits_per_month.toLocaleString() }}</p>
+					<p class="text-2xl font-semibold text-slate-900 dark:text-white leading-none tabular-nums">{{ (subscription.plan.features.email_credits_per_month ?? 0).toLocaleString() }}</p>
 					<p class="text-xs font-medium text-slate-700 dark:text-slate-200 mt-1.5">{{ $t('subscription.current.emails_per_month_label') }}</p>
 					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 leading-snug">{{ $t('subscription.current.emails_per_month_description') }}</p>
 				</div>

@@ -22,9 +22,10 @@ export const useLocaleDate = () => {
 	}
 
 	const formatNumber = (
-		num: number,
+		num: number | null | undefined,
 		options?: Intl.NumberFormatOptions
 	): string => {
+		if (num == null) return '0'
 		return num.toLocaleString(currentLocale.value, options)
 	}
 
