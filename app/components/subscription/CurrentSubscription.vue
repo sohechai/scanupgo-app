@@ -191,17 +191,17 @@ const canCancel = computed(() => !isLifetime.value && !props.subscription?.cance
 			<div class="grid grid-cols-3 border-t border-slate-100 dark:border-slate-800 divide-x divide-slate-100 dark:divide-slate-800">
 				<div class="px-4 py-4 flex flex-col items-center text-center">
 					<Icon name="ph:game-controller-bold" class="text-slate-400 dark:text-slate-500 mb-1.5" size="16" />
-					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ subscription.plan.features.max_games }}</p>
+					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ subscription.plan.features.max_games ?? '∞' }}</p>
 					<p class="text-xs text-slate-400 mt-0.5">{{ $t('subscription.current.active_games_label') }}</p>
 				</div>
 				<div class="px-4 py-4 flex flex-col items-center text-center">
 					<Icon name="ph:users-bold" class="text-slate-400 dark:text-slate-500 mb-1.5" size="16" />
-					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ (subscription.plan.features.max_players ?? 0).toLocaleString() }}</p>
+					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ subscription.plan.features.max_players != null ? subscription.plan.features.max_players.toLocaleString() : '∞' }}</p>
 					<p class="text-xs text-slate-400 mt-0.5">{{ $t('subscription.current.players_label') }}</p>
 				</div>
 				<div class="px-4 py-4 flex flex-col items-center text-center">
 					<Icon name="ph:envelope-bold" class="text-slate-400 dark:text-slate-500 mb-1.5" size="16" />
-					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ (subscription.plan.features.email_credits_per_month ?? 0).toLocaleString() }}</p>
+					<p class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{{ subscription.plan.features.email_credits_per_month != null ? subscription.plan.features.email_credits_per_month.toLocaleString() : '∞' }}</p>
 					<p class="text-xs text-slate-400 mt-0.5">{{ $t('subscription.current.emails_per_month_label') }}</p>
 				</div>
 			</div>
