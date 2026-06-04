@@ -356,7 +356,7 @@ onMounted(() => fetchBusiness())
 							</div>
 							<div class="space-y-2">
 								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
-								<PhoneInput v-model="business.phone" variant="light" placeholder="6 00 00 00 00" />
+								<PhoneInput v-model="business.phone" variant="light" placeholder="6 00 00 00 00" :country="business.addressCountry" />
 							</div>
 						</div>
 

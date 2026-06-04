@@ -317,6 +317,7 @@ onMounted(() => {
 							:disabled="!canEdit"
 							:variant="colorMode.value === 'dark' ? 'dark' : 'light'"
 							:placeholder="$t('profile.phone_placeholder')"
+							:country="business.addressCountry"
 						/>
 					</div>
 
