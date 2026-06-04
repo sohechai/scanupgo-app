@@ -228,9 +228,9 @@
     "period_label": {
       "7d": "Last 7 days",
       "30d": "Last 30 days",
-      "this_month": "this month",
+      "this_month": "This month",
       "90d": "Last 90 days",
-      "this_year": "this year"
+      "this_year": "This year"
     },
     "stats": {
       "players": "Players",
