@@ -407,7 +407,7 @@
       "tagline_placeholder": "Try your luck and win exclusive prizes!",
       "google_review_link": "Google Reviews Link",
       "google_review_help": "Help",
-      "google_review_description": "Add the link to your Google page to encourage customers to leave a review before playing.",
+      "google_review_description": "Link to your Google Reviews page",
       "google_review_placeholder": "https://g.page/r/XXXXXXXX/review",
       "google_review_required": "The Google Reviews link is required.",
       "google_review_error": "Cannot create a game without an associated business.",
