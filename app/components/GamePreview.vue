@@ -320,12 +320,13 @@ const previewPrizes = computed(() => {
 
 				<!-- STEP 4: PLAYING -->
 				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
-					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
+					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
 						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
 							class="h-10 max-w-[140px] object-contain drop-shadow-xl"
 							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
 						<h1 v-else-if="!isImageBackground" class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<div v-else class="h-10"></div>
 					</div>
 
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
@@ -372,6 +373,7 @@ const previewPrizes = computed(() => {
 							class="h-12 max-w-[160px] object-contain drop-shadow-xl"
 							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
 						<h1 v-else-if="!isImageBackground" class="text-[12px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<div v-else class="h-12"></div>
 					</div>
 
 					<!-- Tagline WIN / LOSE -->

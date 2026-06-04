@@ -26,6 +26,7 @@ const isImageBackground = computed(() => {
       <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
         :style="isImageBackground ? { visibility: 'hidden' } : {}" />
       <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <div v-else class="h-16"></div>
     </div>
 
     <!-- Tagline "FÉLICITATIONS !" -->
@@ -96,6 +97,7 @@ const isImageBackground = computed(() => {
       <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
         :style="isImageBackground ? { visibility: 'hidden' } : {}" />
       <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <div v-else class="h-16"></div>
     </div>
 
     <!-- Tagline "PERDU" -->
