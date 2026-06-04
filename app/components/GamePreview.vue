@@ -187,9 +187,18 @@ const previewPrizes = computed(() => {
 
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
-						<img v-if="logoUrl && !imgError && !isImageBackground" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-						<h1 v-else-if="!isImageBackground" class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-14 max-w-[180px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-14"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
+							<div v-else class="h-14 w-28 rounded-xl border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="22" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
 					<!-- Tagline -->
@@ -321,11 +330,18 @@ const previewPrizes = computed(() => {
 				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-10 max-w-[140px] object-contain drop-shadow-xl"
-							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
-						<h1 v-else-if="!isImageBackground" class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
-						<div v-else class="h-10"></div>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-10 max-w-[140px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-10"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
+							<div v-else class="h-10 w-20 rounded-lg border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="16" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
@@ -368,11 +384,18 @@ const previewPrizes = computed(() => {
 				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-6">
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-12 max-w-[160px] object-contain drop-shadow-xl"
-							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
-						<h1 v-else-if="!isImageBackground" class="text-[12px] font-black text-center text-white">{{ displayTitle }}</h1>
-						<div v-else class="h-12"></div>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-12 max-w-[160px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-12"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-12 max-w-[160px] object-contain drop-shadow-xl" />
+							<div v-else class="h-12 w-24 rounded-lg border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="18" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
 					<!-- Tagline WIN / LOSE -->
