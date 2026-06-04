@@ -2417,7 +2417,7 @@
     },
     "review_timer": {
       "not_done": "Pas encore fait ?",
-      "verifying_action": "Merci ! Votre participation est en cours de vérification…",
+      "verifying_action": "La roue vous attend — revenez dès que c'est fait !",
       "title": "Laissez votre avis ⭐",
       "subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
       "seconds": "sec",
