@@ -238,12 +238,12 @@ onMounted(() => {
 			<!-- Actions -->
 			<div v-if="!loading" class="flex items-center gap-2">
 				<button v-if="isEditing" @click="cancelEdit"
-					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-slate-700/40 text-slate-500 dark:text-slate-400 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
+					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
 					{{ $t('common.cancel') }}
 				</button>
 
 				<button v-if="isProfileComplete && !isEditing" @click="startEditing"
-					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-slate-700/40 text-slate-600 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#2C2C2E] transition-colors">
+					class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
 					<Icon name="ph:pencil-simple-bold" size="14" />
 					<span>{{ $t('profile.edit_button') }}</span>
 				</button>
@@ -276,8 +276,8 @@ onMounted(() => {
 		<div v-if="!loading" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
 			<!-- SECTION 1: Informations (Left Column) -->
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40">
-				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/40">
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
 					<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('profile.information_section') }}</h2>
 					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('profile.information_subtitle') }}</p>
 				</div>
@@ -293,7 +293,7 @@ onMounted(() => {
 					</div>
 
 					<!-- Google rating badge (read-only) -->
-					<div v-if="business.googleRating && !canEdit" class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-[#2C2C2E] rounded-lg border border-slate-200 dark:border-slate-700/40">
+					<div v-if="business.googleRating && !canEdit" class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800">
 						<Icon name="ph:star-fill" class="text-yellow-400 shrink-0" size="16" />
 						<div class="flex items-baseline gap-1.5">
 							<span class="text-sm font-bold text-slate-900 dark:text-white">{{ business.googleRating?.toFixed(1) }}</span>
@@ -309,7 +309,7 @@ onMounted(() => {
 					<div>
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.business_name') }}</label>
 						<input v-model="business.name" type="text" required :disabled="!canEdit"
-							class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.business_name_placeholder')">
 					</div>
 
@@ -331,7 +331,7 @@ onMounted(() => {
 						<div class="relative">
 							<Icon name="ph:map-pin-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
 							<input v-model="business.addressStreet" :disabled="!canEdit"
-								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.address_placeholder')">
 						</div>
 					</div>
@@ -341,13 +341,13 @@ onMounted(() => {
 						<div>
 							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.city') }}</label>
 							<input v-model="business.addressCity" :disabled="!canEdit"
-								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.city_placeholder')">
 						</div>
 						<div>
 							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.postal_code') }}</label>
 							<input v-model="business.addressZip" :disabled="!canEdit"
-								class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.postal_code_placeholder')">
 						</div>
 					</div>
@@ -356,7 +356,7 @@ onMounted(() => {
 					<div>
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.country') }}</label>
 						<input v-model="business.addressCountry" :disabled="!canEdit"
-							class="w-full bg-slate-50 dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-[#1C1C1E] focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.country_placeholder')">
 					</div>
 				</div>
@@ -364,8 +364,8 @@ onMounted(() => {
 			</div>
 
 			<!-- SECTION 2: Marque & Visuel (Right Column) -->
-			<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
-				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700/40">
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
 					<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('profile.visual_identity') }}</h2>
 					<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('profile.visual_identity_subtitle') }}</p>
 				</div>
@@ -377,7 +377,7 @@ onMounted(() => {
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{{ $t('profile.logo') }}</label>
 						<div class="flex items-start gap-4">
 							<!-- Logo Preview -->
-							<div class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-[#2C2C2E] flex items-center justify-center p-2 relative group/logo overflow-hidden transition-colors hover:bg-white">
+							<div class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-2 relative group/logo overflow-hidden transition-colors hover:bg-white">
 								<img v-if="business.logo" :src="getAssetUrl(business.logo)" class="w-full h-full object-contain" />
 								<Icon v-else name="ph:storefront-duotone" class="text-slate-300" size="28" />
 								<button v-if="business.logo && canEdit" type="button" @click="business.logo = null"
@@ -391,7 +391,7 @@ onMounted(() => {
 							<div v-if="canEdit" class="flex-1 space-y-2 pt-1">
 								<input ref="fileInputRef" type="file" @change="handleLogoUpload" accept="image/*" class="hidden" />
 								<button type="button" @click="triggerFileInput" :disabled="logoUploading"
-									class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-slate-600/50 hover:bg-slate-50 dark:hover:bg-[#3A3A3C] text-slate-600 dark:text-slate-200 text-xs font-medium rounded-md transition-colors disabled:opacity-50">
+									class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-200 text-xs font-medium rounded-md transition-colors disabled:opacity-50">
 									<Icon v-if="logoUploading" name="ph:spinner-gap-bold" class="animate-spin" size="13" />
 									<Icon v-else name="ph:upload-simple-bold" size="13" />
 									{{ logoUploading ? $t('components.file_upload.uploading') : $t('profile.upload_logo') }}
@@ -410,7 +410,7 @@ onMounted(() => {
 					<!-- Colors Section -->
 					<div>
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{{ $t('profile.brand_color') }}</label>
-						<div class="flex items-center gap-2 bg-slate-50 dark:bg-[#2C2C2E] px-3 py-2 rounded-md border border-slate-200 dark:border-slate-600/50">
+						<div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700">
 							<div class="relative w-7 h-7 rounded overflow-hidden border border-slate-200 cursor-pointer"
 								:class="{ 'opacity-50 cursor-not-allowed': !canEdit }">
 								<input v-model="business.primaryColor" type="color" :disabled="!canEdit"
