@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   game: any
   business: any
   primaryColor: string
@@ -9,6 +9,12 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{ restart: [] }>()
+
+const isImageBackground = computed(() => {
+  const bg = props.game?.backgroundImage
+  if (!bg) return false
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+})
 </script>
 
 <template>
@@ -17,8 +23,9 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-      <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
     </div>
 
     <!-- Tagline "FÉLICITATIONS !" -->
@@ -86,8 +93,9 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-      <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
     </div>
 
     <!-- Tagline "PERDU" -->
