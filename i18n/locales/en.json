@@ -349,7 +349,10 @@
     "success_message": "Profile updated successfully",
     "error_message": "Error saving profile",
     "upload_error": "Upload error",
-    "upload_success": "Logo uploaded"
+    "upload_success": "Logo uploaded",
+    "google_search_label": "Search for your business on Google",
+    "google_search_placeholder": "E.g.: Chicken Street Paris...",
+    "google_search_hint": "Select your business to auto-fill the information."
   },
   "games": {
     "title": "My Games",
@@ -488,7 +491,13 @@
       "flyer_save_error": "Error saving flyer",
       "preview_flyer": "Flyer Preview",
       "finish_wizard": "Finish",
-      "google_review_invalid": "Invalid URL. It must start with https://"
+      "google_review_invalid": "Invalid URL. It must start with https://",
+      "save_success": "Changes saved.",
+      "button_color": "Buttons color",
+      "wheel_lost_color": "\"Lost\" slots",
+      "wheel_prize_color": "Prize slots",
+      "wheel_border_color": "Wheel borders",
+      "wheel_pointer_color": "Pointer (arrow)"
     },
     "prizes": {
       "modal_title": "Prizes to win",
@@ -2414,7 +2423,8 @@
       "step_review": "Leave your review ⭐⭐⭐⭐⭐",
       "step_return": "Come back here to play",
       "already_reviewed": "I already left my review →",
-      "verifying_action": "The wheel is waiting — come back when you're done!"
+      "verifying_action": "The wheel is waiting — come back when you're done!",
+      "not_done": "Not done yet?"
     },
     "form": {
       "heading": "Claim your prize",
