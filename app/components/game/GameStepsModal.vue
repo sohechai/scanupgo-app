@@ -84,29 +84,12 @@ const buttonTextColor = computed(() => {
 
           <!-- ÉTAPE : INSTRUCTIONS -->
           <div v-if="internalStep === 'steps'" class="px-6 pt-14 pb-8 flex flex-col items-center">
-            <h2 class="text-[22px] font-black text-white mb-6 text-center tracking-wide">
-              {{ $t('play.steps.heading') }}
-            </h2>
 
-            <div class="space-y-3 mb-6 w-full">
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">1</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step1') }}</span>
-              </div>
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">2</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step2') }}</span>
-              </div>
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">3</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step3') }}</span>
-              </div>
+            <!-- Message unique -->
+            <div class="w-full bg-[#262626] rounded-2xl px-4 py-4 mb-6 shadow-inner">
+              <p class="font-bold text-white text-[17px] text-center leading-snug">
+                {{ $t('play.steps.message') }}
+              </p>
             </div>
 
             <!-- 5 étoiles -->

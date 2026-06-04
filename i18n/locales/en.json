@@ -2224,6 +2224,8 @@
       "step_form": "Form",
       "step_playing": "Playing",
       "step_result": "Result",
+      "result_win": "Won",
+      "result_lose": "Lost",
       "default_title": "Game Title",
       "default_tagline": "Try your luck!"
     },
@@ -2399,10 +2401,7 @@
       "contact": "Contact"
     },
     "steps": {
-      "heading": "Follow the steps:",
-      "step1": "Leave us a review",
-      "step2": "Come back to this page",
-      "step3": "Spin the wheel!",
+      "message": "Share your experience on Google and come back to spin the wheel!",
       "google_button": "Rate on Google",
       "skip": "Skip this step",
       "back": "Back"

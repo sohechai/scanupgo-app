@@ -2234,7 +2234,9 @@
       "step_playing": "En cours",
       "step_result": "Résultat",
       "default_title": "Titre du Jeu",
-      "default_tagline": "Tentez votre chance !"
+      "default_tagline": "Tentez votre chance !",
+      "result_win": "Gagné",
+      "result_lose": "Perdu"
     },
     "file_upload": {
       "error_too_large": "Le fichier est trop volumineux (max {size}MB)",
@@ -2408,10 +2410,7 @@
       "contact": "Contact"
     },
     "steps": {
-      "heading": "Suivez les étapes :",
-      "step1": "Laissez nous un avis",
-      "step2": "Revenez sur cette page",
-      "step3": "Faites tourner la roue !",
+      "message": "Partagez votre expérience sur Google et revenez tourner la roue !",
       "google_button": "Noter sur Google",
       "skip": "Passer cette étape",
       "back": "Retour"

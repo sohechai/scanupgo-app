@@ -2170,6 +2170,8 @@
       "step_form": "نموذج",
       "step_playing": "يلعب",
       "step_result": "النتيجة",
+      "result_win": "فاز",
+      "result_lose": "خسر",
       "default_title": "عنوان اللعبة",
       "default_tagline": "جرب حظك!"
     },
@@ -2345,10 +2347,7 @@
       "contact": "اتصل بنا"
     },
     "steps": {
-      "heading": "اتبع الخطوات:",
-      "step1": "اترك لنا تقييماً",
-      "step2": "عد إلى هذه الصفحة",
-      "step3": "أدر العجلة!",
+      "message": "شارك تجربتك على Google وعد لتدوير العجلة!",
       "google_button": "قيّم على Google",
       "skip": "تخطي هذه الخطوة",
       "back": "رجوع"
