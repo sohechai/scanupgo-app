@@ -320,18 +320,12 @@ const previewPrizes = computed(() => {
 
 				<!-- STEP 4: PLAYING -->
 				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
-					<!-- Logo -->
+					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<template v-if="isImageBackground">
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-10 max-w-[140px] object-contain drop-shadow-xl opacity-0" />
-							<div v-else class="h-10 w-24 rounded-xl border border-dashed border-white/30 bg-white/10"></div>
-						</template>
-						<template v-else>
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
-							<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
-						</template>
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-10 max-w-[140px] object-contain drop-shadow-xl"
+							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<h1 v-else-if="!isImageBackground" class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
@@ -374,16 +368,10 @@ const previewPrizes = computed(() => {
 				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-6">
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<template v-if="isImageBackground">
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-12 max-w-[160px] object-contain drop-shadow-xl opacity-0" />
-							<div v-else class="h-12 w-28 rounded-xl border border-dashed border-white/30 bg-white/10"></div>
-						</template>
-						<template v-else>
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-12 max-w-[160px] object-contain drop-shadow-xl" />
-							<h1 v-else class="text-[12px] font-black text-center text-white">{{ displayTitle }}</h1>
-						</template>
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-12 max-w-[160px] object-contain drop-shadow-xl"
+							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<h1 v-else-if="!isImageBackground" class="text-[12px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
 					<!-- Tagline WIN / LOSE -->

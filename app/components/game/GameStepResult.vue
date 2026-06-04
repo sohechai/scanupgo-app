@@ -23,14 +23,9 @@ const isImageBackground = computed(() => {
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <template v-if="isImageBackground">
-        <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl opacity-0" />
-        <div v-else class="h-16 w-36 rounded-2xl border-2 border-dashed border-white/30 bg-white/10 backdrop-blur-sm"></div>
-      </template>
-      <template v-else>
-        <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-        <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
-      </template>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
     </div>
 
     <!-- Tagline "FÉLICITATIONS !" -->
@@ -98,14 +93,9 @@ const isImageBackground = computed(() => {
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <template v-if="isImageBackground">
-        <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl opacity-0" />
-        <div v-else class="h-16 w-36 rounded-2xl border-2 border-dashed border-white/30 bg-white/10 backdrop-blur-sm"></div>
-      </template>
-      <template v-else>
-        <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-        <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
-      </template>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
     </div>
 
     <!-- Tagline "PERDU" -->

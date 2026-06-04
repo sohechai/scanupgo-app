@@ -46,17 +46,12 @@ const buttonTextColor = computed(() => {
   <div class="fixed inset-0 flex flex-col overflow-hidden" :style="backgroundStyle">
     <div v-if="game?.backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
     <div class="relative z-10 w-full h-full flex flex-col pt-6">
-      <!-- Logo -->
+      <!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
       <div class="flex justify-center px-8 shrink-0">
-        <template v-if="isImageBackground">
-          <img v-if="business?.logo" :src="business.logo"
-            class="h-20 max-w-[280px] object-contain drop-shadow-2xl opacity-0" />
-          <div v-else class="h-20 w-40 rounded-2xl border-2 border-dashed border-white/30 bg-white/10 backdrop-blur-sm"></div>
-        </template>
-        <template v-else>
-          <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[280px] object-contain drop-shadow-2xl" />
-          <h1 v-else class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
-        </template>
+        <img v-if="business?.logo" :src="business.logo"
+          class="h-20 max-w-[280px] object-contain drop-shadow-2xl"
+          :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+        <h1 v-else-if="!isImageBackground" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
       </div>
 
       <!-- Tagline "MERCI, BONNE CHANCE !" — même style que l'intro -->
