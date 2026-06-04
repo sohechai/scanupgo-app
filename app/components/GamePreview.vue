@@ -185,11 +185,10 @@ const previewPrizes = computed(() => {
 				<!-- STEP 1: INTRO -->
 				<div v-if="currentStep === 'intro'" class="relative h-full overflow-hidden flex flex-col">
 
-					<!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
+					<!-- Logo -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-14 max-w-[180px] object-contain drop-shadow-xl"
-							:style="isImageBackground ? { visibility: 'hidden' } : {}" />
+						<img v-if="logoUrl && !imgError && !isImageBackground" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
 						<h1 v-else-if="!isImageBackground" class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
 					</div>
 
