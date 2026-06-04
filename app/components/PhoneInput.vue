@@ -102,7 +102,10 @@ function selectCountry(dial: string) {
 watch(() => props.country, (countryName) => {
 	if (!countryName) return
 	const match = countries.find(c => c.name.toLowerCase() === countryName.toLowerCase())
-	if (match) selectedDial.value = match.dial
+	if (match && match.dial !== selectedDial.value) {
+		selectedDial.value = match.dial
+		emitCombined()
+	}
 })
 
 onMounted(() => {

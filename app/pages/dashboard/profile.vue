@@ -201,13 +201,17 @@ const handleCropCancel = () => {
 	cropperFile.value = null
 }
 
+const { normalizePhone } = usePhone()
+
 const handlePlaceSelect = (details: any) => {
 	business.value.name = details.name || business.value.name
 	business.value.addressStreet = details.addressStreet || ''
 	business.value.addressCity = details.addressCity || ''
 	business.value.addressZip = details.addressZip || ''
 	business.value.addressCountry = details.addressCountry || ''
-	business.value.phone = details.phone || business.value.phone
+	if (details.phone) {
+		business.value.phone = normalizePhone(details.phone, details.addressCountry || '')
+	}
 	business.value.googlePlaceId = details.placeId
 	business.value.googleReviewUrl = details.googleReviewUrl
 	business.value.googleRating = details.rating

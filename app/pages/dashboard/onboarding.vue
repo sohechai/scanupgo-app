@@ -71,6 +71,8 @@ const hidePredictions = () => {
 	setTimeout(() => { showPredictions.value = false }, 150)
 }
 
+const { normalizePhone } = usePhone()
+
 const selectPlace = async (prediction: typeof predictions.value[0]) => {
 	showPredictions.value = false
 	placeLoading.value = true
@@ -82,7 +84,7 @@ const selectPlace = async (prediction: typeof predictions.value[0]) => {
 		business.value.addressCity = details.addressCity || ''
 		business.value.addressZip = details.addressZip || ''
 		business.value.addressCountry = details.addressCountry || ''
-		business.value.phone = business.value.phone || details.phone || ''
+		business.value.phone = details.phone ? normalizePhone(details.phone, details.addressCountry || '') : (business.value.phone || '')
 		business.value.googlePlaceId = details.placeId
 		business.value.googleReviewUrl = details.googleReviewUrl
 		business.value.googleRating = details.rating ?? null

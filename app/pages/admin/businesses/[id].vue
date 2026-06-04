@@ -113,6 +113,8 @@ const reactivateBusiness = async () => {
 	}
 }
 
+const { phoneFlag, phoneDial, parsePhone } = usePhone()
+
 const getBillingLabel = (period: string) => {
 	switch (period) {
 		case 'monthly': return t('admin.subscriptions.period_monthly')
@@ -216,7 +218,14 @@ onMounted(fetchBusiness)
 							<div class="border-t border-white/5"></div>
 							<div class="flex items-center justify-between">
 								<span class="text-sm text-slate-400">{{ $t('admin.businesses.detail.info_phone') }}</span>
-								<span class="text-sm font-bold text-white">{{ business.phone || '-' }}</span>
+								<span class="text-sm font-bold text-white flex items-center gap-1.5">
+									<template v-if="business.phone">
+										<span>{{ phoneFlag(business.phone) }}</span>
+										<span class="text-slate-400 font-mono text-xs">{{ phoneDial(business.phone) }}</span>
+										<span>{{ parsePhone(business.phone).number }}</span>
+									</template>
+									<span v-else>-</span>
+								</span>
 							</div>
 							<div class="border-t border-white/5"></div>
 							<div class="flex items-center justify-between">
