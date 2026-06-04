@@ -75,7 +75,10 @@ watch(
 )
 
 const colorMode = useColorMode()
-colorMode.preference = 'light'
+
+const toggleDarkMode = () => {
+	colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 </script>
 
 <template>
@@ -161,6 +164,11 @@ colorMode.preference = 'light'
 					</div>
 
 					<div class="flex items-center gap-2">
+						<button @click="toggleDarkMode"
+							class="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+							:title="colorMode.value === 'dark' ? 'Mode clair' : 'Mode sombre'">
+							<Icon :name="colorMode.value === 'dark' ? 'ph:sun-bold' : 'ph:moon-bold'" size="16" />
+						</button>
 						<LanguageSelector />
 						<NotificationDropdown />
 					</div>
