@@ -26,6 +26,12 @@ const backgroundStyle = computed(() => {
   return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
 })
 
+const isImageBackground = computed(() => {
+  const bg = props.game?.backgroundImage
+  if (!bg) return false
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+})
+
 const buttonTextColor = computed(() => {
   const hex = buttonColor.value.replace('#', '')
   if (hex.length !== 6) return '#000000'
@@ -42,8 +48,11 @@ const buttonTextColor = computed(() => {
     <div class="relative z-10 w-full h-full flex flex-col pt-6">
       <!-- Logo -->
       <div class="flex justify-center px-8 shrink-0">
-        <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[280px] object-contain drop-shadow-2xl" />
-        <h1 v-else class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
+        <img v-if="business?.logo" :src="business.logo"
+          class="h-20 max-w-[280px] object-contain drop-shadow-2xl"
+          :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+        <h1 v-else-if="!isImageBackground" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
+        <div v-else class="h-20"></div>
       </div>
 
       <!-- Tagline "MERCI, BONNE CHANCE !" — même style que l'intro -->

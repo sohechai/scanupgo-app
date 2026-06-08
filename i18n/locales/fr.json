@@ -200,12 +200,15 @@
     "title": "Vue d'ensemble",
     "welcome_time": "Bienvenue",
     "nav": {
+      "section_principal": "Principal",
+      "section_gestion": "Gestion",
+      "section_compte": "Compte",
       "dashboard": "Tableau de bord",
       "business": "Mon Établissement",
       "games": "Jeux & Flyers",
       "orders": "Commandes",
       "players": "Joueurs",
-      "marketing": "Marketing",
+      "marketing": "Marketing Email",
       "redeem": "Validation des lots",
       "prizes": "Mes Lots",
       "subscription": "Mon Abonnement",
@@ -225,9 +228,9 @@
     "period_label": {
       "7d": "7 derniers jours",
       "30d": "30 derniers jours",
-      "this_month": "ce mois-ci",
+      "this_month": "Ce mois-ci",
       "90d": "90 derniers jours",
-      "this_year": "cette année"
+      "this_year": "Cette année"
     },
     "stats": {
       "players": "Joueurs",
@@ -407,7 +410,7 @@
       "tagline_placeholder": "Tentez votre chance et gagnez des cadeaux exclusifs !",
       "google_review_link": "Lien Google Avis",
       "google_review_help": "Aide",
-      "google_review_description": "Ajoutez le lien vers votre page Google pour inciter vos clients à laisser un avis avant de jouer.",
+      "google_review_description": "Lien vers votre page Google Reviews",
       "google_review_placeholder": "https://g.page/r/XXXXXXXX/review",
       "google_review_required": "Le lien Google Avis est obligatoire.",
       "save_success": "Modifications enregistrées.",
@@ -426,9 +429,12 @@
       "tab_prizes": "Cadeaux",
       "tab_flyers": "Flyers",
       "appearance_title": "Apparence du Jeu",
+      "apply_business_colors": "Appliquer les couleurs du logo",
+      "colors_applied": "Couleurs du logo appliquées",
       "appearance_subtitle": "Personnalisez les couleurs",
       "background_color": "Couleur de fond",
       "button_color": "Couleur des boutons",
+      "popup_color": "Couleur popup",
       "wheel_lost_color": "Cases « Perdu »",
       "wheel_prize_color": "Cases cadeaux",
       "wheel_border_color": "Bordures de la roue",
@@ -936,6 +942,8 @@
       "back_to_home": "Retour à l'accueil",
       "change_plan": "Changer de plan",
       "cancel": "Résilier",
+      "lifetime_access": "Accès à vie — aucun renouvellement",
+      "days_remaining": "{days} jour(s) restant(s)",
       "included_features": "Fonctionnalités incluses",
       "active_games": "{count} jeux actifs",
       "active_games_label": "Jeux actifs",
@@ -2229,7 +2237,9 @@
       "step_playing": "En cours",
       "step_result": "Résultat",
       "default_title": "Titre du Jeu",
-      "default_tagline": "Tentez votre chance !"
+      "default_tagline": "Tentez votre chance !",
+      "result_win": "Gagné",
+      "result_lose": "Perdu"
     },
     "file_upload": {
       "error_too_large": "Le fichier est trop volumineux (max {size}MB)",
@@ -2403,17 +2413,14 @@
       "contact": "Contact"
     },
     "steps": {
-      "heading": "Suivez les étapes :",
-      "step1": "Laissez nous un avis",
-      "step2": "Revenez sur cette page",
-      "step3": "Faites tourner la roue !",
+      "message": "Partagez votre expérience sur Google et revenez tourner la roue !",
       "google_button": "Noter sur Google",
       "skip": "Passer cette étape",
       "back": "Retour"
     },
     "review_timer": {
       "not_done": "Pas encore fait ?",
-      "verifying_action": "Merci ! Votre participation est en cours de vérification…",
+      "verifying_action": "La roue vous attend — revenez dès que c'est fait !",
       "title": "Laissez votre avis ⭐",
       "subtitle": "Google s'est ouvert.\nPrenez le temps de laisser un avis pour valider votre participation.",
       "seconds": "sec",

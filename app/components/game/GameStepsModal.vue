@@ -49,16 +49,20 @@ onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
 })
 
-const buttonTextColor = computed(() => {
-  const hexColor = props.game?.primaryColor || '#1a1a1a'
-  const hex = hexColor.replace('#', '')
+const contrastColor = (hexColor: string) => {
+  const hex = (hexColor || '').replace('#', '')
   if (hex.length !== 6) return '#ffffff'
   const r = parseInt(hex.substring(0, 2), 16)
   const g = parseInt(hex.substring(2, 4), 16)
   const b = parseInt(hex.substring(4, 6), 16)
   const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
   return (yiq >= 128) ? '#111111' : '#ffffff'
-})
+}
+
+const popupColor = computed(() => props.game?.popupColor || '#333333')
+const buttonColor = computed(() => props.game?.buttonColor || '#1a1a1a')
+const cardTextColor = computed(() => contrastColor(popupColor.value))
+const buttonTextColor = computed(() => contrastColor(buttonColor.value))
 </script>
 
 <template>
@@ -70,7 +74,8 @@ const buttonTextColor = computed(() => {
           @click="internalStep === 'steps' && emit('close')"></div>
 
         <!-- Centered Modal -->
-        <div class="modal-panel relative bg-[#333333] rounded-3xl w-full max-w-sm shadow-2xl mt-8 border-2 border-black">
+        <div class="modal-panel relative rounded-3xl w-full max-w-sm shadow-2xl mt-8 border-2 border-black"
+          :style="{ backgroundColor: popupColor, color: cardTextColor }">
 
           <!-- Floating Google Logo -->
           <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl border-[3px] border-black">
@@ -84,29 +89,12 @@ const buttonTextColor = computed(() => {
 
           <!-- ÉTAPE : INSTRUCTIONS -->
           <div v-if="internalStep === 'steps'" class="px-6 pt-14 pb-8 flex flex-col items-center">
-            <h2 class="text-[22px] font-black text-white mb-6 text-center tracking-wide">
-              {{ $t('play.steps.heading') }}
-            </h2>
 
-            <div class="space-y-3 mb-6 w-full">
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">1</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step1') }}</span>
-              </div>
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">2</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step2') }}</span>
-              </div>
-              <div class="flex items-center gap-4 bg-[#262626] rounded-2xl px-4 py-3.5 shadow-inner">
-                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0">
-                  <span class="text-black font-black text-[15px]">3</span>
-                </div>
-                <span class="font-bold text-white text-[15px]">{{ $t('play.steps.step3') }}</span>
-              </div>
+            <!-- Message unique -->
+            <div class="w-full bg-[#262626] rounded-2xl px-4 py-4 mb-6 shadow-inner">
+              <p class="font-bold text-white text-[17px] text-center leading-snug">
+                {{ $t('play.steps.message') }}
+              </p>
             </div>
 
             <!-- 5 étoiles -->
@@ -117,7 +105,7 @@ const buttonTextColor = computed(() => {
             <!-- Bouton Google -->
             <button @click="openGoogleReview"
               class="w-full py-4 rounded-[20px] font-black text-[18px] flex items-center justify-center shadow-lg active:scale-95 transition"
-              :style="{ backgroundColor: props.game?.primaryColor || '#1a1a1a', color: buttonTextColor }">
+              :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
               {{ $t('play.steps.google_button') }}
             </button>
 
@@ -131,13 +119,13 @@ const buttonTextColor = computed(() => {
           <!-- ÉTAPE : TIMER -->
           <div v-else class="px-6 pt-12 pb-10 flex flex-col items-center gap-6">
 
-            <h2 class="text-[22px] font-black text-white text-center">
+            <h2 class="text-[22px] font-black text-center">
               {{ $t('play.review_timer.not_done') }}
             </h2>
 
             <button @click="openGoogleReview"
               class="px-8 py-3 rounded-[20px] font-black text-[16px] flex items-center justify-center shadow-lg active:scale-95 transition"
-              :style="{ backgroundColor: props.game?.primaryColor || '#1a1a1a', color: buttonTextColor }">
+              :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
               {{ $t('play.steps.google_button') }}
             </button>
 
@@ -147,7 +135,7 @@ const buttonTextColor = computed(() => {
             </div>
             <div v-else class="my-2"></div>
 
-            <p class="text-[15px] font-bold text-white text-center leading-tight">
+            <p class="text-[15px] font-bold text-center leading-tight opacity-90">
               {{ $t('play.review_timer.verifying_action') }}
             </p>
 

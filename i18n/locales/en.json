@@ -200,12 +200,15 @@
     "title": "Overview",
     "welcome_time": "Welcome",
     "nav": {
+      "section_principal": "Main",
+      "section_gestion": "Management",
+      "section_compte": "Account",
       "dashboard": "Dashboard",
       "business": "My Business",
       "games": "Games & Flyers",
       "orders": "Orders",
       "players": "Players",
-      "marketing": "Marketing",
+      "marketing": "Email Marketing",
       "redeem": "Prize Validation",
       "prizes": "My Prizes",
       "subscription": "My Subscription",
@@ -225,9 +228,9 @@
     "period_label": {
       "7d": "Last 7 days",
       "30d": "Last 30 days",
-      "this_month": "this month",
+      "this_month": "This month",
       "90d": "Last 90 days",
-      "this_year": "this year"
+      "this_year": "This year"
     },
     "stats": {
       "players": "Players",
@@ -346,7 +349,10 @@
     "success_message": "Profile updated successfully",
     "error_message": "Error saving profile",
     "upload_error": "Upload error",
-    "upload_success": "Logo uploaded"
+    "upload_success": "Logo uploaded",
+    "google_search_label": "Search for your business on Google",
+    "google_search_placeholder": "E.g.: Chicken Street Paris...",
+    "google_search_hint": "Select your business to auto-fill the information."
   },
   "games": {
     "title": "My Games",
@@ -404,7 +410,7 @@
       "tagline_placeholder": "Try your luck and win exclusive prizes!",
       "google_review_link": "Google Reviews Link",
       "google_review_help": "Help",
-      "google_review_description": "Add the link to your Google page to encourage customers to leave a review before playing.",
+      "google_review_description": "Link to your Google Reviews page",
       "google_review_placeholder": "https://g.page/r/XXXXXXXX/review",
       "google_review_required": "The Google Reviews link is required.",
       "google_review_error": "Cannot create a game without an associated business.",
@@ -422,6 +428,8 @@
       "tab_prizes": "Prizes",
       "tab_flyers": "Flyers",
       "appearance_title": "Game Appearance",
+      "apply_business_colors": "Apply logo colors",
+      "colors_applied": "Logo colors applied",
       "appearance_subtitle": "Customize the colors",
       "background_color": "Background color",
       "background_none": "None",
@@ -485,7 +493,14 @@
       "flyer_save_error": "Error saving flyer",
       "preview_flyer": "Flyer Preview",
       "finish_wizard": "Finish",
-      "google_review_invalid": "Invalid URL. It must start with https://"
+      "google_review_invalid": "Invalid URL. It must start with https://",
+      "save_success": "Changes saved.",
+      "button_color": "Buttons color",
+      "popup_color": "Popup color",
+      "wheel_lost_color": "\"Lost\" slots",
+      "wheel_prize_color": "Prize slots",
+      "wheel_border_color": "Wheel borders",
+      "wheel_pointer_color": "Pointer (arrow)"
     },
     "prizes": {
       "modal_title": "Prizes to win",
@@ -927,6 +942,8 @@
       "back_to_home": "Back to home",
       "change_plan": "Change plan",
       "cancel": "Cancel",
+      "lifetime_access": "Lifetime access — no renewal",
+      "days_remaining": "{days} day(s) remaining",
       "included_features": "Included features",
       "active_games": "{count} active games",
       "active_games_label": "Active games",
@@ -2219,6 +2236,8 @@
       "step_form": "Form",
       "step_playing": "Playing",
       "step_result": "Result",
+      "result_win": "Won",
+      "result_lose": "Lost",
       "default_title": "Game Title",
       "default_tagline": "Try your luck!"
     },
@@ -2394,10 +2413,7 @@
       "contact": "Contact"
     },
     "steps": {
-      "heading": "Follow the steps:",
-      "step1": "Leave us a review",
-      "step2": "Come back to this page",
-      "step3": "Spin the wheel!",
+      "message": "Share your experience on Google and come back to spin the wheel!",
       "google_button": "Rate on Google",
       "skip": "Skip this step",
       "back": "Back"
@@ -2410,7 +2426,8 @@
       "step_review": "Leave your review ⭐⭐⭐⭐⭐",
       "step_return": "Come back here to play",
       "already_reviewed": "I already left my review →",
-      "verifying_action": "Thank you! Your participation is being verified…"
+      "verifying_action": "The wheel is waiting — come back when you're done!",
+      "not_done": "Not done yet?"
     },
     "form": {
       "heading": "Claim your prize",

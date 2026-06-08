@@ -18,6 +18,22 @@ const loading = ref(true)
 const actionLoading = ref(false)
 const showSuspendModal = ref(false)
 const showReactivateModal = ref(false)
+const showDeleteModal = ref(false)
+const deleteLoading = ref(false)
+
+const deleteBusiness = async () => {
+	deleteLoading.value = true
+	try {
+		await $api(`/admin/businesses/${businessId}`, { method: 'DELETE' })
+		showToast('Commerce supprimé', 'success')
+		router.push('/admin/businesses')
+	} catch (e: any) {
+		showToast(e?.data?.message || 'Erreur', 'error')
+	} finally {
+		deleteLoading.value = false
+		showDeleteModal.value = false
+	}
+}
 
 // Credits management
 const creditsToSet = ref<number | ''>('')
@@ -97,6 +113,8 @@ const reactivateBusiness = async () => {
 	}
 }
 
+const { phoneFlag, phoneDial, parsePhone } = usePhone()
+
 const getBillingLabel = (period: string) => {
 	switch (period) {
 		case 'monthly': return t('admin.subscriptions.period_monthly')
@@ -171,6 +189,11 @@ onMounted(fetchBusiness)
 							<Icon name="ph:check-circle-bold" size="16" />
 							{{ $t('admin.businesses.detail.reactivate') }}
 						</button>
+						<button @click="showDeleteModal = true"
+							class="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+							<Icon name="ph:trash-bold" size="16" />
+							Supprimer le commerce
+						</button>
 					</div>
 				</div>
 
@@ -195,7 +218,14 @@ onMounted(fetchBusiness)
 							<div class="border-t border-white/5"></div>
 							<div class="flex items-center justify-between">
 								<span class="text-sm text-slate-400">{{ $t('admin.businesses.detail.info_phone') }}</span>
-								<span class="text-sm font-bold text-white">{{ business.phone || '-' }}</span>
+								<span class="text-sm font-bold text-white flex items-center gap-1.5">
+									<template v-if="business.phone">
+										<span>{{ phoneFlag(business.phone) }}</span>
+										<span class="text-slate-400 font-mono text-xs">{{ phoneDial(business.phone) }}</span>
+										<span>{{ parsePhone(business.phone).number }}</span>
+									</template>
+									<span v-else>-</span>
+								</span>
 							</div>
 							<div class="border-t border-white/5"></div>
 							<div class="flex items-center justify-between">
@@ -464,6 +494,41 @@ onMounted(fetchBusiness)
 								<span>{{ $t('admin.businesses.reactivate_modal.confirm') }}</span>
 							</button>
 						</div>
+					</div>
+				</div>
+			</div>
+		</Teleport>
+
+		<!-- Delete Business Modal -->
+		<Teleport to="body">
+			<div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+				<div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showDeleteModal = false" />
+				<div class="relative w-full max-w-md bg-[#0f172a] rounded-2xl border border-red-500/20 shadow-2xl p-6">
+					<div class="flex items-center gap-3 mb-4">
+						<div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+							<Icon name="ph:trash-bold" size="20" class="text-red-500" />
+						</div>
+						<div>
+							<h3 class="text-white font-bold">Supprimer le commerce</h3>
+							<p class="text-slate-400 text-xs mt-0.5">{{ business?.name }}</p>
+						</div>
+					</div>
+					<p class="text-slate-400 text-sm mb-2">
+						Cette action supprimera <strong class="text-white">définitivement</strong> le commerce, ses jeux, flyers et abonnement Stripe.
+					</p>
+					<p class="text-slate-400 text-sm mb-6">
+						<span v-if="business?.owner?.role === 'SUPER_ADMIN'" class="text-amber-400">Le compte utilisateur sera conservé (compte administrateur).</span>
+						<span v-else>Le compte utilisateur sera également supprimé.</span>
+					</p>
+					<div class="flex gap-3">
+						<button @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-slate-300 rounded-xl font-bold text-sm hover:bg-white/10 transition-all">
+							Annuler
+						</button>
+						<button @click="deleteBusiness" :disabled="deleteLoading"
+							class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+							<Icon v-if="deleteLoading" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
+							<span>Supprimer</span>
+						</button>
 					</div>
 				</div>
 			</div>

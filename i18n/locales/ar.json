@@ -209,7 +209,10 @@
       "redeem": "التحقق من الجوائز",
       "prizes": "جوائزي",
       "subscription": "اشتراكي",
-      "account": "حسابي"
+      "account": "حسابي",
+      "section_principal": "الرئيسية",
+      "section_gestion": "الإدارة",
+      "section_compte": "الحساب"
     },
     "my_account": "حسابي",
     "logout": "تسجيل الخروج",
@@ -346,7 +349,10 @@
     "success_message": "تم تحديث الملف التعريفي بنجاح",
     "error_message": "خطأ أثناء الحفظ",
     "upload_error": "خطأ أثناء الرفع",
-    "upload_success": "تم رفع الشعار"
+    "upload_success": "تم رفع الشعار",
+    "google_search_label": "ابحث عن متجرك على Google",
+    "google_search_placeholder": "مثال: Chicken Street Paris...",
+    "google_search_hint": "اختر متجرك لملء المعلومات تلقائيًا."
   },
   "games": {
     "title": "ألعابي",
@@ -404,7 +410,7 @@
       "tagline_placeholder": "جرب حظك واربح هدايا حصرية!",
       "google_review_link": "رابط تقييمات Google",
       "google_review_help": "مساعدة",
-      "google_review_description": "أضف الرابط إلى صفحتك على Google لتشجيع عملائك على ترك تقييم قبل اللعب.",
+      "google_review_description": "رابط صفحة Google Reviews الخاصة بك",
       "google_review_placeholder": "https://g.page/r/XXXXXXXX/review",
       "google_review_required": "رابط تقييمات Google إلزامي.",
       "google_review_error": "تعذر إنشاء لعبة بدون مؤسسة مرتبطة.",
@@ -422,6 +428,8 @@
       "tab_prizes": "الجوائز",
       "tab_flyers": "الفلايرات",
       "appearance_title": "مظهر اللعبة",
+      "apply_business_colors": "تطبيق ألوان الشعار",
+      "colors_applied": "تم تطبيق ألوان الشعار",
       "appearance_subtitle": "خصص الألوان",
       "background_color": "لون الخلفية",
       "background_none": "بدون",
@@ -485,7 +493,14 @@
       "flyer_save_error": "خطأ أثناء حفظ الفلاير",
       "preview_flyer": "معاينة الفلاير",
       "finish_wizard": "إنهاء",
-      "google_review_invalid": "رابط غير صالح. يجب أن يبدأ بـ https://"
+      "google_review_invalid": "رابط غير صالح. يجب أن يبدأ بـ https://",
+      "save_success": "تم حفظ التعديلات.",
+      "button_color": "لون الأزرار",
+      "popup_color": "لون النافذة المنبثقة",
+      "wheel_lost_color": "خانات «خسارة»",
+      "wheel_prize_color": "خانات الجوائز",
+      "wheel_border_color": "حدود العجلة",
+      "wheel_pointer_color": "المؤشر (السهم)"
     },
     "prizes": {
       "modal_title": "الجوائز المراد ربحها",
@@ -686,7 +701,9 @@
       "tip_message": "خصّص رسائلك الإلكترونية باستخدام {prenom} و{nom} و{commerce} لتحقيق معدل فتح أفضل.",
       "credits_available": "رصيد بريد إلكتروني متاح",
       "no_credits": "لم يتبق لديك رصيد. تواصل مع المسؤول للحصول على رصيد.",
-      "credits_info": "1 رصيد = 1 بريد إلكتروني مُرسل · {contacts} جهة اتصال موافقة"
+      "credits_info": "1 رصيد = 1 بريد إلكتروني مُرسل · {contacts} جهة اتصال موافقة",
+      "manage": "إدارة",
+      "to_configure": "للإعداد"
     },
     "campaigns": {
       "title": "الحملات",
@@ -736,7 +753,10 @@
       "template_thanks": "شكر",
       "template_event": "حدث",
       "template_loyalty": "ولاء",
-      "template_reminder": "تذكير بالجائزة"
+      "template_reminder": "تذكير بالجائزة",
+      "error_name_required": "اسم الحملة إلزامي.",
+      "error_subject_required": "موضوع البريد الإلكتروني إلزامي.",
+      "error_content_required": "محتوى البريد الإلكتروني إلزامي."
     },
     "campaign_detail": {
       "edit_title": "تعديل الحملة",
@@ -814,7 +834,21 @@
       "saved_updated": "تم تحديث الأتمتة",
       "delete_confirmation_title": "حذف الأتمتة",
       "delete_confirmation_message": "هل أنت متأكد من رغبتك في حذف هذه الأتمتة؟ هذا الإجراء لا يمكن التراجع عنه.",
-      "delete_button": "حذف"
+      "delete_button": "حذف",
+      "page_subtitle": "اضبطها مرة واحدة، وتنطلق رسائلك تلقائيًا.",
+      "explainer_title": "رسائل تعمل من أجلك على مدار الساعة",
+      "explainer_body": "كل أتمتة تراقب سلوك عملائك وترسل البريد في الوقت المناسب — دون أي إجراء منك. فعّل ما يناسب استراتيجيتك.",
+      "active_count": "نشطة",
+      "welcome_trigger": "ينضم لاعب إلى لعبتك ← يُرسل البريد تلقائيًا",
+      "welcome_trigger_event": "ينضم لاعب إلى لعبتك",
+      "welcome_trigger_result": "إرسال بريد ترحيبي تلقائيًا",
+      "inactivity_trigger": "لا مشاركة منذ X يوم ← يُرسل بريد التذكير",
+      "inactivity_trigger_event": "لا مشاركة منذ X يوم",
+      "inactivity_trigger_result": "إرسال بريد إعادة تفعيل تلقائيًا",
+      "post_win_trigger": "جائزة مكسوبة لكن غير مستلمة بعد X يوم ← يُرسل بريد تذكير",
+      "post_win_trigger_event": "جائزة مكسوبة لكن غير مستلمة بعد X يوم",
+      "post_win_trigger_result": "إرسال بريد تذكير تلقائيًا",
+      "trigger_label": "المُحفّز"
     }
   },
   "subscription": {
@@ -896,6 +930,8 @@
       "back_to_home": "العودة للرئيسية",
       "change_plan": "تغيير الخطة",
       "cancel": "إلغاء",
+      "lifetime_access": "وصول مدى الحياة — بدون تجديد",
+      "days_remaining": "{days} يوم/أيام متبقية",
       "included_features": "الميزات المضمنة",
       "active_games": "{count} ألعاب نشطة",
       "active_games_label": "ألعاب نشطة",
@@ -907,7 +943,8 @@
       "emails_per_month_label": "بريد إلكتروني / شهر",
       "emails_per_month_description": "رصيد إرسال النشرات الإخبارية",
       "google_reviews_booster": "معزز تقييمات Google",
-      "google_reviews_booster_description": "أعد توجيه الفائزين إلى تقييمات Google"
+      "google_reviews_booster_description": "أعد توجيه الفائزين إلى تقييمات Google",
+      "billing_portal": "إدارة الدفع"
     },
     "plan_descriptions": {
       "ScanUpGo": "حل متكامل لجمع تقييمات Google وبناء ولاء العملاء."
@@ -933,7 +970,18 @@
       "current_plan_badge": "الخطة الحالية",
       "try_free": "تجريب مجاني {days} أيام",
       "choose": "اختر {period}"
-    }
+    },
+    "gate": {
+      "label": "ميزة مدفوعة",
+      "title": "افتح جميع الميزات",
+      "description": "اشترك في باقة للوصول إلى ألعابك ولاعبيك وحملاتك التسويقية.",
+      "cta": "اطّلع على العروض",
+      "hint": "بدون التزام · يمكن الإلغاء في أي وقت",
+      "feature_games": "المسابقات",
+      "feature_players": "اللاعبون",
+      "feature_marketing": "التسويق"
+    },
+    "confirm_change_subtitle": "تحقق من التفاصيل قبل التأكيد."
   },
   "account": {
     "title": "حسابي",
@@ -1037,7 +1085,13 @@
     "logout_all_success": "تم تسجيل الخروج من جميع الأجهزة",
     "logout_all_error": "خطأ أثناء تسجيل الخروج",
     "profile_update_success": "تم تحديث الملف الشخصي بنجاح",
-    "profile_update_error": "خطأ أثناء تحديث الملف الشخصي"
+    "profile_update_error": "خطأ أثناء تحديث الملف الشخصي",
+    "delete_loses": "ما الذي ستفقده",
+    "delete_lose_games": "جميع ألعابك وحملاتك",
+    "delete_lose_players": "لاعبوك وبياناتهم",
+    "delete_lose_orders": "طلباتك وسجلّك",
+    "delete_lose_data": "إحصائياتك وتقاريرك",
+    "delete_warning": "هذا الإجراء لا رجعة فيه. ستُحذف جميع بياناتك وألعابك وطلباتك نهائيًا."
   },
   "redeem": {
     "title": "التحقق من الجوائز",
@@ -1059,7 +1113,10 @@
     "error": "خطأ أثناء التحقق من الرمز",
     "how_it_works": "كيف يعمل؟",
     "instructions": "اطلب من الفائز تقديم رمز الاستلام أو رمز QR الخاص به. بمجرد التحقق، سيتم تسجيل الجائزة كـ\"مُوزَّعة\" وسيتم تحديث المخزون.",
-    "documentation": "الاطلاع على الوثائق"
+    "documentation": "الاطلاع على الوثائق",
+    "mode_manual": "إدخال يدوي",
+    "mode_scan": "مسح QR",
+    "validated": "تم التحقق"
   },
   "prizes": {
     "title": "الجوائز والأرباح",
@@ -1804,7 +1861,10 @@
       "theme_type_label": "النوع",
       "theme_type_gradient": "تدرج CSS",
       "theme_type_image": "صورة",
-      "theme_gradient_label": "قيمة CSS"
+      "theme_gradient_label": "قيمة CSS",
+      "modal_error_type": "صيغة غير مقبولة. استخدم فقط ملفات PNG أو JPEG.",
+      "modal_error_size": "الملف كبير جدًا: {size} ميغابايت (الحد: 3 ميغابايت). اضغط الصورة وأعد المحاولة.",
+      "modal_error_upload": "فشل الرفع. تحقق من اتصالك وأعد المحاولة."
     },
     "pricing": {
       "title": "إدارة الأسعار",
@@ -2158,7 +2218,15 @@
         "notif_emails_empty": "لم يتم تكوين عناوين بريد إلكتروني",
         "add_email_placeholder": "email{'@'}example.com",
         "add": "إضافة"
-      }
+      },
+      "billing_trial_title": "فترة تجريبية مجانية",
+      "billing_trial_enable": "تفعيل التجربة المجانية",
+      "billing_trial_description": "يحصل المسجّلون الجدد على فترة تجريبية تلقائية",
+      "billing_trial_duration": "مدة التجربة",
+      "billing_trial_days_unit": "أيام",
+      "billing_trial_active": "تجربة {days} يوم مفعّلة",
+      "billing_trial_inactive": "التجربة معطّلة — تسجيل مباشر دون فترة تجريبية",
+      "email_template_auto": "تلقائي"
     }
   },
   "components": {
@@ -2168,6 +2236,8 @@
       "step_form": "نموذج",
       "step_playing": "يلعب",
       "step_result": "النتيجة",
+      "result_win": "فاز",
+      "result_lose": "خسر",
       "default_title": "عنوان اللعبة",
       "default_tagline": "جرب حظك!"
     },
@@ -2343,10 +2413,7 @@
       "contact": "اتصل بنا"
     },
     "steps": {
-      "heading": "اتبع الخطوات:",
-      "step1": "اترك لنا تقييماً",
-      "step2": "عد إلى هذه الصفحة",
-      "step3": "أدر العجلة!",
+      "message": "شارك تجربتك على Google وعد لتدوير العجلة!",
       "google_button": "قيّم على Google",
       "skip": "تخطي هذه الخطوة",
       "back": "رجوع"
@@ -2359,7 +2426,8 @@
       "step_review": "اترك تقييمك ⭐⭐⭐⭐⭐",
       "step_return": "عد إلى هنا للعب",
       "already_reviewed": "لقد تركت تقييمي بالفعل ←",
-      "verifying_action": "شكراً! جارٍ التحقق من مشاركتك…"
+      "verifying_action": "العجلة تنتظرك — عد بمجرد الانتهاء!",
+      "not_done": "لم تُنجز بعد؟"
     },
     "form": {
       "heading": "احصل على جائزتك",

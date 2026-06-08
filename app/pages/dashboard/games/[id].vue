@@ -140,6 +140,7 @@ const game = ref({
 	wheelBorderColor: '#ffffff',
 	wheelPointerColor: '#fde047',
 	buttonColor: '#ffffff',
+	popupColor: '#333333',
 	backgroundImage: null as string | null,
 	gameLanguage: 'fr',
 	active: true,
@@ -178,6 +179,7 @@ const fetchBusiness = async () => {
 				if (business.primaryColor) {
 					game.value.primaryColor = business.primaryColor
 					game.value.wheelPrizeColor = business.primaryColor
+					game.value.popupColor = business.primaryColor
 				}
 				if (business.googleReviewUrl) game.value.googleReviewUrl = business.googleReviewUrl
 			}
@@ -185,6 +187,16 @@ const fetchBusiness = async () => {
 	} catch (e) {
 		console.error('Failed to fetch business', e)
 	}
+}
+
+// Réapplique la couleur de l'établissement (utile après un changement de logo)
+const applyBusinessColors = () => {
+	const color = businessObject.value?.primaryColor
+	if (!color) return
+	game.value.primaryColor = color
+	game.value.wheelPrizeColor = color
+	game.value.popupColor = color
+	showToast(t('games.detail.colors_applied'), 'success')
 }
 
 onMounted(async () => {
@@ -692,9 +704,16 @@ const saveGame = async () => {
 
 						<!-- TAB: APPEARANCE -->
 						<form v-show="activeTab === 'appearance'" @submit.prevent="saveGame" class="space-y-6">
-							<div class="pb-4 border-b border-slate-100 dark:border-slate-700">
-								<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.appearance_title') }}</h2>
-								<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.appearance_subtitle') }}</p>
+							<div class="pb-4 border-b border-slate-100 dark:border-slate-700 flex items-start justify-between gap-3">
+								<div>
+									<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.appearance_title') }}</h2>
+									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.appearance_subtitle') }}</p>
+								</div>
+								<button v-if="businessObject?.primaryColor" type="button" @click="applyBusinessColors"
+									class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-blue-200 dark:border-blue-500/40 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors">
+									<Icon name="ph:paint-brush-broad-bold" size="14" />
+									{{ $t('games.detail.apply_business_colors') }}
+								</button>
 							</div>
 
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -715,6 +734,15 @@ const saveGame = async () => {
 										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.buttonColor }}</p>
 									</div>
 								</div>
+								<!-- Couleur des popups (fond des cartes joueur) -->
+								<div>
+									<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">{{ $t('games.detail.popup_color') }}</label>
+									<div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700 p-2 rounded-md border border-slate-200 dark:border-slate-600">
+										<input v-model="game.popupColor" type="color" class="w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer p-0 overflow-hidden shadow-sm hover:scale-105 transition-transform">
+										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.popupColor }}</p>
+									</div>
+								</div>
+
 
 								<!-- Couleur cases perdu -->
 								<div>
@@ -906,6 +934,7 @@ const saveGame = async () => {
 							<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor"
 								:wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor"
 								:wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor" :button-color="game.buttonColor"
+ :popup-color="game.popupColor"
 								:background-image="game.backgroundImage" :logo="businessLogo"
 								:prizes="(game as any).prizes"
 								:google-review-url="game.googleReviewUrl" />
@@ -938,7 +967,7 @@ const saveGame = async () => {
 							<Icon name="ph:x-bold" size="16" />
 						</button>
 					</div>
-					<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor"
+					<GamePreview :title="game.title" :tagline="game.tagline" :primary-color="game.primaryColor" :button-color="game.buttonColor" :popup-color="game.popupColor"
 						:background-image="game.backgroundImage" :logo="businessLogo"
 						:prizes="(game as any).prizes"
 						:google-review-url="game.googleReviewUrl" />

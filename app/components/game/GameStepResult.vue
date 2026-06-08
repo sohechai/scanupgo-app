@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   game: any
   business: any
   primaryColor: string
@@ -9,6 +9,23 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{ restart: [] }>()
+
+const isImageBackground = computed(() => {
+  const bg = props.game?.backgroundImage
+  if (!bg) return false
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+})
+
+const contrastColor = (hexColor: string) => {
+  const hex = (hexColor || '').replace('#', '')
+  if (hex.length !== 6) return '#ffffff'
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  return (((r * 299) + (g * 587) + (b * 114)) / 1000) >= 128 ? '#111111' : '#ffffff'
+}
+const popupColor = computed(() => props.game?.popupColor || '#2a2a2a')
+const cardTextColor = computed(() => contrastColor(popupColor.value))
 </script>
 
 <template>
@@ -17,8 +34,10 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-      <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <div v-else class="h-16"></div>
     </div>
 
     <!-- Tagline "FÉLICITATIONS !" -->
@@ -34,20 +53,21 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Card résultat — remplit tout l'espace entre tagline et footer -->
     <div class="relative z-10 flex-1 flex flex-col px-4 mt-3 pb-[68px] overflow-hidden min-h-0">
-      <div class="bg-[#2a2a2a] rounded-3xl p-4 shadow-2xl flex flex-col items-center text-center gap-3 flex-1 overflow-y-auto min-h-0">
+      <div class="rounded-3xl p-4 shadow-2xl flex flex-col items-center text-center gap-3 flex-1 overflow-y-auto min-h-0"
+        :style="{ backgroundColor: popupColor, color: cardTextColor }">
 
         <!-- Prix gagné -->
         <div class="shrink-0">
-          <p class="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">{{ $t('play.result.win.subtitle') }}</p>
-          <h2 class="text-white text-xl font-black leading-tight">{{ wonPrize?.name }}</h2>
-          <p v-if="wonPrize?.winningMessage" class="text-white/70 text-sm mt-1">{{ wonPrize.winningMessage }}</p>
+          <p class="opacity-60 text-xs font-bold uppercase tracking-widest mb-1">{{ $t('play.result.win.subtitle') }}</p>
+          <h2 class="text-xl font-black leading-tight">{{ wonPrize?.name }}</h2>
+          <p v-if="wonPrize?.winningMessage" class="opacity-70 text-sm mt-1">{{ wonPrize.winningMessage }}</p>
         </div>
 
         <!-- QR Code -->
         <div v-if="qrCodeDataUrl" class="flex flex-col items-center gap-1 shrink-0">
           <img :src="qrCodeDataUrl" alt="QR Code"
             class="w-40 h-40 rounded-2xl border-4 border-white/20 shadow-lg bg-white p-1" />
-          <p class="text-white/50 text-xs uppercase tracking-widest">{{ $t('play.result.win.qr_instruction') }}</p>
+          <p class="opacity-50 text-xs uppercase tracking-widest">{{ $t('play.result.win.qr_instruction') }}</p>
         </div>
 
         <!-- Code texte -->
@@ -60,12 +80,12 @@ const emit = defineEmits<{ restart: [] }>()
 
         <!-- Délai de récupération -->
         <div v-if="game?.prizeRedemptionDelayEnabled && game?.prizeRedemptionDelayHours"
-          class="flex items-center gap-2 text-white/60 text-xs shrink-0">
+          class="flex items-center gap-2 opacity-60 text-xs shrink-0">
           <Icon name="ph:clock-countdown-bold" size="14" />
           <span>{{ $t('play.result.win.expiry_title') }} — {{ game.prizeRedemptionDelayHours }}h</span>
         </div>
 
-        <p class="text-white/40 text-xs shrink-0">{{ $t('play.result.win.save_hint') }}</p>
+        <p class="opacity-40 text-xs shrink-0">{{ $t('play.result.win.save_hint') }}</p>
       </div>
     </div>
 
@@ -86,8 +106,10 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
-      <h1 v-else class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <div v-else class="h-16"></div>
     </div>
 
     <!-- Tagline "PERDU" -->
@@ -103,15 +125,16 @@ const emit = defineEmits<{ restart: [] }>()
 
     <!-- Card résultat perdu — centrée verticalement dans l'espace restant -->
     <div class="relative z-10 flex-1 flex flex-col justify-center px-4 pb-[68px]">
-      <div class="bg-[#2a2a2a] rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center gap-5">
-        <Icon name="ph:smiley-sad-duotone" class="text-white/50" size="64" />
+      <div class="rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center gap-5"
+        :style="{ backgroundColor: popupColor, color: cardTextColor }">
+        <Icon name="ph:smiley-sad-duotone" class="opacity-50" size="64" />
         <div>
-          <p class="text-white text-lg font-bold leading-snug">{{ $t('play.result.lose.message') }}</p>
-          <p class="text-white/50 text-sm mt-2">{{ $t('play.result.lose.details') }}</p>
+          <p class="text-lg font-bold leading-snug">{{ $t('play.result.lose.message') }}</p>
+          <p class="opacity-50 text-sm mt-2">{{ $t('play.result.lose.details') }}</p>
         </div>
         <button @click="emit('restart')"
-          class="w-full py-4 rounded-2xl font-black text-base text-white active:scale-95 transition"
-          style="background: rgba(255,255,255,0.15);">
+          class="w-full py-4 rounded-2xl font-black text-base active:scale-95 transition border-2"
+          :style="{ borderColor: cardTextColor, color: cardTextColor }">
           {{ $t('play.result.lose.home_button') }}
         </button>
       </div>

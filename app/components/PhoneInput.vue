@@ -4,6 +4,7 @@ const props = defineProps<{
 	disabled?: boolean
 	placeholder?: string
 	variant?: 'light' | 'dark'
+	country?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -97,6 +98,15 @@ function selectCountry(dial: string) {
 		emitCombined()
 	}
 }
+
+watch(() => props.country, (countryName) => {
+	if (!countryName) return
+	const match = countries.find(c => c.name.toLowerCase() === countryName.toLowerCase())
+	if (match && match.dial !== selectedDial.value) {
+		selectedDial.value = match.dial
+		emitCombined()
+	}
+})
 
 onMounted(() => {
 	const handler = (e: MouseEvent) => {

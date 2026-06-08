@@ -42,8 +42,13 @@ const showDropdown = ref(false)
 const sessionToken = ref(crypto.randomUUID())
 
 let debounceTimer: ReturnType<typeof setTimeout>
+let justSelected = false
 
 watch(query, (val) => {
+  if (justSelected) {
+    justSelected = false
+    return
+  }
   clearTimeout(debounceTimer)
   if (!val || val.trim().length < 2) {
     predictions.value = []
@@ -69,8 +74,10 @@ const fetchPredictions = async (input: string) => {
 }
 
 const selectPlace = async (prediction: PlacePrediction) => {
+  justSelected = true
   loadingDetails.value = true
   showDropdown.value = false
+  predictions.value = []
   query.value = prediction.description
 
   try {

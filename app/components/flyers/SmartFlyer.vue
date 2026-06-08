@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { submitFlyerJob } from '~/composables/useFlyerJob'
+
 interface Prize {
 	name: string
 	rank?: number
@@ -93,35 +95,26 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 	return d
 }
 
-// Generate flyer using backend Puppeteer service (pixel-perfect rendering)
+// Generate flyer using backend Puppeteer service (async queue — non-blocking)
 const generateFlyerOnServer = async (): Promise<string | null> => {
 	try {
-		// Get prizes from props or game object
 		const prizesToSend = props.prizes || props.game?.prizes || []
-
-		const result = await $api<{ url: string }>('/flyer-generator/generate', {
-			method: 'POST',
-			body: {
-				businessName: props.businessName,
-				businessLogo: props.businessLogo,
-				qrCodeUrl: props.qrCodeUrl,
-				primaryColor: backgroundColor.value,
-				accentColor: accentColor.value,
-				buttonColor: buttonColor.value,
-				fontFamily: currentFont.value,
-				footerIconColor: footerIconColor.value,
-				lostColor: lostSegmentColor.value,
-				qrColor: props.qrColor || '#000000',
-				qrBgColor: props.qrBgColor || '#ffffff',
-				qrPlayUrl: props.qrPlayUrl || null,
-				prizes: prizesToSend.map((p: Prize) => ({
-					name: p.name,
-					rank: p.rank,
-					probability: p.probability
-				}))
-			}
-		})
-		return result?.url || null
+		const body = {
+			businessName: props.businessName,
+			businessLogo: props.businessLogo,
+			qrCodeUrl: props.qrCodeUrl,
+			primaryColor: backgroundColor.value,
+			accentColor: accentColor.value,
+			buttonColor: buttonColor.value,
+			fontFamily: currentFont.value,
+			footerIconColor: footerIconColor.value,
+			lostColor: lostSegmentColor.value,
+			qrColor: props.qrColor || '#000000',
+			qrBgColor: props.qrBgColor || '#ffffff',
+			qrPlayUrl: props.qrPlayUrl || null,
+			prizes: prizesToSend.map((p: Prize) => ({ name: p.name, rank: p.rank, probability: p.probability })),
+		}
+		return await submitFlyerJob($api, '/flyer-generator/generate', body)
 	} catch (e) {
 		console.error('Server-side flyer generation failed', e)
 		return null
@@ -155,34 +148,21 @@ defineExpose({
 	},
 	downloadPDF: async () => {
 		try {
-			// Get prizes from props or game object
 			const prizesToSend = props.prizes || props.game?.prizes || []
-
-			const result = await $api<{ url: string }>('/flyer-generator/generate-pdf', {
-				method: 'POST',
-				body: {
-					businessName: props.businessName,
-					businessLogo: props.businessLogo,
-					qrCodeUrl: props.qrCodeUrl,
-					primaryColor: backgroundColor.value,
-					accentColor: accentColor.value,
-					buttonColor: buttonColor.value,
-					fontFamily: currentFont.value,
-					prizes: prizesToSend.map((p: Prize) => ({
-						name: p.name,
-						rank: p.rank,
-						probability: p.probability
-					}))
-				}
-			})
-
-			if (!result?.url) {
-				console.error('Failed to generate PDF')
-				return
+			const body = {
+				businessName: props.businessName,
+				businessLogo: props.businessLogo,
+				qrCodeUrl: props.qrCodeUrl,
+				primaryColor: backgroundColor.value,
+				accentColor: accentColor.value,
+				buttonColor: buttonColor.value,
+				fontFamily: currentFont.value,
+				prizes: prizesToSend.map((p: Prize) => ({ name: p.name, rank: p.rank, probability: p.probability })),
 			}
 
-			// Download the PDF
-			const response = await fetch(result.url)
+			const url = await submitFlyerJob($api, '/flyer-generator/generate-pdf', body)
+
+			const response = await fetch(url)
 			const blob = await response.blob()
 			const downloadUrl = URL.createObjectURL(blob)
 

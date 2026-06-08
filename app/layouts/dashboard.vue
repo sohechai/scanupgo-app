@@ -33,17 +33,34 @@ onUnmounted(() => {
 	document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
-const navItems = computed(() => [
-	{ name: t('dashboard.nav.dashboard'), path: '/dashboard', icon: 'ph:squares-four-duotone' },
-	{ name: t('dashboard.nav.business'), path: '/dashboard/profile', icon: 'ph:storefront-duotone' },
-	{ name: t('dashboard.nav.games'), path: '/dashboard/games', icon: 'ph:game-controller-duotone' },
-	{ name: t('dashboard.nav.orders'), path: '/dashboard/orders', icon: 'ph:shopping-cart-duotone' },
-	{ name: t('dashboard.nav.players'), path: '/dashboard/players', icon: 'ph:users-three-duotone' },
-	{ name: t('dashboard.nav.marketing'), path: '/dashboard/marketing', icon: 'ph:megaphone-duotone' },
-	{ name: t('dashboard.nav.prizes'), path: '/dashboard/redeem', icon: 'ph:gift-duotone' },
-	{ name: t('dashboard.nav.subscription'), path: '/dashboard/subscription', icon: 'ph:crown-duotone' },
-	{ name: t('dashboard.nav.account'), path: '/dashboard/account', icon: 'ph:user-circle-duotone' },
+const navSections = computed(() => [
+	{
+		label: t('dashboard.nav.section_principal'),
+		items: [
+			{ name: t('dashboard.nav.dashboard'), path: '/dashboard', icon: 'ph:squares-four-duotone' },
+			{ name: t('dashboard.nav.games'), path: '/dashboard/games', icon: 'ph:game-controller-duotone' },
+			{ name: t('dashboard.nav.players'), path: '/dashboard/players', icon: 'ph:users-three-duotone' },
+			{ name: t('dashboard.nav.marketing'), path: '/dashboard/marketing', icon: 'ph:megaphone-duotone' },
+		],
+	},
+	{
+		label: t('dashboard.nav.section_gestion'),
+		items: [
+			{ name: t('dashboard.nav.orders'), path: '/dashboard/orders', icon: 'ph:shopping-cart-duotone' },
+			{ name: t('dashboard.nav.prizes'), path: '/dashboard/redeem', icon: 'ph:check-circle-duotone' },
+			{ name: t('dashboard.nav.subscription'), path: '/dashboard/subscription', icon: 'ph:credit-card-duotone' },
+		],
+	},
+	{
+		label: t('dashboard.nav.section_compte'),
+		items: [
+			{ name: t('dashboard.nav.business'), path: '/dashboard/profile', icon: 'ph:storefront-duotone' },
+			{ name: t('dashboard.nav.account'), path: '/dashboard/account', icon: 'ph:user-circle-duotone' },
+		],
+	},
 ])
+
+const navItems = computed(() => navSections.value.flatMap(s => s.items))
 
 const isActive = (path: string) => route.path === path || (path !== '/dashboard' && route.path.startsWith(path))
 
@@ -58,7 +75,10 @@ watch(
 )
 
 const colorMode = useColorMode()
-colorMode.preference = 'light'
+
+const toggleDarkMode = () => {
+	colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 </script>
 
 <template>
@@ -82,16 +102,19 @@ colorMode.preference = 'light'
 			</div>
 
 			<!-- Navigation -->
-			<nav class="flex-1 overflow-y-auto px-2 space-y-1">
-				<NuxtLink v-for="item in navItems" :key="item.path" :to="item.path"
-					class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors group"
-					:class="isActive(item.path)
-						? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium shadow-sm'
-						: 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/50'">
-					<Icon :name="item.icon" size="17" class="shrink-0 transition-colors"
-						:class="isActive(item.path) ? 'text-[#007AFF]' : 'text-slate-400 dark:text-slate-500'" />
-					<span>{{ item.name }}</span>
-				</NuxtLink>
+			<nav class="flex-1 overflow-y-auto px-2 pb-2">
+				<div v-for="section in navSections" :key="section.label" class="mb-2">
+					<p class="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">{{ section.label }}</p>
+					<NuxtLink v-for="item in section.items" :key="item.path" :to="item.path"
+						class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors group"
+						:class="isActive(item.path)
+							? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium shadow-sm'
+							: 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/50'">
+						<Icon :name="item.icon" size="17" class="shrink-0 transition-colors"
+							:class="isActive(item.path) ? 'text-[#007AFF]' : 'text-slate-400 dark:text-slate-500'" />
+						<span>{{ item.name }}</span>
+					</NuxtLink>
+				</div>
 			</nav>
 
 			<!-- User Footer -->
@@ -141,6 +164,11 @@ colorMode.preference = 'light'
 					</div>
 
 					<div class="flex items-center gap-2">
+						<button @click="toggleDarkMode"
+							class="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+							:title="colorMode.value === 'dark' ? 'Mode clair' : 'Mode sombre'">
+							<Icon :name="colorMode.value === 'dark' ? 'ph:sun-bold' : 'ph:moon-bold'" size="16" />
+						</button>
 						<LanguageSelector />
 						<NotificationDropdown />
 					</div>

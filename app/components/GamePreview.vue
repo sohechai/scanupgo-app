@@ -11,6 +11,7 @@ const props = defineProps<{
 	wheelBorderColor?: string;
 	wheelPointerColor?: string;
 	buttonColor?: string;
+	popupColor?: string;
 	backgroundImage?: string | null;
 	showPrize?: boolean;
 	winningMessage?: string;
@@ -49,6 +50,13 @@ const isSpinning = ref(false)
 const targetPrizeIndex = ref<number | null>(null)
 const hasLost = ref(false)
 
+// Steps modal substep (mirrors GameStepsModal internalStep)
+const stepsSubStep = ref<'steps' | 'timer'>('steps')
+watch(currentStep, (s) => { if (s === 'steps') stepsSubStep.value = 'steps' })
+
+// Result preview toggle (win/lose)
+const previewIsWin = ref(true)
+
 const startPreviewSpin = () => {
 	if (currentStep.value !== 'playing') return
 	isSpinning.value = true
@@ -74,6 +82,12 @@ const logoUrl = computed(() => {
 	return props.logo
 })
 
+const isImageBackground = computed(() => {
+	const bg = props.backgroundImage
+	if (!bg) return false
+	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+})
+
 const displayTitle = computed(() => props.title || t('components.game_preview.default_title'))
 const displayTagline = computed(() => props.tagline || t('components.game_preview.default_tagline'))
 
@@ -93,7 +107,9 @@ const getContrastColor = (hexColor: string): string => {
 }
 
 const textColor = computed(() => getContrastColor(props.primaryColor || '#00e5ff'))
-const buttonTextColor = computed(() => getContrastColor(props.primaryColor || '#00e5ff'))
+const buttonTextColor = computed(() => getContrastColor(props.buttonColor || '#ffffff'))
+const popupColor = computed(() => props.popupColor || '#333333')
+const cardTextColor = computed(() => getContrastColor(popupColor.value))
 
 // Fake prizes
 const previewPrizes = computed(() => {
@@ -111,11 +127,25 @@ const previewPrizes = computed(() => {
 <template>
 	<div class="flex flex-col items-center">
 		<!-- Step Navigation Tabs -->
-		<div class="flex gap-1 mb-4 bg-slate-800 rounded-lg p-1">
+		<div class="flex gap-1 mb-3 bg-slate-800 rounded-lg p-1">
 			<button v-for="step in steps" :key="step.key" @click="currentStep = step.key"
 				class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
 				:class="currentStep === step.key ? 'bg-white text-slate-900' : 'text-slate-400 hover:text-white'">
 				{{ step.label }}
+			</button>
+		</div>
+
+		<!-- Win/Lose toggle (result step only) -->
+		<div v-if="currentStep === 'result'" class="flex gap-1 mb-3 bg-slate-800 rounded-lg p-1">
+			<button @click="previewIsWin = true"
+				class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+				:class="previewIsWin ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white'">
+				{{ $t('components.game_preview.result_win') }}
+			</button>
+			<button @click="previewIsWin = false"
+				class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+				:class="!previewIsWin ? 'bg-red-500 text-white' : 'text-slate-400 hover:text-white'">
+				{{ $t('components.game_preview.result_lose') }}
 			</button>
 		</div>
 
@@ -160,9 +190,18 @@ const previewPrizes = computed(() => {
 
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[14px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-14 max-w-[180px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-14"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
+							<div v-else class="h-14 w-28 rounded-xl border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="22" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
 					<!-- Tagline -->
@@ -201,15 +240,16 @@ const previewPrizes = computed(() => {
 
 				<!-- STEP 2: STEPS -->
 				<div v-else-if="currentStep === 'steps'"
-					class="relative z-10 h-full flex flex-col items-center justify-center p-4">
+					class="relative z-10 h-full flex flex-col items-center justify-center p-3">
 					<!-- Backdrop -->
 					<div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
 					<!-- Centered Modal -->
-					<div class="relative bg-[#333333] rounded-3xl w-full max-w-sm shadow-2xl mt-8">
+					<div class="relative rounded-3xl w-full shadow-2xl mt-8 border-2 border-black"
+						:style="{ backgroundColor: popupColor, color: cardTextColor }">
 						<!-- Floating Google Logo -->
-						<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl border-[6px] border-[#333333]">
-							<svg viewBox="0 0 24 24" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+						<div class="absolute -top-9 left-1/2 -translate-x-1/2 bg-white rounded-full flex items-center justify-center shadow-xl border-[3px] border-black" style="width:4.5rem;height:4.5rem;">
+							<svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
 								<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
 								<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
 								<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -217,43 +257,40 @@ const previewPrizes = computed(() => {
 							</svg>
 						</div>
 
-						<!-- ÉTAPE : INSTRUCTIONS -->
-						<div class="px-5 pt-14 pb-6 flex flex-col items-center">
-							<h2 class="text-[20px] font-black text-white mb-5 text-center tracking-wide leading-tight">
-								{{ $t('play.steps.heading') }}
-							</h2>
-
-							<div class="space-y-3 mb-5 w-full">
-								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
-									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
-										<span class="text-black font-black text-[13px]">1</span>
-									</div>
-									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step1') }}</span>
-								</div>
-								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
-									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
-										<span class="text-black font-black text-[13px]">2</span>
-									</div>
-									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step2') }}</span>
-								</div>
-								<div class="flex items-center gap-3 bg-[#262626] rounded-2xl px-3 py-3 shadow-inner">
-									<div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shrink-0">
-										<span class="text-black font-black text-[13px]">3</span>
-									</div>
-									<span class="font-bold text-white text-[13px]">{{ $t('play.steps.step3') }}</span>
-								</div>
+						<!-- SUBSTEP : MESSAGE + BOUTON -->
+						<div v-if="stepsSubStep === 'steps'" class="px-4 pt-12 pb-5 flex flex-col items-center">
+							<div class="w-full bg-[#262626] rounded-2xl px-3 py-3 mb-4 shadow-inner">
+								<p class="font-bold text-white text-[12px] text-center leading-snug">
+									{{ $t('play.steps.message') }}
+								</p>
 							</div>
-
-							<!-- 5 étoiles -->
-							<div class="flex justify-center gap-1 mb-5">
-								<span v-for="i in 5" :key="i" class="text-3xl">⭐</span>
+							<div class="flex justify-center gap-0.5 mb-4">
+								<span v-for="i in 5" :key="i" class="text-xl">⭐</span>
 							</div>
-
-							<!-- Bouton Google -->
-							<button
-								class="w-full py-3.5 rounded-[20px] font-black text-[16px] flex items-center justify-center shadow-lg"
-								:style="{ backgroundColor: primaryColor || '#1a1a1a', color: buttonTextColor }">
+							<button @click="stepsSubStep = 'timer'"
+								class="w-full py-3 rounded-[20px] font-black text-[13px] flex items-center justify-center shadow-lg"
+								:style="{ backgroundColor: buttonColor || '#1a1a1a', color: buttonTextColor }">
 								{{ $t('play.steps.google_button') }}
+							</button>
+						</div>
+
+						<!-- SUBSTEP : TIMER -->
+						<div v-else class="px-4 pt-10 pb-5 flex flex-col items-center gap-3">
+							<h2 class="text-[13px] font-black text-center">
+								{{ $t('play.review_timer.not_done') }}
+							</h2>
+							<button class="px-5 py-2 rounded-[20px] font-black text-[12px] flex items-center justify-center shadow-lg"
+								:style="{ backgroundColor: buttonColor || '#1a1a1a', color: buttonTextColor }">
+								{{ $t('play.steps.google_button') }}
+							</button>
+							<div class="w-12 h-12 rounded-full flex items-center justify-center animate-spin" :style="{ backgroundColor: primaryColor + '33' }">
+								<Icon name="ph:storefront-duotone" size="20" class="text-white/50" />
+							</div>
+							<p class="text-[10px] font-bold text-center leading-tight opacity-90">
+								{{ $t('play.review_timer.verifying_action') }}
+							</p>
+							<button @click="stepsSubStep = 'steps'" class="text-[9px] text-slate-400 underline">
+								{{ $t('play.review_timer.already_reviewed') }}
 							</button>
 						</div>
 					</div>
@@ -262,10 +299,11 @@ const previewPrizes = computed(() => {
 				<!-- STEP 3: FORM -->
 				<div v-else-if="currentStep === 'form'"
 					class="relative z-10 w-full h-full flex flex-col justify-center items-center p-4">
-					<div class="bg-[#333333] rounded-[24px] p-6 shadow-2xl w-full text-center flex flex-col items-center">
+					<div class="rounded-[24px] p-6 shadow-2xl w-full text-center flex flex-col items-center"
+						:style="{ backgroundColor: popupColor, color: cardTextColor }">
 						<div class="mb-5">
-							<h2 class="text-lg font-black text-white leading-tight">{{ $t('play.form.heading') }}</h2>
-							<p class="text-[11px] font-bold text-white mt-1.5">{{ $t('play.form.subtitle') }}</p>
+							<h2 class="text-lg font-black leading-tight">{{ $t('play.form.heading') }}</h2>
+							<p class="text-[11px] font-bold mt-1.5 opacity-90">{{ $t('play.form.subtitle') }}</p>
 						</div>
 
 						<div class="space-y-3 w-full text-left rtl:text-right">
@@ -281,12 +319,12 @@ const previewPrizes = computed(() => {
 
 							<div class="flex items-start gap-2 pt-1">
 								<div class="w-3.5 h-3.5 rounded-sm border border-[#666] mt-0.5 shrink-0 bg-transparent"></div>
-								<p class="text-[9px] font-bold text-white leading-tight">{{ $t('play.form.email_optin') }}</p>
+								<p class="text-[9px] font-bold leading-tight">{{ $t('play.form.email_optin') }}</p>
 							</div>
 
 							<button
 								class="w-full py-3 mt-4 rounded-[20px] font-black text-[14px] flex items-center justify-center shadow-lg"
-								:style="{ backgroundColor: primaryColor || '#d63d4a', color: buttonTextColor }">
+								:style="{ backgroundColor: buttonColor || '#d63d4a', color: buttonTextColor }">
 								{{ $t('play.form.submit') }}
 							</button>
 						</div>
@@ -297,9 +335,18 @@ const previewPrizes = computed(() => {
 				<div v-else-if="currentStep === 'playing'" class="relative h-full overflow-hidden flex flex-col pt-8">
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-10 max-w-[140px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-10"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
+							<div v-else class="h-10 w-20 rounded-lg border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="16" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
@@ -339,49 +386,73 @@ const previewPrizes = computed(() => {
 				</div>
 
 				<!-- STEP 5: RESULT -->
-				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-7">
+				<div v-else-if="currentStep === 'result'" class="relative h-full overflow-hidden flex flex-col pt-6">
 					<!-- Logo -->
 					<div class="relative z-10 flex justify-center px-3 shrink-0">
-						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-							class="h-10 max-w-[140px] object-contain drop-shadow-xl" />
-						<h1 v-else class="text-[11px] font-black text-center text-white">{{ displayTitle }}</h1>
+						<template v-if="isImageBackground">
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-12 max-w-[160px] object-contain" style="visibility:hidden" />
+							<div v-else class="h-12"></div>
+						</template>
+						<template v-else>
+							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+								class="h-12 max-w-[160px] object-contain drop-shadow-xl" />
+							<div v-else class="h-12 w-24 rounded-lg border-2 border-dashed border-white/40 flex items-center justify-center">
+								<Icon name="ph:storefront-duotone" size="18" class="text-white/50" />
+							</div>
+						</template>
 					</div>
 
-					<!-- Tagline "FÉLICITATIONS!" -->
-					<div class="relative z-10 px-3 mt-2 shrink-0 mx-auto w-full max-w-[90%]">
-						<div class="rounded-xl px-2 py-2 text-center shadow-xl border border-white/20"
+					<!-- Tagline WIN / LOSE -->
+					<div class="relative z-10 px-3 mt-2 shrink-0 mx-auto w-full max-w-[92%]">
+						<div class="rounded-2xl px-3 py-2 text-center shadow-2xl border border-white/20"
 							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
-							<p class="text-[10px] uppercase leading-[1.1]"
-								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4); letter-spacing: 0.3px;">
-								{{ $t('play.result.win.title') }}
+							<p class="text-[13px] uppercase leading-[1.1]"
+								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.5px;">
+								{{ previewIsWin ? $t('play.result.win.title') : $t('play.result.lose.title') }}
 							</p>
 						</div>
 					</div>
 
-					<!-- Card résultat -->
-					<div class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[48px] overflow-hidden min-h-0">
-						<div class="bg-[#2a2a2a] rounded-2xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0">
-							<!-- Prix gagné -->
+					<!-- WIN card -->
+					<div v-if="previewIsWin" class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[52px] overflow-hidden min-h-0">
+						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
 							<div class="shrink-0">
-								<p class="text-white/60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
-								<h2 class="text-white text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>
+								<p class="opacity-60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
+								<h2 class="text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>
 							</div>
-							<!-- QR Code placeholder -->
-							<div class="w-16 h-16 bg-white rounded-lg mx-auto flex items-center justify-center opacity-40 shrink-0">
-								<Icon name="ph:qr-code" size="32" class="text-slate-400" />
+							<!-- QR placeholder -->
+							<div class="flex flex-col items-center gap-1 shrink-0">
+								<div class="w-20 h-20 rounded-2xl border-4 border-white/20 shadow-lg bg-white p-1 flex items-center justify-center">
+									<Icon name="ph:qr-code" size="52" class="text-slate-400" />
+								</div>
+								<p class="opacity-50 text-[8px] uppercase tracking-widest">{{ $t('play.result.win.qr_instruction') }}</p>
 							</div>
-							<!-- Code texte -->
-							<div class="w-full bg-[#1a1a1a] rounded-xl px-2 py-2 shrink-0">
-								<p class="text-white/40 text-[8px] uppercase tracking-widest mb-0.5">CODE</p>
-								<p class="font-mono text-xs font-black tracking-widest text-white">ABCD-1234</p>
+							<div class="w-full bg-[#1a1a1a] rounded-2xl px-3 py-2 shrink-0">
+								<p class="text-white/40 text-[8px] uppercase tracking-widest mb-0.5">{{ $t('play.result.win.code_instruction') }}</p>
+								<p class="font-mono text-sm font-black tracking-widest text-white">ABCD-1234</p>
 							</div>
 						</div>
 					</div>
 
+					<!-- LOSE card -->
+					<div v-else class="relative z-10 flex-1 flex flex-col justify-center px-3 pb-[52px]">
+						<div class="rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center gap-3" :style="{ backgroundColor: popupColor, color: cardTextColor }">
+							<Icon name="ph:smiley-sad-duotone" class="opacity-50" size="40" />
+							<div>
+								<p class="text-sm font-bold leading-snug">{{ $t('play.result.lose.message') }}</p>
+								<p class="opacity-50 text-[10px] mt-1">{{ $t('play.result.lose.details') }}</p>
+							</div>
+							<button class="w-full py-3 rounded-2xl font-black text-sm border-2" :style="{ borderColor: cardTextColor, color: cardTextColor }">
+								{{ $t('play.result.lose.home_button') }}
+							</button>
+						</div>
+					</div>
+
 					<!-- Footer bar -->
-					<div class="absolute bottom-0 left-0 right-0 h-[45px] bg-[#2a2a2a] flex justify-between items-center px-8 z-30 shadow-[0_-3px_8px_rgba(0,0,0,0.4)]">
-						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.rules') }}</span>
-						<span class="text-[9px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.contact') }}</span>
+					<div class="absolute bottom-0 left-0 right-0 h-[52px] bg-[#2a2a2a] flex justify-between items-center px-8 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.4)]">
+						<span class="text-[10px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.rules') }}</span>
+						<span class="text-[10px] font-extrabold text-white underline underline-offset-[3px] decoration-2 tracking-wide">{{ $t('play.intro.contact') }}</span>
 					</div>
 				</div>
 			</div>
