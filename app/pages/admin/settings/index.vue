@@ -22,6 +22,7 @@ const settings = ref({
 	freeTrialEnabled: false,
 	freeTrialDays: 14,
 	notificationEmails: [] as string[],
+	whatsappEnabled: false,
 })
 
 // Account (profile)
@@ -48,6 +49,7 @@ onMounted(async () => {
 			freeTrialEnabled: data.freeTrialEnabled ?? false,
 			freeTrialDays: data.freeTrialDays ?? 14,
 			notificationEmails: data.notificationEmails ?? [],
+			whatsappEnabled: data.whatsappEnabled ?? false,
 		}
 		profile.value = {
 			firstName: profileData.firstName || '',
@@ -72,6 +74,7 @@ const handleSave = async () => {
 				supportEmail: settings.value.supportEmail,
 				freeTrialEnabled: settings.value.freeTrialEnabled,
 				freeTrialDays: settings.value.freeTrialDays,
+				whatsappEnabled: settings.value.whatsappEnabled,
 			}
 		})
 		toast.show(t('admin.settings.save_success'), 'success')
@@ -268,7 +271,25 @@ const tabs = computed(() => [
 								</div>
 							</div>
 
-							<div class="p-5 space-y-3">
+														<div class="p-5 space-y-3">
+								<h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.settings.whatsapp_title') }}</h3>
+								<div class="flex items-center justify-between gap-4">
+									<div>
+										<p class="text-sm font-medium text-white">{{ $t('admin.settings.whatsapp_enable') }}</p>
+										<p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.settings.whatsapp_description') }}</p>
+									</div>
+									<button type="button" @click="settings.whatsappEnabled = !settings.whatsappEnabled"
+										:class="['relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none', settings.whatsappEnabled ? 'bg-emerald-500' : 'bg-white/10']">
+										<span :class="['pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200', settings.whatsappEnabled ? 'translate-x-4' : 'translate-x-0']" />
+									</button>
+								</div>
+								<div class="flex items-center gap-1.5 text-xs font-medium" :class="settings.whatsappEnabled ? 'text-emerald-400' : 'text-slate-600'">
+									<span class="w-1.5 h-1.5 rounded-full shrink-0" :class="settings.whatsappEnabled ? 'bg-emerald-400' : 'bg-slate-600'"></span>
+									{{ settings.whatsappEnabled ? $t('admin.settings.whatsapp_active') : $t('admin.settings.whatsapp_inactive') }}
+								</div>
+							</div>
+
+<div class="p-5 space-y-3">
 								<h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ $t('admin.settings.stripe_config') }}</h3>
 								<div class="flex items-start gap-3 p-3 rounded-md border"
 									:class="settings.stripeConfigured ? 'bg-emerald-500/[0.06] border-emerald-500/20' : 'bg-amber-500/[0.06] border-amber-500/20'">

@@ -53,7 +53,7 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
 
     <!-- Card résultat — remplit tout l'espace entre tagline et footer -->
     <div class="relative z-10 flex-1 flex flex-col px-4 mt-3 pb-[68px] overflow-hidden min-h-0">
-      <div class="rounded-3xl p-4 shadow-2xl flex flex-col items-center text-center gap-3 flex-1 overflow-y-auto min-h-0"
+      <div class="rounded-3xl p-4 shadow-2xl flex flex-col items-center justify-center text-center gap-3 flex-1 overflow-y-auto min-h-0"
         :style="{ backgroundColor: popupColor, color: cardTextColor }">
 
         <!-- Prix gagné -->

@@ -416,7 +416,7 @@ const previewPrizes = computed(() => {
 
 					<!-- WIN card -->
 					<div v-if="previewIsWin" class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[52px] overflow-hidden min-h-0">
-						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
+						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center justify-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
 							<div class="shrink-0">
 								<p class="opacity-60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
 								<h2 class="text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>

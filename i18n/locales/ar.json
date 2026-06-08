@@ -2219,6 +2219,11 @@
         "add_email_placeholder": "email{'@'}example.com",
         "add": "إضافة"
       },
+      "whatsapp_title": "إشعارات WhatsApp",
+      "whatsapp_enable": "تفعيل WhatsApp",
+      "whatsapp_description": "إرسال الإشعارات للتجار واللاعبين عبر WhatsApp أيضًا (إضافة إلى البريد).",
+      "whatsapp_active": "WhatsApp مفعّل — إشعارات بالبريد و WhatsApp",
+      "whatsapp_inactive": "WhatsApp معطّل — إشعارات بالبريد فقط",
       "billing_trial_title": "فترة تجريبية مجانية",
       "billing_trial_enable": "تفعيل التجربة المجانية",
       "billing_trial_description": "يحصل المسجّلون الجدد على فترة تجريبية تلقائية",
