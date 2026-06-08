@@ -11,6 +11,7 @@ const props = defineProps<{
 	wheelBorderColor?: string;
 	wheelPointerColor?: string;
 	buttonColor?: string;
+	popupColor?: string;
 	backgroundImage?: string | null;
 	showPrize?: boolean;
 	winningMessage?: string;
@@ -106,7 +107,9 @@ const getContrastColor = (hexColor: string): string => {
 }
 
 const textColor = computed(() => getContrastColor(props.primaryColor || '#00e5ff'))
-const buttonTextColor = computed(() => getContrastColor(props.primaryColor || '#00e5ff'))
+const buttonTextColor = computed(() => getContrastColor(props.buttonColor || '#ffffff'))
+const popupColor = computed(() => props.popupColor || '#333333')
+const cardTextColor = computed(() => getContrastColor(popupColor.value))
 
 // Fake prizes
 const previewPrizes = computed(() => {
@@ -242,7 +245,8 @@ const previewPrizes = computed(() => {
 					<div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
 					<!-- Centered Modal -->
-					<div class="relative bg-[#333333] rounded-3xl w-full shadow-2xl mt-8 border-2 border-black">
+					<div class="relative rounded-3xl w-full shadow-2xl mt-8 border-2 border-black"
+						:style="{ backgroundColor: popupColor, color: cardTextColor }">
 						<!-- Floating Google Logo -->
 						<div class="absolute -top-9 left-1/2 -translate-x-1/2 bg-white rounded-full flex items-center justify-center shadow-xl border-[3px] border-black" style="width:4.5rem;height:4.5rem;">
 							<svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
@@ -265,24 +269,24 @@ const previewPrizes = computed(() => {
 							</div>
 							<button @click="stepsSubStep = 'timer'"
 								class="w-full py-3 rounded-[20px] font-black text-[13px] flex items-center justify-center shadow-lg"
-								:style="{ backgroundColor: primaryColor || '#1a1a1a', color: buttonTextColor }">
+								:style="{ backgroundColor: buttonColor || '#1a1a1a', color: buttonTextColor }">
 								{{ $t('play.steps.google_button') }}
 							</button>
 						</div>
 
 						<!-- SUBSTEP : TIMER -->
 						<div v-else class="px-4 pt-10 pb-5 flex flex-col items-center gap-3">
-							<h2 class="text-[13px] font-black text-white text-center">
+							<h2 class="text-[13px] font-black text-center">
 								{{ $t('play.review_timer.not_done') }}
 							</h2>
 							<button class="px-5 py-2 rounded-[20px] font-black text-[12px] flex items-center justify-center shadow-lg"
-								:style="{ backgroundColor: primaryColor || '#1a1a1a', color: buttonTextColor }">
+								:style="{ backgroundColor: buttonColor || '#1a1a1a', color: buttonTextColor }">
 								{{ $t('play.steps.google_button') }}
 							</button>
 							<div class="w-12 h-12 rounded-full flex items-center justify-center animate-spin" :style="{ backgroundColor: primaryColor + '33' }">
 								<Icon name="ph:storefront-duotone" size="20" class="text-white/50" />
 							</div>
-							<p class="text-[10px] font-bold text-white text-center leading-tight">
+							<p class="text-[10px] font-bold text-center leading-tight opacity-90">
 								{{ $t('play.review_timer.verifying_action') }}
 							</p>
 							<button @click="stepsSubStep = 'steps'" class="text-[9px] text-slate-400 underline">
@@ -295,10 +299,11 @@ const previewPrizes = computed(() => {
 				<!-- STEP 3: FORM -->
 				<div v-else-if="currentStep === 'form'"
 					class="relative z-10 w-full h-full flex flex-col justify-center items-center p-4">
-					<div class="bg-[#333333] rounded-[24px] p-6 shadow-2xl w-full text-center flex flex-col items-center">
+					<div class="rounded-[24px] p-6 shadow-2xl w-full text-center flex flex-col items-center"
+						:style="{ backgroundColor: popupColor, color: cardTextColor }">
 						<div class="mb-5">
-							<h2 class="text-lg font-black text-white leading-tight">{{ $t('play.form.heading') }}</h2>
-							<p class="text-[11px] font-bold text-white mt-1.5">{{ $t('play.form.subtitle') }}</p>
+							<h2 class="text-lg font-black leading-tight">{{ $t('play.form.heading') }}</h2>
+							<p class="text-[11px] font-bold mt-1.5 opacity-90">{{ $t('play.form.subtitle') }}</p>
 						</div>
 
 						<div class="space-y-3 w-full text-left rtl:text-right">
@@ -314,12 +319,12 @@ const previewPrizes = computed(() => {
 
 							<div class="flex items-start gap-2 pt-1">
 								<div class="w-3.5 h-3.5 rounded-sm border border-[#666] mt-0.5 shrink-0 bg-transparent"></div>
-								<p class="text-[9px] font-bold text-white leading-tight">{{ $t('play.form.email_optin') }}</p>
+								<p class="text-[9px] font-bold leading-tight">{{ $t('play.form.email_optin') }}</p>
 							</div>
 
 							<button
 								class="w-full py-3 mt-4 rounded-[20px] font-black text-[14px] flex items-center justify-center shadow-lg"
-								:style="{ backgroundColor: primaryColor || '#d63d4a', color: buttonTextColor }">
+								:style="{ backgroundColor: buttonColor || '#d63d4a', color: buttonTextColor }">
 								{{ $t('play.form.submit') }}
 							</button>
 						</div>
@@ -411,17 +416,17 @@ const previewPrizes = computed(() => {
 
 					<!-- WIN card -->
 					<div v-if="previewIsWin" class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[52px] overflow-hidden min-h-0">
-						<div class="bg-[#2a2a2a] rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0">
+						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
 							<div class="shrink-0">
-								<p class="text-white/60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
-								<h2 class="text-white text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>
+								<p class="opacity-60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
+								<h2 class="text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>
 							</div>
 							<!-- QR placeholder -->
 							<div class="flex flex-col items-center gap-1 shrink-0">
 								<div class="w-20 h-20 rounded-2xl border-4 border-white/20 shadow-lg bg-white p-1 flex items-center justify-center">
 									<Icon name="ph:qr-code" size="52" class="text-slate-400" />
 								</div>
-								<p class="text-white/50 text-[8px] uppercase tracking-widest">{{ $t('play.result.win.qr_instruction') }}</p>
+								<p class="opacity-50 text-[8px] uppercase tracking-widest">{{ $t('play.result.win.qr_instruction') }}</p>
 							</div>
 							<div class="w-full bg-[#1a1a1a] rounded-2xl px-3 py-2 shrink-0">
 								<p class="text-white/40 text-[8px] uppercase tracking-widest mb-0.5">{{ $t('play.result.win.code_instruction') }}</p>
@@ -432,13 +437,13 @@ const previewPrizes = computed(() => {
 
 					<!-- LOSE card -->
 					<div v-else class="relative z-10 flex-1 flex flex-col justify-center px-3 pb-[52px]">
-						<div class="bg-[#2a2a2a] rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center gap-3">
-							<Icon name="ph:smiley-sad-duotone" class="text-white/50" size="40" />
+						<div class="rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center gap-3" :style="{ backgroundColor: popupColor, color: cardTextColor }">
+							<Icon name="ph:smiley-sad-duotone" class="opacity-50" size="40" />
 							<div>
-								<p class="text-white text-sm font-bold leading-snug">{{ $t('play.result.lose.message') }}</p>
-								<p class="text-white/50 text-[10px] mt-1">{{ $t('play.result.lose.details') }}</p>
+								<p class="text-sm font-bold leading-snug">{{ $t('play.result.lose.message') }}</p>
+								<p class="opacity-50 text-[10px] mt-1">{{ $t('play.result.lose.details') }}</p>
 							</div>
-							<button class="w-full py-3 rounded-2xl font-black text-sm text-white" style="background: rgba(255,255,255,0.15);">
+							<button class="w-full py-3 rounded-2xl font-black text-sm border-2" :style="{ borderColor: cardTextColor, color: cardTextColor }">
 								{{ $t('play.result.lose.home_button') }}
 							</button>
 						</div>
