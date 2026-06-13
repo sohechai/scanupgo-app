@@ -468,9 +468,9 @@ const recentActivity = computed(() =>
 			const hasPrize = !!(s.prize)
 			const type = hasPrize ? 'won' : hasEmail ? 'contact' : 'played'
 			const detail = hasPrize
-				? `A joué et gagné ${s.prizeName || s.prize?.name || 'un lot'}`
+				? t('dashboard.home.activity_won', { prize: s.prizeName || s.prize?.name || t('dashboard.home.a_prize') })
 				: hasEmail
-					? `Nouveau contact — ${s.player.email}`
+					? t('dashboard.home.activity_contact', { email: s.player.email })
 					: 'A participé au jeu'
 			return {
 				id: s.id,
@@ -537,7 +537,7 @@ onMounted(() => {
 			<div class="relative flex items-center justify-between gap-4">
 				<div class="flex-1 min-w-0">
 					<p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">
-						Nouveaux avis Google{{ trackingStartLabel ? ` depuis le ${trackingStartLabel}` : '' }}
+						{{ $t('dashboard.home.banner_title') }}{{ trackingStartLabel ? ` ${$t('dashboard.home.banner_since')} ${trackingStartLabel}` : '' }}
 					</p>
 					<div class="flex items-baseline gap-3">
 						<p class="text-3xl font-bold tabular-nums leading-none">
@@ -547,15 +547,15 @@ onMounted(() => {
 					<p class="text-blue-200 text-xs mt-1.5 truncate">
 						{{ user?.business?.name }}
 						<span class="mx-1 opacity-50">·</span>
-						QR code actif
+						{{ $t('dashboard.home.qr_active') }}
 						<span class="mx-1 opacity-50">·</span>
-						{{ analyticsEvents.page_visit || 0 }} scans ce mois
+						{{ analyticsEvents.page_visit || 0 }} {{ $t('dashboard.home.scans_this_month') }}
 					</p>
 				</div>
 				<a v-if="googleStats?.reviewUrl" :href="googleStats.reviewUrl" target="_blank" rel="noopener noreferrer"
 					class="shrink-0 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-all">
 					<Icon name="ph:arrow-square-out-bold" size="13" />
-					Voir mes avis
+					{{ $t('dashboard.home.see_reviews') }}
 				</a>
 			</div>
 		</div>
@@ -564,7 +564,7 @@ onMounted(() => {
 		<div v-if="hasActiveSubscription" class="grid grid-cols-2 lg:grid-cols-4 gap-2">
 			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Note Google</p>
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_google_rating') }}</p>
 					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
 						<Icon name="ph:star-fill" size="12" class="text-amber-400" />
 					</div>
@@ -575,11 +575,11 @@ onMounted(() => {
 					</p>
 					<Icon v-if="googleStats?.rating != null" name="ph:star-fill" class="text-yellow-400 mb-0.5" size="11" />
 				</div>
-				<p class="text-[10px] text-slate-400 mt-1">sur 5.0</p>
+				<p class="text-[10px] text-slate-400 mt-1">{{ $t('dashboard.home.kpi_out_of') }}</p>
 			</div>
 			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Scans QR</p>
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_scans') }}</p>
 					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
 						<Icon name="ph:qr-code-bold" size="12" class="text-[#007AFF]" />
 					</div>
@@ -591,7 +591,7 @@ onMounted(() => {
 			</div>
 			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Emails captés</p>
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_emails') }}</p>
 					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
 						<Icon name="ph:envelope-bold" size="12" class="text-emerald-500" />
 					</div>
@@ -599,11 +599,11 @@ onMounted(() => {
 				<p class="text-xl font-semibold text-slate-900 tabular-nums">
 					{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}
 				</p>
-				<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">Voir tout →</NuxtLink>
+				<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.home.see_all') }} →</NuxtLink>
 			</div>
 			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Fidélisation</p>
+					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_loyalty') }}</p>
 					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
 						<Icon name="ph:chart-line-up-bold" size="12" class="text-purple-500" />
 					</div>
@@ -611,7 +611,7 @@ onMounted(() => {
 				<p class="text-xl font-semibold text-slate-900 tabular-nums">
 					{{ playersLoading ? '—' : `${playerStats.loyaltyRate}%` }}
 				</p>
-				<p class="text-[10px] text-slate-400 mt-1">joueurs fidèles</p>
+				<p class="text-[10px] text-slate-400 mt-1">{{ $t('dashboard.home.loyal_players') }}</p>
 			</div>
 		</div>
 
@@ -711,8 +711,8 @@ onMounted(() => {
 			<!-- Activité récente -->
 			<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
 				<div class="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
-					<h3 class="font-medium text-slate-900 text-sm">Activité récente</h3>
-					<NuxtLink to="/dashboard/players" class="text-xs text-[#007AFF] font-medium hover:opacity-70">Voir tout →</NuxtLink>
+					<h3 class="font-medium text-slate-900 text-sm">{{ $t('dashboard.home.recent_activity') }}</h3>
+					<NuxtLink to="/dashboard/players" class="text-xs text-[#007AFF] font-medium hover:opacity-70">{{ $t('dashboard.home.see_all') }} →</NuxtLink>
 				</div>
 				<div v-if="sessionsLoading" class="p-8 flex justify-center">
 					<Icon name="ph:spinner-gap-bold" size="24" class="animate-spin text-slate-300" />
@@ -741,7 +741,7 @@ onMounted(() => {
 								'bg-emerald-50 text-emerald-600': item.type === 'contact',
 								'bg-slate-100 text-slate-500': item.type === 'played',
 							}">
-							{{ item.type === 'won' ? 'Récompense' : item.type === 'contact' ? 'Nouveau contact' : 'Joué' }}
+							{{ item.type === 'won' ? $t('dashboard.home.badge_won') : item.type === 'contact' ? $t('dashboard.home.badge_contact') : $t('dashboard.home.badge_played') }}
 						</span>
 					</div>
 				</div>
