@@ -43,7 +43,7 @@ const buttonTextColor = computed(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col overflow-hidden" :style="backgroundStyle">
+  <div class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="backgroundStyle">
     <div v-if="game?.backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
     <div class="relative z-10 w-full h-full flex flex-col pt-6">
       <!-- Logo -->

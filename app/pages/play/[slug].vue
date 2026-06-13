@@ -194,7 +194,7 @@ const onSpinEnd = () => {
 
 <template>
   <!-- Écran propre en cas de crash (jamais d'écran blanc) -->
-  <div v-if="hasCrashed" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
+  <div v-if="hasCrashed" class="min-h-[100dvh] flex flex-col items-center justify-center bg-white text-center px-6">
     <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[200px] object-contain mb-8 drop-shadow" :alt="business?.name" />
     <div v-else class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
       <Icon name="ph:smiley-sad-duotone" size="36" class="text-slate-400" />
@@ -208,7 +208,7 @@ const onSpinEnd = () => {
   </div>
 
   <!-- Jeu pas encore actif -->
-  <div v-else-if="gameInactive" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
+  <div v-else-if="gameInactive" class="min-h-[100dvh] flex flex-col items-center justify-center bg-white text-center px-6">
     <img v-if="business?.logo" :src="business.logo"
       class="h-24 max-w-[220px] object-contain mb-8 drop-shadow" :alt="business?.name" />
     <div v-else class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
@@ -223,7 +223,7 @@ const onSpinEnd = () => {
   </div>
 
   <!-- Desktop block -->
-  <div v-else-if="!isMobile" class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+  <div v-else-if="!isMobile" class="min-h-[100dvh] flex flex-col items-center justify-center relative overflow-hidden"
     :style="{ backgroundColor: primaryColor, color: textColor }">
     <div class="absolute inset-0 opacity-10">
       <div class="absolute inset-0"
@@ -255,7 +255,7 @@ const onSpinEnd = () => {
   </div>
 
   <!-- Mobile -->
-  <div v-else class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-display"
+  <div v-else class="min-h-[100dvh] flex flex-col items-center justify-center relative overflow-hidden font-display"
     :style="{ color: textColor }">
     <div class="absolute inset-0 z-0" :style="{ backgroundColor: primaryColor }"></div>
 

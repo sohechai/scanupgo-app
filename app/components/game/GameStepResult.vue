@@ -30,7 +30,7 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
 
 <template>
   <!-- GAGNÉ -->
-  <div v-if="isWin" class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+  <div v-if="isWin" class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
@@ -105,7 +105,7 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
   </div>
 
   <!-- PERDU -->
-  <div v-else class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+  <div v-else class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">

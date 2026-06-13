@@ -39,7 +39,7 @@ const buttonTextColor = computed(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col overflow-hidden" :style="backgroundStyle">
+  <div class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="backgroundStyle">
     <div v-if="game?.backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
     <!-- Error banner -->
     <div v-if="error" class="absolute top-0 left-0 right-0 z-50 bg-red-500/90 text-white text-sm text-center px-4 py-3 font-semibold">
