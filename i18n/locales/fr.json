@@ -2465,6 +2465,7 @@
       "title": "Oups !",
       "game_not_found": "Ce jeu n'existe pas ou est désactivé.",
       "game_closed": "Ce jeu est actuellement fermé.",
+      "offline": "Connexion perdue. Vérifiez votre réseau et réessayez.",
       "unknown": "Une erreur est survenue lors du jeu."
     },
     "crash": {

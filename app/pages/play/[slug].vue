@@ -170,9 +170,13 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
       throw new Error(t('play.error.unknown'))
     }
   } catch (e: any) {
+    const offline = (import.meta.client && !navigator.onLine) || e?.message?.includes('fetch') || e?.name === 'FetchError' && !e?.data
     if (e?.data?.message?.includes('already played')) {
       rateLimitError.value = true
       error.value = e.data.message
+    } else if (offline) {
+      // Réseau coupé au moment de jouer — message clair, le joueur réessaie
+      error.value = t('play.error.offline')
     } else {
       error.value = e?.data?.message || t('play.error.unknown')
     }

@@ -15,7 +15,41 @@ export default defineNuxtConfig({
 		'@nuxtjs/color-mode',
 		'@vueuse/motion/nuxt',
 		'@nuxtjs/i18n',
+		'@vite-pwa/nuxt',
 	],
+	// PWA — résilience réseau pour le jeu joueur (/play). Cache les assets
+	// pour que la page s'ouvre même sans réseau. NE cache PAS les API.
+	pwa: {
+		registerType: 'autoUpdate',
+		manifest: {
+			name: 'ScanUpGo',
+			short_name: 'ScanUpGo',
+			theme_color: '#007AFF',
+			background_color: '#ffffff',
+			display: 'standalone',
+		},
+		workbox: {
+			// Précache des assets du build (JS, CSS, polices, images, html)
+			globPatterns: ['**/*.{js,css,html,woff,woff2,png,jpg,jpeg,svg,webp,ico}'],
+			navigateFallback: null,
+			runtimeCaching: [
+				{
+					// Logos / images d'établissement (R2) — affichage offline
+					urlPattern: ({ url }: any) =>
+						/\.(?:png|jpg|jpeg|svg|webp|gif)$/i.test(url.pathname) ||
+						url.hostname.includes('r2.dev') ||
+						url.hostname.includes('cloudflarestorage'),
+					handler: 'CacheFirst',
+					options: {
+						cacheName: 'play-images',
+						expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+					},
+				},
+			],
+		},
+		// Ne pas enregistrer le SW en dev (évite le cache pénible pendant le dev)
+		devOptions: { enabled: false },
+	},
 	i18n: {
 		locales: [
 			{ code: 'fr', name: 'Français', dir: 'ltr', language: 'fr-FR', file: 'fr.json' },
