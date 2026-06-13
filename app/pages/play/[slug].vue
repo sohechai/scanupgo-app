@@ -63,6 +63,31 @@ if (fetchError.value) {
   if (!game.value.active) gameInactive.value = true
 }
 
+// Signale une erreur technique au backend (alerte équipe) — best-effort
+const hasCrashed = ref(false)
+const reportError = (message: string) => {
+  $api('/gameplay/report-error', {
+    method: 'POST',
+    body: {
+      slug,
+      message,
+      url: import.meta.client ? window.location.href : `/play/${slug}`,
+      userAgent: import.meta.client ? navigator.userAgent : undefined,
+    },
+  }).catch(() => {})
+}
+
+// Capture tout crash de rendu dans la page de jeu → écran propre + alerte
+onErrorCaptured((err) => {
+  hasCrashed.value = true
+  reportError(`Crash rendu: ${err?.message || err}`)
+  return false // empêche la propagation (pas d'écran blanc)
+})
+
+const reloadPage = () => {
+  if (import.meta.client) window.location.reload()
+}
+
 // Analytics
 const trackEvent = (eventType: string) => {
   if (!game.value?.business?.id) return
@@ -168,8 +193,22 @@ const onSpinEnd = () => {
 </script>
 
 <template>
+  <!-- Écran propre en cas de crash (jamais d'écran blanc) -->
+  <div v-if="hasCrashed" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
+    <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[200px] object-contain mb-8 drop-shadow" :alt="business?.name" />
+    <div v-else class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
+      <Icon name="ph:smiley-sad-duotone" size="36" class="text-slate-400" />
+    </div>
+    <h1 class="text-xl font-bold text-slate-900 mb-3">{{ $t('play.crash.title') }}</h1>
+    <p class="text-slate-500 leading-relaxed max-w-xs mb-8">{{ $t('play.crash.message') }}</p>
+    <button @click="reloadPage"
+      class="px-6 py-3 bg-slate-900 text-white font-semibold rounded-xl active:scale-95 transition">
+      {{ $t('play.crash.retry') }}
+    </button>
+  </div>
+
   <!-- Jeu pas encore actif -->
-  <div v-if="gameInactive" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
+  <div v-else-if="gameInactive" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
     <img v-if="business?.logo" :src="business.logo"
       class="h-24 max-w-[220px] object-contain mb-8 drop-shadow" :alt="business?.name" />
     <div v-else class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">

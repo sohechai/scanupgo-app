@@ -2467,6 +2467,11 @@
       "game_closed": "This game is currently closed.",
       "unknown": "An error occurred while playing."
     },
+    "crash": {
+      "title": "Oops, something went wrong",
+      "message": "The game hit an error. Please try again in a moment — our team has been notified.",
+      "retry": "Try again"
+    },
     "desktop": {
       "heading": "Scan with your phone 📱",
       "description_line1": "This game is only accessible on smartphone.",
