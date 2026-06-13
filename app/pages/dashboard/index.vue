@@ -485,16 +485,7 @@ const recentActivity = computed(() =>
 
 // Lifecycle
 onMounted(() => {
-	fetchSubscription() // non-blocking
-
-	// If the cache already tells us the user is not subscribed (loading=false, no active sub),
-	// skip the heavy data calls — the gate will hide the content anyway.
-	if (!subscriptionLoading.value && !hasActiveSubscription.value) {
-		sessionsLoading.value = false
-		statsLoading.value = false
-		playersLoading.value = false
-		return
-	}
+	fetchSubscription() // non-blocking — accès libre total (plus de gate)
 
 	fetchSessions()
 	fetchPlayers()
@@ -515,7 +506,7 @@ onMounted(() => {
 				</h1>
 				<p class="text-slate-400 text-sm mt-0.5">{{ formatDate(new Date(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
 			</div>
-			<div v-if="hasActiveSubscription" class="flex items-center gap-3">
+			<div class="flex items-center gap-3">
 				<div class="relative flex items-center">
 					<Icon name="ph:calendar-blank" size="16" class="absolute left-3 rtl:left-auto rtl:right-3 text-slate-400 pointer-events-none z-10" />
 					<select v-model="selectedPeriod"
@@ -532,7 +523,7 @@ onMounted(() => {
 		</div>
 
 		<!-- 2. HERO — Google Avis -->
-		<div v-if="hasActiveSubscription"
+		<div
 			class="relative overflow-hidden rounded-lg bg-gradient-to-br from-[#1e3a8a] via-[#1d4ed8] to-[#2563eb] px-5 py-4 text-white">
 			<div class="relative flex items-center justify-between gap-4">
 				<div class="flex-1 min-w-0">
@@ -561,7 +552,7 @@ onMounted(() => {
 		</div>
 
 		<!-- 3. KPI CARDS -->
-		<div v-if="hasActiveSubscription" class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
 			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
 				<div class="flex items-center justify-between mb-1">
 					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_google_rating') }}</p>
@@ -616,7 +607,7 @@ onMounted(() => {
 		</div>
 
 		<!-- 4. CHART + ACTIVITÉ RÉCENTE -->
-		<div v-if="hasActiveSubscription" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 			<!-- Chart -->
 			<div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-5 relative overflow-hidden">
 				<div class="flex items-center justify-between mb-6">
@@ -748,130 +739,17 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<!-- ========================================== -->
-		<!-- DASHBOARD PREVIEW (No Subscription)     -->
-		<!-- ========================================== -->
-		<div v-if="!subscriptionLoading && !hasActiveSubscription">
-
-			<!-- ── Fake dashboard skeleton (grayed, behind overlay) ── -->
-			<div class="pointer-events-none select-none space-y-8 opacity-40">
-
-				<!-- Fake stats row -->
-				<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.players') }}</p>
-						<div class="h-7 w-12 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
-						<div class="h-2.5 w-14 bg-slate-100 dark:bg-slate-800 rounded"></div>
-					</div>
-					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.participations') }}</p>
-						<div class="h-7 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
-						<div class="h-2.5 w-20 bg-slate-100 dark:bg-slate-800 rounded"></div>
-					</div>
-					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.prizes_won') }}</p>
-						<div class="h-7 w-10 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
-						<div class="h-2.5 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div>
-					</div>
-					<div class="bg-white dark:bg-[#1C1C1E] p-4 rounded-lg border border-slate-200 dark:border-slate-700/40">
-						<p class="text-[11px] text-slate-400 font-medium mb-2">{{ $t('dashboard.stats.pending_prizes') }}</p>
-						<div class="h-7 w-8 bg-slate-200 dark:bg-slate-700 rounded-lg mb-2"></div>
-						<div class="h-2.5 w-16 bg-slate-100 dark:bg-slate-800 rounded"></div>
-					</div>
-				</div>
-
-				<!-- Fake chart + right column -->
-				<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-					<div class="lg:col-span-2 bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 p-5">
-						<div class="flex items-center justify-between mb-6">
-							<div class="space-y-1.5">
-								<div class="h-3.5 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
-								<div class="h-2.5 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
-							</div>
-						</div>
-						<div class="h-48 flex items-end gap-2.5 px-1">
-							<div class="flex-1 h-[45%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[70%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[38%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[85%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[55%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[65%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-							<div class="flex-1 h-[30%] bg-slate-200 dark:bg-slate-700 rounded-t-md"></div>
-						</div>
-					</div>
-					<div class="space-y-4">
-						<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 p-5 h-48">
-							<div class="flex items-center gap-3 mb-4">
-								<div class="w-9 h-9 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
-								<div class="space-y-1.5">
-									<div class="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
-									<div class="h-2.5 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
-								</div>
-							</div>
-							<div class="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Fake table -->
-				<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 overflow-hidden">
-					<div class="px-5 py-4 border-b border-[#E5E5EA] dark:border-slate-700/40 flex items-center justify-between">
-						<div class="h-3.5 w-36 bg-slate-200 dark:bg-slate-700 rounded"></div>
-					</div>
-					<div v-for="i in 4" :key="i" class="px-5 py-4 border-b border-[#E5E5EA]/60 dark:border-slate-700/20 flex items-center gap-6">
-						<div class="h-3 w-8 bg-slate-200 dark:bg-slate-700 rounded"></div>
-						<div class="h-5 w-14 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-						<div class="flex items-center gap-2">
-							<div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-							<div class="h-3 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
-						</div>
-						<div class="h-2.5 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto"></div>
-					</div>
-				</div>
-
-			</div>
-
-			<!-- ── Overlay fixe centré sur la zone de contenu (après sidebar + header) ── -->
-			<Teleport to="body">
-				<div class="fixed top-14 left-0 lg:left-60 right-0 bottom-0 z-10 flex items-center justify-center p-4 pointer-events-none">
-					<div class="relative z-10 w-full max-w-md pointer-events-auto">
-						<div class="bg-white dark:bg-[#1C1C1E] rounded-lg border border-slate-200 dark:border-slate-700/40 shadow-lg overflow-hidden">
-							<div class="h-0.5 w-full bg-[#007AFF]" />
-							<div class="p-7 text-center">
-								<div class="flex justify-center mb-5">
-									<div class="w-12 h-12 rounded-lg bg-[#007AFF]/10 dark:bg-[#007AFF]/15 flex items-center justify-center">
-										<Icon name="ph:crown-simple-fill" size="24" class="text-[#007AFF]" />
-									</div>
-								</div>
-								<p class="text-xs font-semibold text-[#007AFF] uppercase tracking-widest mb-1.5">{{ $t('subscription.gate.label') }}</p>
-								<h2 class="text-lg font-semibold text-slate-900 dark:text-white tracking-tight mb-2">{{ $t('subscription.gate.title') }}</h2>
-								<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">{{ $t('subscription.gate.description') }}</p>
-								<div class="grid grid-cols-3 gap-2 mb-5">
-									<div class="flex flex-col items-center gap-1.5 p-3 bg-slate-50 dark:bg-[#2C2C2E] rounded-md">
-										<Icon name="ph:chart-line-up-bold" size="15" class="text-[#007AFF]" />
-										<span class="text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_games') }}</span>
-									</div>
-									<div class="flex flex-col items-center gap-1.5 p-3 bg-slate-50 dark:bg-[#2C2C2E] rounded-md">
-										<Icon name="ph:users-three-bold" size="15" class="text-indigo-500" />
-										<span class="text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_players') }}</span>
-									</div>
-									<div class="flex flex-col items-center gap-1.5 p-3 bg-slate-50 dark:bg-[#2C2C2E] rounded-md">
-										<Icon name="ph:envelope-bold" size="15" class="text-emerald-500" />
-										<span class="text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center leading-tight">{{ $t('subscription.gate.feature_marketing') }}</span>
-									</div>
-								</div>
-								<NuxtLink to="/dashboard/subscription"
-									class="flex items-center justify-center gap-2 w-full py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-md transition-colors text-sm">
-									<Icon name="ph:rocket-launch-bold" size="15" />
-									{{ $t('subscription.gate.cta') }}
-								</NuxtLink>
-								<p class="text-xs text-slate-400 dark:text-slate-500 mt-3">{{ $t('subscription.gate.hint') }}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Teleport>
-
+		<!-- Bannière d'activation (accès libre, pas de blocage) -->
+		<div v-if="!subscriptionLoading && !hasActiveSubscription"
+			class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10">
+			<p class="flex-1 text-sm text-amber-800 dark:text-amber-200 leading-snug">
+				🎯 {{ $t('games.activation_banner') }}
+			</p>
+			<NuxtLink to="/dashboard/subscription"
+				class="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
+				{{ $t('games.activation_cta') }}
+				<Icon name="ph:arrow-right-bold" size="14" class="rtl:rotate-180" />
+			</NuxtLink>
 		</div>
 
 	</div>
