@@ -2157,6 +2157,7 @@
       "role_filter_administrator": "مسؤول",
       "role_filter_commercant": "تاجر",
       "role_filter_public": "عام",
+      "filter_unpaid": "غير المدفوعين",
       "table_header_user": "المستخدم",
       "table_header_role": "الدور",
       "table_header_business": "المتجر",

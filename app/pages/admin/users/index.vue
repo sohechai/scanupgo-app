@@ -13,6 +13,7 @@ const toast = useToast()
 const loading = ref(true)
 const searchQuery = ref('')
 const roleFilter = ref('all')
+const paymentFilter = ref<'all' | 'unpaid'>('all')
 
 const users = ref<any[]>([])
 
@@ -46,7 +47,8 @@ const filteredUsers = computed(() => {
 			(u.lastName && u.lastName.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
 			u.email.toLowerCase().includes(searchQuery.value.toLowerCase())
 		const matchesRole = roleFilter.value === 'all' || u.role === roleFilter.value
-		return matchesSearch && matchesRole
+		const matchesPayment = paymentFilter.value === 'all' || (u.role === 'COMMERCANT' && !u.subscriptionActive)
+		return matchesSearch && matchesRole && matchesPayment
 	})
 })
 
@@ -233,6 +235,15 @@ async function changeRole(e: Event, user: any, newRole: string) {
 				<option value="COMMERCANT" class="bg-[#161920]">{{ $t('admin.users.role_filter_commercant') }}</option>
 				<option value="PUBLIC" class="bg-[#161920]">{{ $t('admin.users.role_filter_public') }}</option>
 			</select>
+			<button type="button"
+				@click="paymentFilter = paymentFilter === 'unpaid' ? 'all' : 'unpaid'"
+				:class="['flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors border whitespace-nowrap',
+					paymentFilter === 'unpaid'
+						? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+						: 'bg-[#161920] border-white/[0.07] text-slate-400 hover:text-slate-200']">
+				<Icon name="ph:warning-circle-bold" size="15" />
+				{{ $t('admin.users.filter_unpaid') }}
+			</button>
 		</div>
 
 		<!-- Table -->

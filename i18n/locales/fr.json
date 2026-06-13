@@ -2157,6 +2157,7 @@
       "role_filter_administrator": "Administrateur",
       "role_filter_commercant": "Commerçant",
       "role_filter_public": "Public",
+      "filter_unpaid": "Non-payés",
       "table_header_user": "Utilisateur",
       "table_header_role": "Rôle",
       "table_header_business": "Business",
