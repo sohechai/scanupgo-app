@@ -62,7 +62,27 @@ const form = ref<CreateOrderDto & { dimensions?: string; paperType?: string }>({
 })
 
 const paperTypeLabel = computed(() => t('components.create_order.paper_type_label'))
-const quantityOptions = [100, 250, 500, 1000, 2500]
+
+// Packs de flyers (l'admin les configure — le commerçant choisit, pas de quantité libre)
+const packs = ref<any[]>([])
+const packsLoading = ref(false)
+const selectedPack = ref<any>(null)
+
+const fetchPacks = async () => {
+	packsLoading.value = true
+	try { packs.value = await $api<any[]>('/flyer-packs') || [] }
+	catch (e) { console.error('Error fetching packs:', e) }
+	finally { packsLoading.value = false }
+}
+
+const selectPack = (pack: any) => {
+	selectedPack.value = pack
+	calculatedPrice.value = {
+		unitPrice: Number(pack.price) / pack.quantity,
+		totalPrice: Number(pack.price),
+		currency: pack.currency,
+	}
+}
 
 // Fetch games with flyers
 const fetchGames = async () => {
@@ -114,17 +134,13 @@ const calculatePrice = async () => {
 	}
 }
 
-watch(() => form.value.quantity, async () => {
-	await calculatePrice()
-})
-
-// Fetch games and calculate price when modal opens
+// Charge games + packs à l'ouverture (plus de calcul par quantité)
 watch(() => props.modelValue, (val) => {
 	if (val) {
 		if (needsFlyerSelection.value) {
 			fetchGames()
 		}
-		calculatePrice()
+		fetchPacks()
 	}
 })
 
@@ -160,7 +176,7 @@ const canGoNext = computed(() => {
 		return selectedFlyerUrl.value !== null
 	}
 	if (currentStep.value === quantityStep.value) {
-		return form.value.quantity >= 100 && calculatedPrice.value !== null
+		return selectedPack.value !== null
 	}
 	return true
 })
@@ -195,9 +211,9 @@ const handleSubmit = async () => {
 	try {
 		const orderData = {
 			...form.value,
-			productType: form.value.productType,
-			unitPrice: calculatedPrice.value.unitPrice,
-			totalPrice: calculatedPrice.value.totalPrice,
+			packId: selectedPack.value?.id,
+			productType: 'flyers',
+			description: selectedPack.value?.name,
 			flyerDesignUrl: activeFlyerUrl.value || undefined,
 			gameId: activeGameId.value || undefined,
 		}
@@ -362,54 +378,38 @@ const stepLabels = computed(() => {
 							</div>
 						</div>
 
-						<!-- Quantity Selection -->
+						<!-- Pack Selection -->
 						<div class="space-y-2">
 							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400">
-								{{ $t('components.create_order.quantity_label') }}
+								{{ $t('components.create_order.pack_select_label') }}
 							</label>
-							<div class="grid grid-cols-5 gap-2">
-								<button v-for="qty in quantityOptions" :key="qty" type="button"
-									@click="form.quantity = qty" :class="[
-										'py-3 rounded-md text-sm font-medium transition-all border',
-										form.quantity === qty
-											? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white'
-											: 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400'
+
+							<div v-if="packsLoading" class="flex justify-center py-8">
+								<Icon name="ph:spinner-gap-bold" size="24" class="text-slate-400 animate-spin" />
+							</div>
+
+							<div v-else-if="packs.length === 0" class="bg-amber-50 dark:bg-amber-900/20 rounded-md p-3.5 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200">
+								{{ $t('components.create_order.no_packs') }}
+							</div>
+
+							<div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<button v-for="pack in packs" :key="pack.id" type="button"
+									@click="selectPack(pack)" :class="[
+										'text-left rounded-lg border overflow-hidden transition-all flex flex-col',
+										selectedPack?.id === pack.id
+											? 'border-[#007AFF] ring-2 ring-[#007AFF]/20'
+											: 'border-slate-200 dark:border-slate-700 hover:border-slate-400'
 									]">
-									{{ qty }}
+									<div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+										<img :src="pack.image || '/images/flyer-pack-default.svg'" :alt="pack.name" class="w-full h-full object-cover" />
+									</div>
+									<div class="p-3">
+										<p class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">{{ $t('components.create_order.pack_label') }}</p>
+										<p class="text-sm font-semibold text-slate-900 dark:text-white leading-snug">{{ pack.name || `Pack ${pack.quantity} flyers` }}</p>
+										<p class="text-xs text-slate-400 mt-0.5">{{ pack.quantity }} {{ $t('components.create_order.pack_units') }}</p>
+										<p class="text-base font-bold text-[#007AFF] mt-1.5">{{ formatPrice(Number(pack.price), pack.currency) }}</p>
+									</div>
 								</button>
-							</div>
-						</div>
-
-						<!-- Price Preview -->
-						<div class="bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 p-4">
-							<div class="flex items-center justify-between">
-								<div>
-									<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('components.create_order.price_total') }}</span>
-									<p class="text-xs text-slate-400 mt-0.5">{{ form.quantity }} flyers A6 — {{ paperTypeLabel }}</p>
-								</div>
-								<div v-if="pricingLoading">
-									<Icon name="ph:spinner-gap-bold" size="18" class="text-slate-400 animate-spin" />
-								</div>
-								<div v-else-if="calculatedPrice" class="text-right rtl:text-left">
-									<p class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">
-										{{ formatPrice(calculatedPrice.totalPrice, calculatedPrice.currency) }}
-									</p>
-									<p class="text-xs text-slate-400">
-										{{ formatPrice(calculatedPrice.unitPrice, calculatedPrice.currency) }} {{ $t('components.create_order.price_per_unit') }}
-									</p>
-								</div>
-								<span v-else class="text-sm text-slate-400">—</span>
-							</div>
-						</div>
-
-						<!-- Pricing Error -->
-						<div v-if="pricingError" class="bg-amber-50 dark:bg-amber-900/20 rounded-md p-3.5 border border-amber-200 dark:border-amber-800">
-							<div class="flex items-start gap-2.5">
-								<Icon name="ph:warning-duotone" size="16" class="text-amber-600 shrink-0 mt-0.5" />
-								<div>
-									<p class="text-xs font-medium text-amber-900 dark:text-amber-100">{{ $t('components.create_order.pricing_unavailable') }}</p>
-									<p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">{{ pricingError }}</p>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -453,8 +453,8 @@ const stepLabels = computed(() => {
 											<img :src="activeFlyerUrl" class="w-full h-full object-cover" />
 										</div>
 										<div>
-											<p class="font-medium text-slate-900 dark:text-white text-sm">{{ form.quantity }} Flyers A6</p>
-											<p class="text-xs text-slate-400">14.8 x 10.5 cm — {{ paperTypeLabel }}</p>
+											<p class="font-medium text-slate-900 dark:text-white text-sm">{{ selectedPack?.name || $t('components.create_order.product_name') }}</p>
+											<p class="text-xs text-slate-400">{{ selectedPack?.quantity }} flyers — {{ paperTypeLabel }}</p>
 										</div>
 									</div>
 									<p v-if="calculatedPrice" class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
