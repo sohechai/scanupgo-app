@@ -17,6 +17,7 @@ const loading = ref(true)
 const togglingId = ref<string | null>(null)
 
 const toggleActive = async (game: any) => {
+	if (!hasActiveSubscription.value) return
 	if (togglingId.value === game.id) return
 	togglingId.value = game.id
 	// Optimistic update — toggle immediately, no spinner
@@ -136,21 +137,12 @@ const fetchGames = async () => {
 }
 
 onMounted(async () => {
-	try {
-		await fetchSubscription()
-	} catch (e) {
-		console.error(e)
-	}
-	if (hasActiveSubscription.value) {
-		await fetchGames()
-	} else {
-		loading.value = false
-	}
+	fetchSubscription()
+	await fetchGames()
 })
 </script>
 
 <template>
-	<SubscriptionGate>
 	<div class="space-y-5">
 
 		<!-- Header -->
@@ -163,6 +155,19 @@ onMounted(async () => {
 				class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
 				<Icon name="ph:plus-bold" size="15" />
 				{{ $t('games.create_button') }}
+			</NuxtLink>
+		</div>
+
+		<!-- Bannière activation abonnement -->
+		<div v-if="!loading && !hasActiveSubscription"
+			class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10">
+			<p class="flex-1 text-sm text-amber-800 dark:text-amber-200 leading-snug">
+				🎯 {{ $t('games.activation_banner') }}
+			</p>
+			<NuxtLink to="/dashboard/subscription"
+				class="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
+				{{ $t('games.activation_cta') }}
+				<Icon name="ph:arrow-right-bold" size="14" class="rtl:rotate-180" />
 			</NuxtLink>
 		</div>
 
@@ -203,15 +208,19 @@ onMounted(async () => {
 					<!-- Toggle actif/inactif -->
 					<button
 						@click.prevent.stop="toggleActive(game)"
-						:title="game.active ? $t('games.deactivate') : $t('games.activate')"
+						:disabled="!hasActiveSubscription"
+						:title="!hasActiveSubscription
+							? $t('games.toggle_locked_tooltip')
+							: (game.active ? $t('games.deactivate') : $t('games.activate'))"
 						class="shrink-0 flex items-center gap-1.5 mt-0.5"
+						:class="!hasActiveSubscription ? 'cursor-not-allowed opacity-50' : ''"
 					>
 						<span class="text-[11px] font-medium w-16 text-right"
-							:class="game.active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
+							:class="game.active && hasActiveSubscription ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
 							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
 						</span>
 						<div class="relative w-7 h-3.5 rounded-full transition-colors shrink-0"
-							:class="game.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
+							:class="game.active && hasActiveSubscription ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
 							<div class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow transition-all"
 								:class="game.active ? 'left-[14px]' : 'left-0.5'"></div>
 						</div>
@@ -344,5 +353,4 @@ onMounted(async () => {
 			</Transition>
 		</Teleport>
 	</div>
-	</SubscriptionGate>
 </template>

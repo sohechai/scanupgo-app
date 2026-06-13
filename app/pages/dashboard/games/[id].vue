@@ -17,7 +17,7 @@ const { $api } = useNuxtApp()
 const { user } = useAuth()
 const config = useRuntimeConfig()
 const { show: showToast } = useToast()
-const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
+const { fetchSubscription } = useSubscription()
 
 const getAssetUrl = (url: string | null | undefined) => {
 	if (!url) return undefined
@@ -202,8 +202,7 @@ const applyBusinessColors = () => {
 onMounted(async () => {
 	fetchBackgroundThemes()
 	try {
-		await fetchSubscription()
-		if (!hasActiveSubscription.value) return
+		fetchSubscription()
 
 		if (user.value) {
 			await fetchBusiness()
@@ -335,15 +334,7 @@ const saveGame = async () => {
 
 <template>
 	<div>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('games.access_required')"
-		:description="$t('games.access_description')"
-		icon="ph:game-controller-fill"
-	/>
-
-	<div v-else class="space-y-6 relative pb-20">
+	<div class="space-y-6 relative pb-20">
 		<!-- Loading Skeleton -->
 		<div v-if="loading" class="animate-pulse space-y-8 max-w-7xl mx-auto w-full">
 			<!-- Header Skeleton -->

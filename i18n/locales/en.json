@@ -210,11 +210,13 @@
       "players": "Players",
       "marketing": "Email Marketing",
       "redeem": "Prize Validation",
-      "prizes": "My Prizes",
+      "prizes": "Validate prizes",
       "subscription": "My Subscription",
       "account": "My Account"
     },
     "my_account": "My Account",
+    "greeting": "Hello, {name} 👋",
+    "greeting_anon": "Hello 👋",
     "logout": "Log Out",
     "view_site": "View my site",
     "light_mode": "Light mode",
@@ -379,6 +381,9 @@
     "update_error": "Error updating game",
     "activate": "Activate game",
     "deactivate": "Deactivate game",
+    "activation_banner": "Your game is set up — activate your subscription so your customers can start playing today.",
+    "activation_cta": "Activate my subscription",
+    "toggle_locked_tooltip": "Available with an active subscription",
     "delete_confirmation_title": "Delete this game?",
     "delete_confirmation_message": "The game \"{title}\" will be permanently deleted with all its data (prizes, sessions, etc.). This action cannot be undone.",
     "delete_confirmation_button": "Delete",
@@ -1506,7 +1511,7 @@
       "plan1_feature4": "Monthly follow-up by phone and email",
       "plan1_cta": "Choose this plan",
       "plan2_name": "Annual",
-      "plan2_price": "5,550 MAD",
+      "plan2_price": "5,500 MAD",
       "plan2_period": "/ year",
       "plan2_subtitle": "Best value for money",
       "plan2_badge": "MOST POPULAR",
@@ -2397,6 +2402,11 @@
     }
   },
   "play": {
+    "inactive": {
+      "title": "This game isn't active yet.",
+      "message": "Come back soon — {business} is preparing a surprise for you!",
+      "fallback_business": "this business"
+    },
     "error": {
       "title": "Oops!",
       "game_not_found": "This game does not exist or has been disabled.",

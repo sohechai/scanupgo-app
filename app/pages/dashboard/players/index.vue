@@ -116,21 +116,12 @@ const exportToPDF = async () => {
 }
 
 onMounted(async () => {
-	try {
-		await fetchSubscription()
-	} catch (e) {
-		console.error(e)
-	}
-	if (hasActiveSubscription.value) {
-		await fetchPlayers()
-	} else {
-		loading.value = false
-	}
+	fetchSubscription()
+	await fetchPlayers()
 })
 </script>
 
 <template>
-	<SubscriptionGate>
 	<div class="space-y-5">
 
 		<!-- Header -->
@@ -325,5 +316,4 @@ onMounted(async () => {
 		</div>
 
 	</div>
-	</SubscriptionGate>
 </template>

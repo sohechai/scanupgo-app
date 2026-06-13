@@ -20,8 +20,8 @@ const selectedOrder = ref<Order | null>(null)
 const filterStatus = ref<string>('all')
 
 onMounted(async () => {
-	await fetchSubscription()
-	if (hasActiveSubscription.value) await Promise.all([fetchOrders(), fetchStats()])
+	fetchSubscription()
+	await Promise.all([fetchOrders(), fetchStats()])
 })
 
 const filteredOrders = computed(() =>
@@ -85,7 +85,6 @@ const getOrderDisplayLabel = (order: Order) => {
 </script>
 
 <template>
-	<SubscriptionGate>
 	<div class="space-y-5">
 
 		<!-- Header -->
@@ -220,5 +219,4 @@ const getOrderDisplayLabel = (order: Order) => {
 		<OrdersCreateOrderModal v-model="showCreateModal" @created="handleOrderCreated" />
 		<OrdersOrderDetailsModal v-model="showDetailsModal" :order="selectedOrder" />
 	</div>
-	</SubscriptionGate>
 </template>

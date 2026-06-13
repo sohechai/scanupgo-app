@@ -207,7 +207,7 @@
       "players": "اللاعبون",
       "marketing": "التسويق",
       "redeem": "التحقق من الجوائز",
-      "prizes": "جوائزي",
+      "prizes": "التحقق من الجوائز",
       "subscription": "اشتراكي",
       "account": "حسابي",
       "section_principal": "الرئيسية",
@@ -215,6 +215,8 @@
       "section_compte": "الحساب"
     },
     "my_account": "حسابي",
+    "greeting": "مرحباً، {name} 👋",
+    "greeting_anon": "مرحباً 👋",
     "logout": "تسجيل الخروج",
     "view_site": "عرض موقعي",
     "light_mode": "الوضع الفاتح",
@@ -379,6 +381,9 @@
     "update_error": "خطأ في تحديث اللعبة",
     "activate": "تفعيل اللعبة",
     "deactivate": "إلغاء تفعيل اللعبة",
+    "activation_banner": "لعبتك جاهزة — فعّل اشتراكك ليتمكن عملاؤك من اللعب اليوم.",
+    "activation_cta": "تفعيل اشتراكي",
+    "toggle_locked_tooltip": "متاح مع اشتراك نشط",
     "delete_confirmation_title": "حذف هذه اللعبة؟",
     "delete_confirmation_message": "سيتم حذف اللعبة « {title} » نهائيًا مع جميع بياناتها (الجوائز، الجلسات، إلخ). هذا الإجراء لا رجعة فيه.",
     "delete_confirmation_button": "حذف",
@@ -1506,7 +1511,7 @@
       "plan1_feature4": "متابعة شهرية بالهاتف والبريد الإلكتروني",
       "plan1_cta": "أختار هذا العرض",
       "plan2_name": "سنوية",
-      "plan2_price": "5550 MAD",
+      "plan2_price": "5500 MAD",
       "plan2_period": "/ سنة",
       "plan2_subtitle": "أفضل قيمة مقابل السعر",
       "plan2_badge": "الأكثر شعبية",
@@ -2397,6 +2402,11 @@
     }
   },
   "play": {
+    "inactive": {
+      "title": "هذه اللعبة ليست نشطة بعد.",
+      "message": "عُد قريباً — {business} يُحضّر لك مفاجأة!",
+      "fallback_business": "هذا المتجر"
+    },
     "error": {
       "title": "عذراً!",
       "game_not_found": "هذه اللعبة غير موجودة أو تم تعطيلها.",

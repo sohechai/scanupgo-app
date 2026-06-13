@@ -12,6 +12,9 @@ const { t } = useI18n()
 const { formatDate, formatNumber } = useLocaleDate()
 const { user } = useAuth()
 const { $api } = useNuxtApp()
+
+// Salutation : prénom → sinon nom de l'établissement → sinon anonyme
+const greetingName = computed(() => user.value?.firstName || user.value?.business?.name || '')
 const { hasActiveSubscription, loading: subscriptionLoading, fetchSubscription, isAdmin } = useSubscription()
 
 // --- STATE: SESSIONS & PRIZES ---
@@ -507,7 +510,9 @@ onMounted(() => {
 		<!-- 1. HEADER -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
-				<h1 class="text-xl font-semibold text-slate-900 tracking-tight">Bonjour, {{ user?.firstName || 'vous' }} 👋</h1>
+				<h1 class="text-xl font-semibold text-slate-900 tracking-tight">
+					{{ greetingName ? $t('dashboard.greeting', { name: greetingName }) : $t('dashboard.greeting_anon') }}
+				</h1>
 				<p class="text-slate-400 text-sm mt-0.5">{{ formatDate(new Date(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
 			</div>
 			<div v-if="hasActiveSubscription" class="flex items-center gap-3">

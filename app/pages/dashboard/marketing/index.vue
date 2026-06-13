@@ -67,12 +67,10 @@ const statusConfig = computed(() => ({
 const getStatus = (s: string) => statusConfig.value[s] || statusConfig.value.draft
 
 onMounted(async () => {
-	await fetchSubscription()
-	if (hasActiveSubscription.value) {
-		fetchStats()
-		fetchCampaigns()
-		fetchCreditPacks()
-	}
+	fetchSubscription()
+	fetchStats()
+	fetchCampaigns()
+	fetchCreditPacks()
 
 	if (route.query.credits_success === 'true') {
 		toast.show(t('marketing.credits.purchase_success'), 'success')
@@ -84,7 +82,6 @@ onMounted(async () => {
 </script>
 
 <template>
-	<SubscriptionGate>
 	<div class="space-y-5">
 
 		<!-- Header -->
@@ -334,5 +331,4 @@ onMounted(async () => {
 			</div>
 		</div>
 	</div>
-	</SubscriptionGate>
 </template>

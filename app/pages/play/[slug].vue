@@ -27,6 +27,7 @@ onUnmounted(() => { if (import.meta.client) window.removeEventListener('resize',
 // Data
 const slug = route.params.slug as string
 const error = ref<string | null>(null)
+const gameInactive = ref(false)
 const game = ref<any>(null)
 const business = ref<any>(null)
 
@@ -59,7 +60,7 @@ if (fetchError.value) {
 } else if (gameData.value) {
   game.value = gameData.value.game
   business.value = gameData.value.business
-  if (!game.value.active) error.value = t('play.error.game_closed')
+  if (!game.value.active) gameInactive.value = true
 }
 
 // Analytics
@@ -69,7 +70,7 @@ const trackEvent = (eventType: string) => {
 }
 
 onMounted(() => {
-  if (game.value && !error.value) {
+  if (game.value && !error.value && !gameInactive.value) {
     trackEvent('page_visit')
     if (game.value.gameLanguage) switchLocale(game.value.gameLanguage)
   }
@@ -167,8 +168,23 @@ const onSpinEnd = () => {
 </script>
 
 <template>
+  <!-- Jeu pas encore actif -->
+  <div v-if="gameInactive" class="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
+    <img v-if="business?.logo" :src="business.logo"
+      class="h-24 max-w-[220px] object-contain mb-8 drop-shadow" :alt="business?.name" />
+    <div v-else class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
+      <Icon name="ph:gift-duotone" size="40" class="text-slate-400" />
+    </div>
+    <h1 class="text-xl font-bold text-slate-900 mb-3">
+      {{ $t('play.inactive.title') }}
+    </h1>
+    <p class="text-slate-500 leading-relaxed max-w-sm">
+      {{ $t('play.inactive.message', { business: business?.name || $t('play.inactive.fallback_business') }) }}
+    </p>
+  </div>
+
   <!-- Desktop block -->
-  <div v-if="!isMobile" class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+  <div v-else-if="!isMobile" class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
     :style="{ backgroundColor: primaryColor, color: textColor }">
     <div class="absolute inset-0 opacity-10">
       <div class="absolute inset-0"
