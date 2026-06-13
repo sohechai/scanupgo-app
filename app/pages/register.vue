@@ -9,12 +9,20 @@ const config = useRuntimeConfig()
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+const phone = ref('')
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const cgvAccepted = ref(false)
 const cgvError = ref(false)
 const error = ref('')
 const loading = ref(false)
+
+// Indicatif par défaut selon l'IP (ex. +212 si IP marocaine)
+const { countryCodeFromIp } = usePhone()
+const ipCountryCode = ref('')
+onMounted(async () => {
+	ipCountryCode.value = await countryCodeFromIp()
+})
 
 const handleRegister = async () => {
 	if (password.value !== confirmPassword.value) {
@@ -32,7 +40,7 @@ const handleRegister = async () => {
 	loading.value = true
 	error.value = ''
 	try {
-		await signUp(email.value, password.value, undefined, undefined, cgvAccepted.value)
+		await signUp(email.value, password.value, undefined, undefined, cgvAccepted.value, phone.value || undefined)
 		navigateTo('/verify-email-pending')
 	} catch (e: any) {
 		console.error(e)
@@ -143,6 +151,15 @@ const loginWithGoogle = () => {
 						<Icon :name="showConfirmPassword ? 'ph:eye-slash' : 'ph:eye'" size="18" />
 					</button>
 				</div>
+			</div>
+
+			<!-- WhatsApp (optionnel) -->
+			<div>
+				<label for="whatsapp" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.whatsapp_label') }}</label>
+				<div class="mt-1">
+					<PhoneInput v-model="phone" variant="light" :placeholder="$t('auth.register.whatsapp_placeholder')" :country-code="ipCountryCode" />
+				</div>
+				<p class="text-xs text-slate-500 mt-1">{{ $t('auth.register.whatsapp_hint') }}</p>
 			</div>
 
 			<!-- CGV Checkbox -->

@@ -149,7 +149,7 @@ export const useAuthStore = defineStore('auth', {
 			}
 		},
 
-		async signUp(email: string, password: string, firstName?: string, lastName?: string, cgvAccepted?: boolean) {
+		async signUp(email: string, password: string, firstName?: string, lastName?: string, cgvAccepted?: boolean, phone?: string) {
 			const { $api } = useNuxtApp()
 
 			try {
@@ -167,6 +167,7 @@ export const useAuthStore = defineStore('auth', {
 						password,
 						firstName,
 						lastName,
+						phone: phone || undefined,
 						preferredLanguage: localeCookie.value || 'fr',
 						cgvAccepted: cgvAccepted ?? true
 					}

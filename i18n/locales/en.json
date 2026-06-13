@@ -101,6 +101,9 @@
       "error_google_not_configured": "Google login is not available at the moment.",
       "error_registration_failed": "Registration failed. Please check your information.",
       "submit_button": "Create my space →",
+      "whatsapp_label": "WhatsApp (optional)",
+      "whatsapp_placeholder": "6 00 00 00 00",
+      "whatsapp_hint": "To help you get set up",
       "submit_loading": "Creating...",
       "already_account_text": "Already have an account?",
       "login_link": "Log In"
@@ -2124,6 +2127,7 @@
       "table_header_user": "User",
       "table_header_role": "Role",
       "table_header_business": "Business",
+      "table_header_whatsapp": "WhatsApp",
       "table_header_created": "Created on",
       "table_header_actions": "Actions",
       "no_users": "No users found.",

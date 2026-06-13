@@ -89,6 +89,13 @@ const getUserName = (user: any) => {
 	return user.email
 }
 
+// Lien WhatsApp cliquable depuis le numéro stocké (relance des non-payés)
+const waLink = (phone?: string) => {
+	if (!phone) return ''
+	const clean = phone.replace(/[^\d]/g, '')
+	return clean ? `https://wa.me/${clean}` : ''
+}
+
 const stats = computed(() => ({
 	total: users.value.length,
 	commercants: users.value.filter(u => u.role === 'COMMERCANT').length,
@@ -237,6 +244,7 @@ async function changeRole(e: Event, user: any, newRole: string) {
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_user') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_role') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_business') }}</th>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_whatsapp') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_created') }}</th>
 							<th class="px-4 py-3 text-right rtl:text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_actions') }}</th>
 						</tr>
@@ -254,6 +262,7 @@ async function changeRole(e: Event, user: any, newRole: string) {
 							</td>
 							<td class="px-4 py-3"><div class="h-3 bg-white/[0.06] rounded w-20"></div></td>
 							<td class="px-4 py-3"><div class="h-3 bg-white/[0.06] rounded w-24"></div></td>
+							<td class="px-4 py-3"><div class="h-3 bg-white/[0.06] rounded w-28"></div></td>
 							<td class="px-4 py-3"><div class="h-3 bg-white/[0.06] rounded w-24"></div></td>
 							<td class="px-4 py-3 text-right rtl:text-left"><div class="h-6 w-6 bg-white/[0.06] rounded ml-auto rtl:ml-0 rtl:mr-auto"></div></td>
 						</tr>
@@ -273,6 +282,7 @@ async function changeRole(e: Event, user: any, newRole: string) {
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_user') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_role') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_business') }}</th>
+							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_whatsapp') }}</th>
 							<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_created') }}</th>
 							<th class="px-4 py-3 text-right rtl:text-left text-xs font-medium text-slate-500">{{ $t('admin.users.table_header_actions') }}</th>
 						</tr>
@@ -298,6 +308,14 @@ async function changeRole(e: Event, user: any, newRole: string) {
 								</span>
 							</td>
 							<td class="px-4 py-3"><span class="text-sm text-slate-300">{{ user.businessName || '—' }}</span></td>
+							<td class="px-4 py-3">
+								<a v-if="waLink(user.phone)" :href="waLink(user.phone)" target="_blank" rel="noopener noreferrer"
+									class="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 font-mono transition-colors">
+									<Icon name="ph:whatsapp-logo-fill" size="15" class="shrink-0" />
+									{{ user.phone }}
+								</a>
+								<span v-else class="text-sm text-slate-600">—</span>
+							</td>
 							<td class="px-4 py-3"><span class="text-sm text-slate-400">{{ formatDate(user.createdAt) }}</span></td>
 							<td class="px-4 py-3 text-right rtl:text-left">
 								<button
@@ -310,7 +328,7 @@ async function changeRole(e: Event, user: any, newRole: string) {
 						</tr>
 						<!-- Separator if both sections have items -->
 						<tr v-if="superAdminUsers.length > 0 && regularUsers.length > 0">
-							<td colspan="5" class="px-4 py-1.5 bg-white/[0.02]">
+							<td colspan="6" class="px-4 py-1.5 bg-white/[0.02]">
 								<span class="text-xs text-slate-600">{{ $t('admin.users.role_filter_commercant') }}</span>
 							</td>
 						</tr>
@@ -334,6 +352,14 @@ async function changeRole(e: Event, user: any, newRole: string) {
 								</span>
 							</td>
 							<td class="px-4 py-3"><span class="text-sm text-slate-300">{{ user.businessName || '—' }}</span></td>
+							<td class="px-4 py-3">
+								<a v-if="waLink(user.phone)" :href="waLink(user.phone)" target="_blank" rel="noopener noreferrer"
+									class="inline-flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300 font-mono transition-colors">
+									<Icon name="ph:whatsapp-logo-fill" size="15" class="shrink-0" />
+									{{ user.phone }}
+								</a>
+								<span v-else class="text-sm text-slate-600">—</span>
+							</td>
 							<td class="px-4 py-3"><span class="text-sm text-slate-400">{{ formatDate(user.createdAt) }}</span></td>
 							<td class="px-4 py-3 text-right rtl:text-left">
 								<!-- Action menu trigger only -->

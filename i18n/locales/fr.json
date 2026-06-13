@@ -101,6 +101,9 @@
       "error_google_not_configured": "La connexion Google n'est pas disponible pour le moment.",
       "error_registration_failed": "Échec de l'inscription. Vérifiez vos informations.",
       "submit_button": "Créer mon espace →",
+      "whatsapp_label": "WhatsApp (optionnel)",
+      "whatsapp_placeholder": "6 00 00 00 00",
+      "whatsapp_hint": "Pour vous accompagner dans la mise en place",
       "submit_loading": "Création...",
       "already_account_text": "Déjà un compte ?",
       "login_link": "Se connecter"
@@ -2124,6 +2127,7 @@
       "table_header_user": "Utilisateur",
       "table_header_role": "Rôle",
       "table_header_business": "Business",
+      "table_header_whatsapp": "WhatsApp",
       "table_header_created": "Créé le",
       "table_header_actions": "Actions",
       "no_users": "Aucun utilisateur trouvé.",
