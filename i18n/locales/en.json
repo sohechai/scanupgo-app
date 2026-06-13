@@ -1138,7 +1138,13 @@
 		"logout_all_success": "All devices have been logged out",
 		"logout_all_error": "Error logging out",
 		"profile_update_success": "Profile updated successfully",
-		"profile_update_error": "Error updating profile"
+		"profile_update_error": "Error updating profile",
+		"google": {
+			"google_section": "Google Reviews",
+			"link_label": "Google review submission link",
+			"change_btn": "Change",
+			"paste_link": "Paste the Google Reviews link"
+		}
 	},
 	"redeem": {
 		"title": "Prize Validation",

@@ -420,7 +420,7 @@ watch(user, (newUser) => {
 
 		<!-- Google Avis Section -->
 		<div>
-			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">Google Avis</p>
+			<p class="text-xs font-medium text-slate-400 dark:text-slate-500 px-1 mb-2">{{ $t('account.google.google_section') }}</p>
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
 				<!-- Confirmed state -->
 				<div v-if="googleReviewUrl && !placeSearchMode" class="flex items-center gap-3.5 px-5 py-3.5">
@@ -428,12 +428,12 @@ watch(user, (newUser) => {
 						<Icon name="ph:check-circle-fill" class="text-emerald-500" size="14" />
 					</div>
 					<div class="flex-1 min-w-0">
-						<p class="text-sm font-medium text-slate-900 dark:text-white">Lien de dépôt d'avis Google</p>
+						<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('account.google.link_label') }}</p>
 						<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate font-mono">{{ googleReviewUrl }}</p>
 					</div>
 					<button @click="placeSearchMode = true; placeManualMode = false; placeManualUrl = ''" :disabled="googleReviewLoading"
 						class="text-[#007AFF] text-xs font-medium hover:opacity-70 transition-opacity shrink-0 disabled:opacity-30">
-						Changer
+						{{ $t('account.google.change_btn') }}
 					</button>
 				</div>
 
@@ -492,7 +492,7 @@ watch(user, (newUser) => {
 
 				<!-- Manual URL input -->
 				<div v-else class="space-y-2">
-					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Coller le lien Google Avis</p>
+					<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('account.google.paste_link') }}</p>
 					<div class="flex gap-2">
 						<input
 							v-model="placeManualUrl"

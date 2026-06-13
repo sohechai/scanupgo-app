@@ -954,7 +954,7 @@
 			"expired_description": "لم يعد لديك حق الوصول إلى الميزات المميزة. أعد الاشتراك لاستعادة الوصول الكامل.",
 			"ending_on": "سينتهي اشتراكك في {date}",
 			"ending_on_description": "تحتفظ بالوصول إلى جميع الميزات حتى هذا التاريخ. يمكنك إعادة تفعيل اشتراكك في أي وقت.",
-			"renews_in_days": "يتجدد اشتراكك خلال {days} يوم/أيام",
+			"renews_in_days": "يتجدد اشتراكك خلال {days} يوماً",
 			"renews_in_days_description": "في {date}، سيتم خصم مبلغ {price} درهم تلقائياً.",
 			"trial_period": "فترة تجريبية جارية",
 			"trial_period_description": "تنتهي فترتك التجريبية المجانية في {date}. بعد ذلك، سيتم محاسبتك بمبلغ {price} درهم.",
@@ -978,7 +978,7 @@
 			"change_plan": "تغيير الخطة",
 			"cancel": "إلغاء",
 			"lifetime_access": "وصول مدى الحياة — بدون تجديد",
-			"days_remaining": "{days} يوم/أيام متبقية",
+			"days_remaining": "{days} يوماً متبقياً",
 			"included_features": "الميزات المضمنة",
 			"active_games": "{count} ألعاب نشطة",
 			"active_games_label": "ألعاب نشطة",
@@ -1138,7 +1138,13 @@
 		"delete_lose_players": "لاعبوك وبياناتهم",
 		"delete_lose_orders": "طلباتك وسجلّك",
 		"delete_lose_data": "إحصائياتك وتقاريرك",
-		"delete_warning": "هذا الإجراء لا رجعة فيه. ستُحذف جميع بياناتك وألعابك وطلباتك نهائيًا."
+		"delete_warning": "هذا الإجراء لا رجعة فيه. ستُحذف جميع بياناتك وألعابك وطلباتك نهائيًا.",
+		"google": {
+			"google_section": "تقييمات Google",
+			"link_label": "رابط إضافة تقييم على Google",
+			"change_btn": "تعديل",
+			"paste_link": "الصق رابط تقييمات Google"
+		}
 	},
 	"redeem": {
 		"title": "التحقق من الجوائز",

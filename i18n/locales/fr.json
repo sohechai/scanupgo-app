@@ -1138,7 +1138,13 @@
 		"logout_all_success": "Tous les appareils ont été déconnectés",
 		"logout_all_error": "Erreur lors de la déconnexion",
 		"profile_update_success": "Profil mis à jour avec succès",
-		"profile_update_error": "Erreur lors de la mise à jour du profil"
+		"profile_update_error": "Erreur lors de la mise à jour du profil",
+		"google": {
+			"google_section": "Google Avis",
+			"link_label": "Lien de dépôt d'avis Google",
+			"change_btn": "Changer",
+			"paste_link": "Coller le lien Google Avis"
+		}
 	},
 	"redeem": {
 		"title": "Validation des lots",
