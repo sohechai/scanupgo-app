@@ -141,6 +141,7 @@ const game = ref({
 	wheelPointerColor: '#fde047',
 	buttonColor: '#ffffff',
 	popupColor: '#333333',
+	showLogo: true,
 	backgroundImage: null as string | null,
 	gameLanguage: 'fr',
 	active: true,
@@ -734,6 +735,18 @@ const saveGame = async () => {
 									</div>
 								</div>
 
+								<!-- Afficher le logo de l'établissement dans le jeu -->
+								<div class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-700 p-3 rounded-md border border-slate-200 dark:border-slate-600">
+									<div>
+										<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('games.detail.show_logo') }}</p>
+										<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $t('games.detail.show_logo_hint') }}</p>
+									</div>
+									<label class="relative inline-flex items-center cursor-pointer shrink-0">
+										<input v-model="game.showLogo" type="checkbox" class="sr-only peer">
+										<div class="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+									</label>
+								</div>
+
 
 								<!-- Couleur cases perdu -->
 								<div>
@@ -926,7 +939,7 @@ const saveGame = async () => {
 								:wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor"
 								:wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor" :button-color="game.buttonColor"
  :popup-color="game.popupColor"
-								:background-image="game.backgroundImage" :logo="businessLogo"
+								:background-image="game.backgroundImage" :logo="game.showLogo === false ? null : businessLogo"
 								:prizes="(game as any).prizes"
 								:google-review-url="game.googleReviewUrl" />
 						</div>

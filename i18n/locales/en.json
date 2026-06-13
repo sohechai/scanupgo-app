@@ -505,6 +505,8 @@
       "save_success": "Changes saved.",
       "button_color": "Buttons color",
       "popup_color": "Popup color",
+      "show_logo": "Show logo in the game",
+      "show_logo_hint": "Hide it if your flyer already shows your logo.",
       "wheel_lost_color": "\"Lost\" slots",
       "wheel_prize_color": "Prize slots",
       "wheel_border_color": "Wheel borders",

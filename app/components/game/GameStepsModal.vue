@@ -130,7 +130,7 @@ const buttonTextColor = computed(() => contrastColor(buttonColor.value))
             </button>
 
             <!-- Logo -->
-            <div v-if="props.business?.logo" class="my-4 relative w-36 h-36 flex items-center justify-center">
+            <div v-if="props.business?.logo && props.game?.showLogo !== false" class="my-4 relative w-36 h-36 flex items-center justify-center">
               <img :src="props.business.logo" alt="Logo" class="max-w-full max-h-full object-contain drop-shadow-2xl animate-[spin_4s_linear_infinite]" />
             </div>
             <div v-else class="my-2"></div>

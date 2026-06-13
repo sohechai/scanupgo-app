@@ -198,9 +198,7 @@ const previewPrizes = computed(() => {
 						<template v-else>
 							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
 								class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-							<div v-else class="h-14 w-28 rounded-xl border-2 border-dashed border-white/40 flex items-center justify-center">
-								<Icon name="ph:storefront-duotone" size="22" class="text-white/50" />
-							</div>
+							<div v-else class="h-14"></div>
 						</template>
 					</div>
 

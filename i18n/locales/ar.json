@@ -505,6 +505,8 @@
       "save_success": "تم حفظ التعديلات.",
       "button_color": "لون الأزرار",
       "popup_color": "لون النافذة المنبثقة",
+      "show_logo": "عرض الشعار في اللعبة",
+      "show_logo_hint": "أخفه إذا كان الفلاير يحتوي على شعارك.",
       "wheel_lost_color": "خانات «خسارة»",
       "wheel_prize_color": "خانات الجوائز",
       "wheel_border_color": "حدود العجلة",

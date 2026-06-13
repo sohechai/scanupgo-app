@@ -443,6 +443,8 @@
       "background_color": "Couleur de fond",
       "button_color": "Couleur des boutons",
       "popup_color": "Couleur popup",
+      "show_logo": "Afficher le logo dans le jeu",
+      "show_logo_hint": "Masquez-le si votre flyer contient déjà votre logo.",
       "wheel_lost_color": "Cases « Perdu »",
       "wheel_prize_color": "Cases cadeaux",
       "wheel_border_color": "Bordures de la roue",

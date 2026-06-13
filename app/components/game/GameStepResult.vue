@@ -34,9 +34,9 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+      <img v-if="business?.logo && game?.showLogo !== false" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
         :style="isImageBackground ? { visibility: 'hidden' } : {}" />
-      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
       <div v-else class="h-16"></div>
     </div>
 
@@ -109,9 +109,9 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
+      <img v-if="business?.logo && game?.showLogo !== false" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
         :style="isImageBackground ? { visibility: 'hidden' } : {}" />
-      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
       <div v-else class="h-16"></div>
     </div>
 
