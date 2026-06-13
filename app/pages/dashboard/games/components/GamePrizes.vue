@@ -16,6 +16,7 @@ interface Prize {
 	quantity: number
 	probability: number
 	winningMessage: string
+	minOrderAmount?: number | null
 	status: string
 }
 
@@ -65,6 +66,7 @@ const openModal = (prize?: Prize) => {
 			quantity: 10,
 			probability: 20,
 			winningMessage: t('games.prizes.default_message'),
+			minOrderAmount: null,
 			status: 'active'
 		}
 	}
@@ -88,6 +90,7 @@ const savePrize = async () => {
 			quantity: form.value.quantity,
 			probability: form.value.probability,
 			winningMessage: form.value.winningMessage,
+			minOrderAmount: form.value.minOrderAmount ?? null,
 			status: form.value.status,
 			gameId: props.gameId
 		}
@@ -254,6 +257,18 @@ watch(() => props.gameId, (newId) => {
 							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.message') }}</label>
 						<textarea v-model="form.winningMessage" rows="2"
 							class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none resize-none"></textarea>
+					</div>
+
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.min_order_amount') }}</label>
+						<div class="relative">
+							<input v-model.number="form.minOrderAmount" type="number" min="0" step="1"
+								:placeholder="$t('games.prizes.min_order_amount_placeholder')"
+								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl pl-4 pr-14 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none" />
+							<span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">MAD</span>
+						</div>
+						<p class="text-[11px] text-slate-400 mt-1">{{ $t('games.prizes.min_order_amount_hint') }}</p>
 					</div>
 				</div>
 

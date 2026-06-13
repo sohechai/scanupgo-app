@@ -156,7 +156,12 @@ const confirm = async () => {
 									</div>
 								</div>
 							</td>
-							<td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ session.prizeName }}</td>
+							<td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+								{{ session.prizeName }}
+								<span v-if="session.prize?.minOrderAmount" class="block text-[11px] font-normal text-amber-600 dark:text-amber-400">
+									{{ $t('redeem.min_order', { amount: Number(session.prize.minOrderAmount) }) }}
+								</span>
+							</td>
 							<td class="px-5 py-3 text-xs text-slate-400">
 								{{ formatDate(session.createdAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}
 							</td>

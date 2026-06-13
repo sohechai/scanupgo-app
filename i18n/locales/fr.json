@@ -528,6 +528,9 @@
       "probability_hint": "Pourcentage de chance qu'un joueur gagne ce lot (ex: 20 = 1 chance sur 5)",
       "message": "Message gagnant",
       "default_message": "Félicitations ! Vous avez gagné un lot.",
+      "min_order_amount": "Montant minimum de commande",
+      "min_order_amount_placeholder": "Laisser vide si aucun",
+      "min_order_amount_hint": "Optionnel — le client doit dépenser ce montant pour utiliser le lot.",
       "modal_title_new": "Nouveau lot",
       "modal_title_edit": "Modifier le lot",
       "modal_cancel": "Annuler",
@@ -1122,6 +1125,7 @@
     "code_label": "Code de retrait",
     "code_placeholder": "Ex: A1B2C3D4",
     "validate_button": "Valider le code",
+    "min_order": "Min. {amount} MAD d'achat",
     "mode_manual": "Saisie manuelle",
     "mode_scan": "Scanner QR",
     "validated": "Validé",
@@ -2521,6 +2525,7 @@
         "qr_instruction": "Scannez ce QR Code en caisse",
         "code_instruction": "Ou présentez ce code",
         "save_hint": "Votre QR code vous sera envoyé par email.",
+        "min_order": "Valable dès {amount} MAD d'achat",
         "expiry_title": "Cadeau à retirer dans"
       },
       "lose": {

@@ -528,6 +528,9 @@
       "probability_hint": "Percentage chance a player wins this prize (e.g. 20 = 1 in 5 chance)",
       "message": "Winner message",
       "default_message": "Congratulations! You won a prize.",
+      "min_order_amount": "Minimum order amount",
+      "min_order_amount_placeholder": "Leave empty if none",
+      "min_order_amount_hint": "Optional — the customer must spend this amount to use the prize.",
       "modal_title_new": "New prize",
       "modal_title_edit": "Edit prize",
       "modal_cancel": "Cancel",
@@ -1122,6 +1125,7 @@
     "code_label": "Redemption code",
     "code_placeholder": "E.g.: A1B2C3D4",
     "validate_button": "Validate code",
+    "min_order": "Min. {amount} MAD purchase",
     "mode_manual": "Manual entry",
     "mode_scan": "Scan QR",
     "validated": "Validated",
@@ -2521,6 +2525,7 @@
         "qr_instruction": "Scan this QR Code at the counter",
         "code_instruction": "Or show this code",
         "save_hint": "Your QR code will be sent to you by email.",
+        "min_order": "Valid from {amount} MAD purchase",
         "expiry_title": "Gift to collect after"
       },
       "lose": {

@@ -61,6 +61,9 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
           <p class="opacity-60 text-xs font-bold uppercase tracking-widest mb-1">{{ $t('play.result.win.subtitle') }}</p>
           <h2 class="text-xl font-black leading-tight">{{ wonPrize?.name }}</h2>
           <p v-if="wonPrize?.winningMessage" class="opacity-70 text-sm mt-1">{{ wonPrize.winningMessage }}</p>
+          <p v-if="wonPrize?.minOrderAmount" class="opacity-60 text-xs mt-1">
+            {{ $t('play.result.win.min_order', { amount: Number(wonPrize.minOrderAmount) }) }}
+          </p>
         </div>
 
         <!-- QR Code -->

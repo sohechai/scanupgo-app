@@ -528,6 +528,9 @@
       "probability_hint": "نسبة احتمال فوز اللاعب بهذه الجائزة (مثال: 20 = فرصة واحدة من 5)",
       "message": "رسالة الفائز",
       "default_message": "مبروك! لقد ربحت جائزة.",
+      "min_order_amount": "الحد الأدنى لمبلغ الطلب",
+      "min_order_amount_placeholder": "اتركه فارغاً إن لم يوجد",
+      "min_order_amount_hint": "اختياري — يجب أن ينفق العميل هذا المبلغ لاستخدام الجائزة.",
       "modal_title_new": "جائزة جديدة",
       "modal_title_edit": "تعديل الجائزة",
       "modal_cancel": "إلغاء",
@@ -1122,6 +1125,7 @@
     "code_label": "رمز الاستلام",
     "code_placeholder": "مثال: A1B2C3D4",
     "validate_button": "التحقق من الرمز",
+    "min_order": "الحد الأدنى {amount} درهم",
     "scanner_button": "مسح QR",
     "position_qr": "ضع رمز QR داخل الإطار",
     "close_scanner": "إغلاق الماسح",
@@ -2521,6 +2525,7 @@
         "qr_instruction": "امسح رمز QR عند الصندوق",
         "code_instruction": "أو أبرز هذا الرمز",
         "save_hint": "سيتم إرسال رمز QR إليك عبر البريد الإلكتروني.",
+        "min_order": "صالح ابتداءً من {amount} درهم",
         "expiry_title": "الهدية تُستلم بعد"
       },
       "lose": {
