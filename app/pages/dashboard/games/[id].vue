@@ -72,6 +72,19 @@ const goToPreviousStep = () => {
 	}
 }
 
+// Les inputs number renvoient "" quand on vide le champ : le backend rejette alors
+// ("must be a number conforming to the specified constraints"). On force un number
+// valide avant l'envoi.
+const sanitizeHours = (payload: any) => {
+	const toHours = (v: any, fallback: number) => {
+		const n = Number(v)
+		return Number.isFinite(n) && n >= 0 ? n : fallback
+	}
+	payload.prizeRedemptionDelayHours = toHours(payload.prizeRedemptionDelayHours, 24)
+	payload.participationFrequencyHours = toHours(payload.participationFrequencyHours, 24)
+	return payload
+}
+
 const syncGameToServer = async () => {
 	saving.value = true
 	try {
@@ -82,7 +95,8 @@ const syncGameToServer = async () => {
 			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de créer ce jeu.', 'error')
 			throw new Error('googleReviewUrl missing')
 		}
-		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
+		const payload = sanitizeHours(rest)
 		if (createdGameId.value) {
 			await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: payload })
 		} else {
@@ -304,7 +318,8 @@ const saveGame = async () => {
 		game.value.description = game.value.tagline
 
 		// Prepare payload (exclude fields managed by server)
-		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
+		const payload = sanitizeHours(rest)
 
 		let gameId = route.params.id as string
 
