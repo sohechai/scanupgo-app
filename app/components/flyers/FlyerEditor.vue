@@ -453,6 +453,12 @@ const addLogo = async () => {
 	FabricImage.fromURL(logoUrl, { crossOrigin: 'anonymous' }).then((img) => {
 		if (!canvas.value) return
 
+		// Remplacer le logo précédemment ajouté (ne pas cumuler)
+		if (logoCanvasObject.value) {
+			canvas.value.remove(logoCanvasObject.value)
+			logoCanvasObject.value = null
+		}
+
 		img.scale(0.3)
 		img.set({
 			left: 50,
@@ -462,6 +468,7 @@ const addLogo = async () => {
 		configureObjectControls(img)
 
 		canvas.value.add(img)
+		logoCanvasObject.value = img
 		canvas.value.setActiveObject(img)
 		canvas.value.renderAll()
 	}).catch((err) => {
@@ -474,6 +481,7 @@ const addLogo = async () => {
 const showQRCodeModal = ref(false)
 const customQRCodeUrl = ref<string | null>(null)
 const qrCanvasObject = ref<any>(null)
+const logoCanvasObject = ref<any>(null)
 
 // Place (or replace) QR code on canvas at the template's qrZone
 const placeQROnCanvas = async (url: string) => {
@@ -486,12 +494,27 @@ const placeQROnCanvas = async (url: string) => {
 		qrCanvasObject.value = null
 	}
 
+	// Position du QR : utiliser la qrZone définie par le template si elle existe,
+	// sinon position fixe par défaut (zone blanche à 66%/68% du canvas).
+	const tpl = templates.value.find((t: any) => t.id === selectedBaseTemplate.value)
+	const zone = tpl?.qrZone || null
+
 	FabricImage.fromURL(url, { crossOrigin: 'anonymous' }).then((img) => {
 		if (!canvas.value) return
 
-		// Fixed position — same for all templates (white zone at 66%/68% of canvas)
-		img.scaleToWidth(120)
-		img.set({ left: 246, top: 420, originX: 'center', originY: 'center', angle: -13 })
+		if (zone) {
+			img.scaleToWidth(zone.size ?? zone.width ?? 120)
+			img.set({
+				left: zone.x ?? zone.left ?? 246,
+				top: zone.y ?? zone.top ?? 420,
+				originX: 'center',
+				originY: 'center',
+				angle: zone.angle ?? 0,
+			})
+		} else {
+			img.scaleToWidth(120)
+			img.set({ left: 246, top: 420, originX: 'center', originY: 'center', angle: -13 })
+		}
 
 		configureObjectControls(img)
 		canvas.value.add(img)
