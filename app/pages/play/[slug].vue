@@ -36,6 +36,7 @@ const step = ref<GameStep>('intro')
 const showStepsModal = ref(false)
 const showRules = ref(false)
 const showSplash = ref(true)
+const splashLogoError = ref(false) // masque le logo splash si son URL est cassée
 
 // Game state
 const isWin = ref(false)
@@ -328,7 +329,8 @@ const onSpinEnd = () => {
   <!-- Splash screen -->
   <Transition name="splash">
     <div v-if="showSplash" class="fixed inset-0 z-[500] flex items-center justify-center" style="background: rgba(255,255,255,0.94);">
-      <img v-if="business?.logo" :src="business.logo" class="h-32 max-w-[260px] object-contain rounded-2xl logo-spin drop-shadow-2xl" />
+      <img v-if="business?.logo && !splashLogoError" :src="business.logo" class="h-32 max-w-[260px] object-contain rounded-2xl logo-spin" @error="splashLogoError = true" />
+      <div v-else-if="business?.logo && splashLogoError" class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
       <div v-else class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </Transition>

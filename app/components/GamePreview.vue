@@ -82,10 +82,11 @@ const logoUrl = computed(() => {
 	return props.logo
 })
 
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 const isImageBackground = computed(() => {
 	const bg = props.backgroundImage
 	if (!bg) return false
-	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const displayTitle = computed(() => props.title || t('components.game_preview.default_title'))
@@ -160,12 +161,15 @@ const previewPrizes = computed(() => {
 			<!-- Screen -->
 			<div class="rounded-[2rem] overflow-hidden w-full h-full relative font-display transition-colors duration-500"
 				:style="{ backgroundColor: primaryColor || '#00e5ff' }">
-				<!-- Background Image / Gradient -->
+				<!-- Background : dégradé / couleur unie / image -->
 				<div v-if="backgroundImage && (backgroundImage.startsWith('linear-gradient') || backgroundImage.startsWith('radial-gradient'))"
 					class="absolute inset-0 z-0" :style="{ background: backgroundImage }" />
+				<div v-else-if="backgroundImage && isHexColor(backgroundImage)"
+					class="absolute inset-0 z-0" :style="{ backgroundColor: backgroundImage }" />
 				<img v-else-if="backgroundImage" :src="backgroundImage"
 					class="absolute inset-0 w-full h-full object-cover z-0" />
-				<div v-if="backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
+				<!-- Overlay sombre seulement pour les vraies images (pas une couleur unie) -->
+				<div v-if="isImageBackground" class="absolute inset-0 bg-black/30 z-0" />
 
 				<!-- Fake Status Bar -->
 				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-30 text-[10px] font-bold tracking-widest opacity-80"

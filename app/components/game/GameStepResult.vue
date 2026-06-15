@@ -10,10 +10,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{ restart: [] }>()
 
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 const isImageBackground = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return false
-  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const contrastColor = (hexColor: string) => {

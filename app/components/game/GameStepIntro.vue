@@ -15,17 +15,24 @@ const emit = defineEmits<{
 
 const buttonColor = computed(() => props.game?.buttonColor || '#ffffff')
 
+// Masque le logo si son URL est cassée (évite l'icône "image brisée")
+const logoError = ref(false)
+
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
+
 const backgroundStyle = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return { backgroundColor: props.primaryColor }
   if (bg.startsWith('linear-gradient') || bg.startsWith('radial-gradient')) return { background: bg }
+  // Couleur unie (ex. thème "Blanc pur" = #ffffff) : couleur de fond, pas une image
+  if (isHexColor(bg)) return { backgroundColor: bg }
   return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
 })
 
 const isImageBackground = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return false
-  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const buttonTextColor = computed(() => {
@@ -49,9 +56,10 @@ const buttonTextColor = computed(() => {
     <div class="relative z-10 w-full h-full flex flex-col pt-6">
       <!-- Logo — visibility:hidden keeps space, v-if removes when no logo -->
       <div class="flex justify-center px-8 shrink-0">
-        <img v-if="business?.logo && game?.showLogo !== false" :src="business.logo"
-          class="h-20 max-w-[280px] object-contain drop-shadow-2xl"
-          :style="isImageBackground ? { visibility: 'hidden' } : {}" />
+        <img v-if="business?.logo && !logoError && game?.showLogo !== false" :src="business.logo"
+          class="h-20 max-w-[280px] object-contain"
+          :style="isImageBackground ? { visibility: 'hidden' } : {}"
+          @error="logoError = true" />
         <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
         <div v-else class="h-20"></div>
       </div>
