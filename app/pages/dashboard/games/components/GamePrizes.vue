@@ -250,12 +250,21 @@ watch(() => props.gameId, (newId) => {
 						<div>
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.probability') }}</label>
-							<div class="relative">
-								<input v-model.number="form.probability" type="number" min="10" max="100" step="0.1"
-									class="w-full bg-slate-50 dark:bg-slate-700 border rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none"
-									:class="probabilityError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'">
-								<span
-									class="absolute right-4 top-2 text-slate-400 dark:text-slate-500 text-sm font-bold">%</span>
+							<div class="relative flex items-center bg-slate-50 dark:bg-slate-700 border rounded-xl focus-within:border-[#007AFF]/40 transition-colors"
+								:class="probabilityError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'">
+								<input v-model.number="form.probability" type="number" min="10" max="100" step="1"
+									class="prob-input flex-1 min-w-0 bg-transparent pl-4 pr-1 py-2 text-slate-900 dark:text-white outline-none">
+								<span class="text-slate-400 dark:text-slate-500 text-sm font-bold pr-2">%</span>
+								<div class="flex flex-col border-l border-slate-200 dark:border-slate-600">
+									<button type="button" @click="form.probability = Math.min(100, (form.probability || 0) + 1)"
+										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+										<Icon name="ph:caret-up-bold" size="11" />
+									</button>
+									<button type="button" @click="form.probability = Math.max(10, (form.probability || 0) - 1)"
+										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors border-t border-slate-200 dark:border-slate-600">
+										<Icon name="ph:caret-down-bold" size="11" />
+									</button>
+								</div>
 							</div>
 							<p v-if="probabilityError" class="text-[11px] text-red-500 mt-1">{{ $t('games.prizes.probability_min_error') }}</p>
 							<p v-else class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
@@ -322,3 +331,16 @@ watch(() => props.gameId, (newId) => {
 		/>
 	</div>
 </template>
+
+<style scoped>
+/* Masque les flèches natives du input number (on a nos propres boutons) */
+.prob-input::-webkit-outer-spin-button,
+.prob-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.prob-input {
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+</style>

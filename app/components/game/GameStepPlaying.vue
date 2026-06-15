@@ -57,7 +57,6 @@ const buttonTextColor = computed(() => {
       <div class="flex justify-center px-8 shrink-0">
         <img v-if="business?.logo && !logoError && game?.showLogo !== false" :src="business.logo"
           class="h-20 max-w-[280px] object-contain"
-          :style="isImageBackground ? { visibility: 'hidden' } : {}"
           @error="logoError = true" />
         <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
         <div v-else class="h-20"></div>

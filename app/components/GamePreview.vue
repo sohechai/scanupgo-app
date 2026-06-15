@@ -192,18 +192,11 @@ const previewPrizes = computed(() => {
 				<!-- STEP 1: INTRO -->
 				<div v-if="currentStep === 'intro'" class="relative h-full overflow-hidden flex flex-col">
 
-					<!-- Logo -->
+					<!-- Logo (affiché selon le toggle showLogo, géré côté parent via la prop logo) -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
-						<template v-if="isImageBackground">
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-14 max-w-[180px] object-contain" style="visibility:hidden" />
-							<div v-else class="h-14"></div>
-						</template>
-						<template v-else>
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-							<div v-else class="h-14"></div>
-						</template>
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
+						<div v-else class="h-14"></div>
 					</div>
 
 					<!-- Tagline -->
