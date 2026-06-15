@@ -2537,8 +2537,8 @@
 			"unknown": "Une erreur est survenue lors du jeu."
 		},
 		"crash": {
-			"title": "Oups, un petit souci est survenu",
-			"message": "Le jeu a rencontré une erreur. Réessayez dans un instant — notre équipe a été prévenue.",
+			"title": "Jeu temporairement indisponible",
+			"message": "Ce jeu est temporairement indisponible. Revenez dans quelques minutes !",
 			"retry": "Réessayer"
 		},
 		"desktop": {

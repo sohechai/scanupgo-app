@@ -2537,8 +2537,8 @@
 			"unknown": "An error occurred while playing."
 		},
 		"crash": {
-			"title": "Oops, something went wrong",
-			"message": "The game hit an error. Please try again in a moment — our team has been notified.",
+			"title": "Game temporarily unavailable",
+			"message": "This game is temporarily unavailable. Come back in a few minutes!",
 			"retry": "Try again"
 		},
 		"desktop": {
