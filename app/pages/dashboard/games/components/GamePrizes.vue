@@ -17,6 +17,7 @@ interface Prize {
 	probability: number
 	winningMessage: string
 	minOrderAmount?: number | null
+	validityDays?: number | null
 	status: string
 }
 
@@ -39,6 +40,10 @@ const form = ref<Prize>({
 	winningMessage: t('games.prizes.default_message'),
 	status: 'active'
 })
+
+// Minimum 10% de chance par lot (garantit une bonne expérience client)
+const MIN_PROBABILITY = 10
+const probabilityError = computed(() => (form.value.probability ?? 0) < MIN_PROBABILITY)
 
 const fetchPrizes = async () => {
 	if (!props.gameId) return
@@ -67,6 +72,7 @@ const openModal = (prize?: Prize) => {
 			probability: 20,
 			winningMessage: t('games.prizes.default_message'),
 			minOrderAmount: null,
+			validityDays: null,
 			status: 'active'
 		}
 	}
@@ -79,6 +85,7 @@ const closeModal = () => {
 }
 
 const savePrize = async () => {
+	if (probabilityError.value) return // bloque la sauvegarde si < 10%
 	saving.value = true
 	try {
 		// Only send allowed fields from DTO
@@ -91,6 +98,7 @@ const savePrize = async () => {
 			probability: form.value.probability,
 			winningMessage: form.value.winningMessage,
 			minOrderAmount: form.value.minOrderAmount ?? null,
+			validityDays: form.value.validityDays ?? null,
 			status: form.value.status,
 			gameId: props.gameId
 		}
@@ -243,12 +251,14 @@ watch(() => props.gameId, (newId) => {
 							<label
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.probability') }}</label>
 							<div class="relative">
-								<input v-model.number="form.probability" type="number" min="0" max="100" step="0.1"
-									class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none">
+								<input v-model.number="form.probability" type="number" min="10" max="100" step="0.1"
+									class="w-full bg-slate-50 dark:bg-slate-700 border rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none"
+									:class="probabilityError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'">
 								<span
 									class="absolute right-4 top-2 text-slate-400 dark:text-slate-500 text-sm font-bold">%</span>
 							</div>
-							<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
+							<p v-if="probabilityError" class="text-[11px] text-red-500 mt-1">{{ $t('games.prizes.probability_min_error') }}</p>
+							<p v-else class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
 						</div>
 					</div>
 
@@ -270,6 +280,18 @@ watch(() => props.gameId, (newId) => {
 						</div>
 						<p class="text-[11px] text-slate-400 mt-1">{{ $t('games.prizes.min_order_amount_hint') }}</p>
 					</div>
+
+					<div>
+						<label
+							class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.validity_days') }}</label>
+						<div class="relative">
+							<input v-model.number="form.validityDays" type="number" min="1" step="1"
+								:placeholder="$t('games.prizes.validity_days_placeholder')"
+								class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl pl-4 pr-16 py-2 text-slate-900 dark:text-white focus:border-[#007AFF]/40 outline-none" />
+							<span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">{{ $t('games.prizes.validity_days_unit') }}</span>
+						</div>
+						<p class="text-[11px] text-slate-400 mt-1">{{ $t('games.prizes.validity_days_hint') }}</p>
+					</div>
 				</div>
 
 				<div class="px-6 py-4 bg-slate-50 dark:bg-slate-700/30 flex justify-end gap-3 sticky bottom-0">
@@ -277,8 +299,8 @@ watch(() => props.gameId, (newId) => {
 						class="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
 						{{ $t('games.prizes.modal_cancel') }}
 					</button>
-					<button @click="savePrize" :disabled="saving"
-						class="px-6 py-2 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] shadow-lg shadow-[#007AFF]/20 disabled:opacity-50 flex items-center gap-2">
+					<button @click="savePrize" :disabled="saving || probabilityError"
+						class="px-6 py-2 bg-[#007AFF] text-white font-bold rounded-xl hover:bg-[#0066DD] shadow-lg shadow-[#007AFF]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
 						<Icon v-if="saving" name="ph:spinner-gap-bold" class="animate-spin" />
 						{{ saving ? $t('games.prizes.modal_saving') : $t('games.prizes.modal_save') }}
 					</button>

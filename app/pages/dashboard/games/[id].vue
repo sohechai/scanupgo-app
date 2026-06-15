@@ -119,6 +119,45 @@ const finishWizard = () => {
 
 const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.length - 1)
 
+// ── Paramètres avancés : selects mappés sur les champs enabled/hours ──────────
+// "Participation unique" = cooldown très long (≈100 ans) -> rejouable une seule fois.
+const ONCE_FOREVER_HOURS = 876000
+
+const participationFrequency = computed<'unlimited' | 'daily' | 'weekly' | 'once'>({
+	get() {
+		if (!game.value.participationFrequencyEnabled) return 'unlimited'
+		const h = game.value.participationFrequencyHours
+		if (h >= ONCE_FOREVER_HOURS) return 'once'
+		if (h >= 168) return 'weekly'
+		return 'daily'
+	},
+	set(val) {
+		if (val === 'unlimited') {
+			game.value.participationFrequencyEnabled = false
+		} else {
+			game.value.participationFrequencyEnabled = true
+			game.value.participationFrequencyHours =
+				val === 'daily' ? 24 : val === 'weekly' ? 168 : ONCE_FOREVER_HOURS
+		}
+	},
+})
+
+const redemptionDelay = computed<'instant' | '24h' | '48h'>({
+	get() {
+		if (!game.value.prizeRedemptionDelayEnabled || !game.value.prizeRedemptionDelayHours) return 'instant'
+		return game.value.prizeRedemptionDelayHours >= 48 ? '48h' : '24h'
+	},
+	set(val) {
+		if (val === 'instant') {
+			game.value.prizeRedemptionDelayEnabled = false
+			game.value.prizeRedemptionDelayHours = 0
+		} else {
+			game.value.prizeRedemptionDelayEnabled = true
+			game.value.prizeRedemptionDelayHours = val === '48h' ? 48 : 24
+		}
+	},
+})
+
 // Google Review Help Modal
 const showGoogleHelpModal = ref(false)
 const showPreviewModal = ref(false)
@@ -642,42 +681,33 @@ const saveGame = async () => {
 									<!-- Frequency -->
 									<div
 										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
-										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.frequency_label') }}</span>
-											<label class="relative inline-flex items-center cursor-pointer">
-												<input v-model="game.participationFrequencyEnabled" type="checkbox"
-													class="sr-only peer">
-												<div
-													class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900">
-												</div>
-											</label>
-										</div>
-										<div v-if="game.participationFrequencyEnabled" class="flex items-center gap-2">
-											<input v-model.number="game.participationFrequencyHours" type="number"
-												min="1"
-												class="w-20 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-900 focus:border-slate-400 outline-none">
-											<span class="text-xs text-slate-500 font-medium">{{ $t('games.detail.frequency_hours') }}</span>
+										<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">{{ $t('games.detail.frequency_label') }}</label>
+										<div class="relative">
+											<select v-model="participationFrequency"
+												class="w-full appearance-none bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg pl-3 pr-9 py-2 text-sm font-medium text-slate-900 dark:text-white focus:border-slate-400 outline-none cursor-pointer">
+												<option value="unlimited">{{ $t('games.detail.frequency_unlimited') }}</option>
+												<option value="daily">{{ $t('games.detail.frequency_daily') }}</option>
+												<option value="weekly">{{ $t('games.detail.frequency_weekly') }}</option>
+												<option value="once">{{ $t('games.detail.frequency_once') }}</option>
+											</select>
+											<Icon name="ph:caret-down-bold" size="14"
+												class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 										</div>
 									</div>
 
 									<!-- Redemption Delay -->
 									<div
 										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
-										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.redemption_delay') }}</span>
-											<label class="relative inline-flex items-center cursor-pointer">
-												<input v-model="game.prizeRedemptionDelayEnabled" type="checkbox"
-													class="sr-only peer">
-												<div
-													class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 dark:peer-checked:bg-[#007AFF]">
-												</div>
-											</label>
-										</div>
-										<div v-if="game.prizeRedemptionDelayEnabled" class="flex items-center gap-2">
-											<input v-model.number="game.prizeRedemptionDelayHours" type="number" min="0"
-												class="w-20 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white focus:border-slate-400 outline-none">
-											<span
-												class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.frequency_hours') }}</span>
+										<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">{{ $t('games.detail.redemption_delay') }}</label>
+										<div class="relative">
+											<select v-model="redemptionDelay"
+												class="w-full appearance-none bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg pl-3 pr-9 py-2 text-sm font-medium text-slate-900 dark:text-white focus:border-slate-400 outline-none cursor-pointer">
+												<option value="instant">{{ $t('games.detail.redemption_instant') }}</option>
+												<option value="24h">{{ $t('games.detail.redemption_24h') }}</option>
+												<option value="48h">{{ $t('games.detail.redemption_48h') }}</option>
+											</select>
+											<Icon name="ph:caret-down-bold" size="14"
+												class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 										</div>
 									</div>
 
