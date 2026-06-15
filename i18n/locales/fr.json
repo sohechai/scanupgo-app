@@ -421,6 +421,7 @@
 			"make_visible": "Rendez votre jeu visible pour vos clients",
 			"game_title": "Titre du Jeu",
 			"game_title_placeholder": "Ex: Grand Jeu de Noël",
+			"game_title_hint": "Pour retrouver ce jeu dans votre dashboard.",
 			"slug": "Slug (URL)",
 			"slug_placeholder": "jeu-noel-2025",
 			"slug_format": "Le slug doit contenir uniquement des lettres minuscules, des chiffres et des tirets.",

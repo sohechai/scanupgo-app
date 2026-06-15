@@ -158,7 +158,7 @@ const game = ref({
 	showLogo: true,
 	backgroundImage: null as string | null,
 	gameLanguage: 'fr',
-	active: true,
+	active: false, // Création libre : le jeu démarre inactif, activé ensuite via le toggle (abonnement requis)
 	winProbability: 50, // Global win probability (50-100%)
 	participationFrequencyEnabled: true,
 	participationFrequencyHours: 24,
@@ -191,6 +191,8 @@ const fetchBusiness = async () => {
 
 			// For new games, use the business primary color and Google review URL as defaults
 			if (isNew) {
+				// Pré-remplir le titre avec le nom de l'établissement (modifiable)
+				if (!game.value.title && business.name) game.value.title = business.name
 				if (business.primaryColor) {
 					game.value.primaryColor = business.primaryColor
 					game.value.wheelPrizeColor = business.primaryColor
@@ -520,6 +522,7 @@ const saveGame = async () => {
 									<input v-model="game.title" type="text" required
 										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 										:placeholder="$t('games.detail.game_title_placeholder')">
+									<p class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ $t('games.detail.game_title_hint') }}</p>
 								</div>
 
 								<div>
@@ -723,6 +726,18 @@ const saveGame = async () => {
 								</button>
 							</div>
 
+							<!-- Logo de l'établissement (section dédiée, en tête de l'apparence) -->
+							<div class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-700 p-3 rounded-md border border-slate-200 dark:border-slate-600">
+								<div>
+									<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('games.detail.show_logo') }}</p>
+									<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $t('games.detail.show_logo_hint') }}</p>
+								</div>
+								<label class="relative inline-flex items-center cursor-pointer shrink-0">
+									<input v-model="game.showLogo" type="checkbox" class="sr-only peer">
+									<div class="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+								</label>
+							</div>
+
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<!-- Couleur de fond -->
 								<div>
@@ -749,19 +764,6 @@ const saveGame = async () => {
 										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.popupColor }}</p>
 									</div>
 								</div>
-
-								<!-- Afficher le logo de l'établissement dans le jeu -->
-								<div class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-700 p-3 rounded-md border border-slate-200 dark:border-slate-600">
-									<div>
-										<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('games.detail.show_logo') }}</p>
-										<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $t('games.detail.show_logo_hint') }}</p>
-									</div>
-									<label class="relative inline-flex items-center cursor-pointer shrink-0">
-										<input v-model="game.showLogo" type="checkbox" class="sr-only peer">
-										<div class="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-									</label>
-								</div>
-
 
 								<!-- Couleur cases perdu -->
 								<div>
