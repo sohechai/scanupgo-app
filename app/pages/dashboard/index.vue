@@ -496,7 +496,16 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="space-y-6 relative">
+	<!-- Commerçant NON-ABONNÉ : dashboard ROI (vraies stats Google + projection) -->
+	<DashboardRoi v-if="!subscriptionLoading && !hasActiveSubscription && !isAdmin"
+		:first-name="user?.firstName"
+		:business-name="user?.business?.name"
+		:business-city="user?.business?.addressCity"
+		:google-rating="googleStats?.rating"
+		:review-count="googleStats?.reviewCount"
+		:reviews-this-month="googleReviewsSinceTracking" />
+
+	<div v-else class="space-y-6 relative">
 
 		<!-- 1. HEADER -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -737,19 +746,6 @@ onMounted(() => {
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<!-- Bannière d'activation (accès libre, pas de blocage) -->
-		<div v-if="!subscriptionLoading && !hasActiveSubscription"
-			class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10">
-			<p class="flex-1 text-sm text-amber-800 dark:text-amber-200 leading-snug">
-				🎯 {{ $t('games.activation_banner') }}
-			</p>
-			<NuxtLink to="/dashboard/subscription"
-				class="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
-				{{ $t('games.activation_cta') }}
-				<Icon name="ph:arrow-right-bold" size="14" class="rtl:rotate-180" />
-			</NuxtLink>
 		</div>
 
 	</div>
