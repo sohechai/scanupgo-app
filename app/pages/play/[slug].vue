@@ -214,6 +214,14 @@ const onSpinEnd = () => {
 
   <!-- Jeu pas encore actif -->
   <div v-else-if="gameInactive" class="min-h-[100dvh] flex flex-col items-center justify-center bg-white text-center px-6">
+    <!-- Sélecteur de langue -->
+    <div class="fixed top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
+      <button v-for="lang in playerLocales" :key="lang.code" @click="switchLocale(lang.code)"
+        class="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all"
+        :class="locale === lang.code ? 'bg-slate-200 shadow-md scale-110' : 'bg-slate-100 hover:bg-slate-200 opacity-60 hover:opacity-100'">
+        {{ lang.flag }}
+      </button>
+    </div>
     <img v-if="business?.logo" :src="business.logo"
       class="h-24 max-w-[220px] object-contain mb-8 drop-shadow" :alt="business?.name" />
     <div v-else class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">

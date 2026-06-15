@@ -407,6 +407,13 @@
 		"deactivate": "Désactiver le jeu",
 		"activation_banner": "Votre jeu est configuré — activez votre abonnement pour que vos clients puissent jouer dès aujourd'hui.",
 		"activation_cta": "Activer mon abonnement",
+		"download_warning": {
+			"title": "Votre flyer est prêt",
+			"text": "Vous pouvez le télécharger et l'imprimer — mais vos clients ne verront pas le jeu tant que votre abonnement n'est pas actif.",
+			"red": "Si un client scanne ce QR maintenant → page vide, pas d'avis, pas de contact capté.",
+			"activate": "Activer mon abonnement — 550 Dhs/mois",
+			"anyway": "Télécharger quand même"
+		},
 		"toggle_locked_tooltip": "Disponible avec un abonnement actif",
 		"delete_confirmation_title": "Supprimer ce jeu ?",
 		"delete_confirmation_message": "Le jeu « {title} » sera définitivement supprimé avec toutes ses données (lots, sessions, etc.). Cette action est irréversible.",
@@ -431,7 +438,7 @@
 			"language": "Langue",
 			"language_french": "Français 🇫🇷",
 			"language_english": "English 🇬🇧",
-			"language_arabic": "Al-Arabia 🇲🇦",
+			"language_arabic": "العربية 🇲🇦",
 			"win_probability": "Probabilité de gain",
 			"win_probability_minimum": "50% (Minimum)",
 			"win_probability_generous": "75% (Généreux)",
@@ -2525,8 +2532,8 @@
 	},
 	"play": {
 		"inactive": {
-			"title": "Ce jeu n'est pas encore actif.",
-			"message": "Revenez bientôt — {business} prépare une surprise pour vous !",
+			"title": "Ce jeu arrive bientôt",
+			"message": "Revenez dans quelques jours — {business} prépare une surprise pour vous !",
 			"fallback_business": "cet établissement"
 		},
 		"error": {

@@ -407,6 +407,13 @@
 		"deactivate": "Deactivate game",
 		"activation_banner": "Your game is set up — activate your subscription so your customers can start playing today.",
 		"activation_cta": "Activate my subscription",
+		"download_warning": {
+			"title": "Your flyer is ready",
+			"text": "You can download and print it — but your customers won't see the game until your subscription is active.",
+			"red": "If a customer scans this QR now → blank page, no review, no contact captured.",
+			"activate": "Activate my subscription — 550 Dhs/month",
+			"anyway": "Download anyway"
+		},
 		"toggle_locked_tooltip": "Available with an active subscription",
 		"delete_confirmation_title": "Delete this game?",
 		"delete_confirmation_message": "The game \"{title}\" will be permanently deleted with all its data (prizes, sessions, etc.). This action cannot be undone.",
@@ -431,7 +438,7 @@
 			"language": "Language",
 			"language_french": "Français 🇫🇷",
 			"language_english": "English 🇬🇧",
-			"language_arabic": "Al-Arabia 🇲🇦",
+			"language_arabic": "العربية 🇲🇦",
 			"win_probability": "Win probability",
 			"win_probability_minimum": "50% (Minimum)",
 			"win_probability_generous": "75% (Generous)",
@@ -2525,8 +2532,8 @@
 	},
 	"play": {
 		"inactive": {
-			"title": "This game isn't active yet.",
-			"message": "Come back soon — {business} is preparing a surprise for you!",
+			"title": "This game is coming soon",
+			"message": "Come back in a few days — {business} is preparing a surprise for you!",
 			"fallback_business": "this business"
 		},
 		"error": {
