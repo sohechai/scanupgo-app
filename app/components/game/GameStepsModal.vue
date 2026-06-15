@@ -109,6 +109,12 @@ const buttonTextColor = computed(() => contrastColor(buttonColor.value))
               {{ $t('play.steps.google_button') }}
             </button>
 
+            <!-- Rappel bien visible : revenir récupérer le lot. Couleur héritée (cardTextColor)
+                 = contraste auto avec le fond du modal (clair ou sombre). -->
+            <p class="w-full mt-4 text-center font-extrabold text-[15px] leading-snug">
+              ⚠️ {{ $t('play.steps.comeback_notice') }}
+            </p>
+
             <!-- Passer si pas d'URL -->
             <button v-if="!game?.googleReviewUrl" @click="emit('done')"
               class="w-full mt-3 text-sm text-slate-400 hover:text-slate-600 transition text-center underline">

@@ -2557,6 +2557,7 @@
 		},
 		"steps": {
 			"message": "Share your experience on Google and come back to spin the wheel!",
+			"comeback_notice": "Come back to this page after leaving your review to claim your prize!",
 			"google_button": "Rate on Google",
 			"skip": "Skip this step",
 			"back": "Back"

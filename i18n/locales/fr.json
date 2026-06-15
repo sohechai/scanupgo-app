@@ -2557,6 +2557,7 @@
 		},
 		"steps": {
 			"message": "Partagez votre expérience sur Google et revenez tourner la roue !",
+			"comeback_notice": "Revenez sur cette page après avoir laissé votre avis pour récupérer votre lot !",
 			"google_button": "Noter sur Google",
 			"skip": "Passer cette étape",
 			"back": "Retour"
