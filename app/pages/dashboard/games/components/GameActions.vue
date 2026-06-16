@@ -31,6 +31,8 @@ const NETWORKS = [
 	{ type: 'twitter', label: 'Twitter/X', icon: 'ph:x-logo-bold', color: 'text-slate-900 dark:text-white' },
 	{ type: 'linkedin', label: 'LinkedIn', icon: 'ph:linkedin-logo-bold', color: 'text-blue-800' },
 	{ type: 'whatsapp', label: 'WhatsApp', icon: 'ph:whatsapp-logo-bold', color: 'text-green-600' },
+	{ type: 'snapchat', label: 'Snapchat', icon: 'ph:snapchat-logo-bold', color: 'text-yellow-400' },
+	{ type: 'tripadvisor', label: 'Tripadvisor', icon: 'ph:bird-bold', color: 'text-green-700' },
 	{ type: 'other', label: 'Autre lien', icon: 'ph:link-bold', color: 'text-slate-500' },
 ]
 const DEFAULTS: Record<string, { msg: string; btn: string }> = {
@@ -41,6 +43,8 @@ const DEFAULTS: Record<string, { msg: string; btn: string }> = {
 	twitter: { msg: 'Suivez-nous sur X', btn: 'Nous suivre' },
 	linkedin: { msg: 'Suivez-nous sur LinkedIn', btn: 'Nous suivre' },
 	whatsapp: { msg: 'Rejoignez notre communauté', btn: 'Rejoindre' },
+	snapchat: { msg: 'Ajoutez-nous sur Snapchat', btn: 'Nous ajouter' },
+	tripadvisor: { msg: 'Laissez-nous un avis Tripadvisor', btn: 'Noter sur Tripadvisor' },
 	other: { msg: 'Suivez-nous', btn: 'Découvrir' },
 }
 const networkLabel = (type: string) => NETWORKS.find(n => n.type === type)?.label || type

@@ -20,6 +20,8 @@ const NET = {
   twitter: { color: '#111111' },
   linkedin: { color: '#0A66C2' },
   whatsapp: { color: '#25D366' },
+  snapchat: { color: '#FFFC00' },
+  tripadvisor: { color: '#00AA6C' },
   other: { color: '#64748b' },
 } as const
 
@@ -120,7 +122,8 @@ const isLinkedIn = computed(() => current.value?.type === 'linkedin')
 const isWhatsApp = computed(() => current.value?.type === 'whatsapp')
 const netIconName = (t: string) => ({
   instagram: 'ph:instagram-logo-fill', facebook: 'ph:facebook-logo-fill', tiktok: 'ph:tiktok-logo-fill',
-  twitter: 'ph:x-logo-fill', linkedin: 'ph:linkedin-logo-fill', whatsapp: 'ph:whatsapp-logo-fill', other: 'ph:link-bold',
+  twitter: 'ph:x-logo-fill', linkedin: 'ph:linkedin-logo-fill', whatsapp: 'ph:whatsapp-logo-fill',
+  snapchat: 'ph:snapchat-logo-fill', tripadvisor: 'ph:bird-fill', other: 'ph:link-bold',
 }[t] || 'ph:link-bold')
 const netColor = (t: string) => (NET as any)[t]?.color || NET.other.color
 </script>
