@@ -16,6 +16,23 @@ const games = ref<any[]>([])
 const loading = ref(true)
 const togglingId = ref<string | null>(null)
 
+// Filtre par établissement (SUPER_ADMIN uniquement : il voit tous les jeux)
+const authStore = useAuthStore()
+const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN')
+const selectedBusinessId = ref<string>('all')
+const businessOptions = computed(() => {
+	const map = new Map<string, string>()
+	for (const g of games.value) {
+		if (g.business?.id) map.set(g.business.id, g.business.name || g.business.id)
+	}
+	return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name))
+})
+const filteredGames = computed(() =>
+	selectedBusinessId.value === 'all'
+		? games.value
+		: games.value.filter(g => g.business?.id === selectedBusinessId.value)
+)
+
 const toggleActive = async (game: any) => {
 	if (!hasActiveSubscription.value) return
 	if (togglingId.value === game.id) return
@@ -151,11 +168,19 @@ onMounted(async () => {
 				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('games.title') }}</h1>
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.subtitle') }}</p>
 			</div>
-			<NuxtLink to="/dashboard/games/new"
-				class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
-				<Icon name="ph:plus-bold" size="15" />
-				{{ $t('games.create_button') }}
-			</NuxtLink>
+			<div class="flex items-center gap-2">
+				<!-- Filtre établissement (SUPER_ADMIN) -->
+				<select v-if="isSuperAdmin && businessOptions.length >= 1" v-model="selectedBusinessId"
+					class="px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30">
+					<option value="all">{{ $t('games.all_businesses') }}</option>
+					<option v-for="b in businessOptions" :key="b.id" :value="b.id">{{ b.name }}</option>
+				</select>
+				<NuxtLink to="/dashboard/games/new"
+					class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
+					<Icon name="ph:plus-bold" size="15" />
+					{{ $t('games.create_button') }}
+				</NuxtLink>
+			</div>
 		</div>
 
 		<!-- Bannière activation abonnement -->
@@ -177,7 +202,7 @@ onMounted(async () => {
 		</div>
 
 		<!-- Empty State -->
-		<div v-else-if="games.length === 0"
+		<div v-else-if="filteredGames.length === 0"
 			class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-14 text-center">
 			<div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
 				<Icon name="ph:game-controller-duotone" size="24" class="text-slate-400 dark:text-slate-500" />
@@ -193,7 +218,7 @@ onMounted(async () => {
 
 		<!-- Games Grid -->
 		<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-			<div v-for="game in games" :key="game.id"
+			<div v-for="game in filteredGames" :key="game.id"
 				class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
 
 				<!-- Card top — game identity -->
@@ -204,6 +229,9 @@ onMounted(async () => {
 					<div class="flex-1 min-w-0 pt-0.5">
 						<h3 class="font-semibold text-slate-900 dark:text-white text-sm truncate">{{ game.title }}</h3>
 						<p class="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate">/{{ game.slug }}</p>
+						<p v-if="isSuperAdmin && game.business?.name" class="text-[10px] text-[#007AFF] dark:text-blue-400 mt-0.5 truncate flex items-center gap-1">
+							<Icon name="ph:storefront-bold" size="10" />{{ game.business.name }}
+						</p>
 					</div>
 					<!-- Toggle actif/inactif -->
 					<button

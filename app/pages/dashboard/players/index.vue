@@ -24,6 +24,18 @@ const filterPeriod = ref<'all' | '7d' | '30d' | '90d' | '12m'>('all')
 const filterParticipations = ref<'all' | '1' | '2+' | '5+'>('all')
 const currentPage = ref(1)
 
+// Filtre par établissement (SUPER_ADMIN : il voit tous les joueurs)
+const authStore = useAuthStore()
+const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN')
+const selectedBusinessId = ref<string>('all')
+const businessOptions = computed(() => {
+	const map = new Map<string, string>()
+	for (const p of players.value) {
+		if (p.business?.id) map.set(p.business.id, p.business.name || p.business.id)
+	}
+	return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name))
+})
+
 const activeFilterCount = computed(() => {
 	let count = 0
 	if (filterOptinEmail.value !== 'all') count++
@@ -38,16 +50,24 @@ const clearFilters = () => {
 	filterParticipations.value = 'all'
 }
 
+// Base des stats : restreinte à l'établissement sélectionné (SUPER_ADMIN)
+const scopedPlayers = computed(() =>
+	selectedBusinessId.value === 'all'
+		? players.value
+		: players.value.filter(p => p.business?.id === selectedBusinessId.value)
+)
 const stats = computed(() => {
-	const total = players.value.length
-	const loyalPlayers = players.value.filter(p => p._count.sessions > 1).length
+	const base = scopedPlayers.value
+	const total = base.length
+	const loyalPlayers = base.filter(p => p._count.sessions > 1).length
 	const loyaltyRate = total > 0 ? Math.round((loyalPlayers / total) * 100) : 0
-	const totalSessions = players.value.reduce((sum, p) => sum + (p._count.sessions || 0), 0)
+	const totalSessions = base.reduce((sum, p) => sum + (p._count.sessions || 0), 0)
 	return { total, loyaltyRate, totalSessions }
 })
 
 const filteredPlayers = computed(() => {
 	let result = players.value
+	if (selectedBusinessId.value !== 'all') result = result.filter(p => p.business?.id === selectedBusinessId.value)
 	if (searchQuery.value) {
 		const q = searchQuery.value.toLowerCase()
 		result = result.filter(p =>
@@ -69,7 +89,7 @@ const filteredPlayers = computed(() => {
 	return result
 })
 
-watch([searchQuery, filterOptinEmail, filterPeriod, filterParticipations], () => { currentPage.value = 1 })
+watch([searchQuery, filterOptinEmail, filterPeriod, filterParticipations, selectedBusinessId], () => { currentPage.value = 1 })
 
 const PAGE_SIZE = 20
 const totalPages = computed(() => Math.ceil(filteredPlayers.value.length / PAGE_SIZE))
@@ -131,6 +151,12 @@ onMounted(async () => {
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('players.subtitle') }}</p>
 			</div>
 			<div class="flex items-center gap-2">
+				<!-- Filtre établissement (SUPER_ADMIN) -->
+				<select v-if="isSuperAdmin && businessOptions.length >= 1" v-model="selectedBusinessId"
+					class="px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20">
+					<option value="all">{{ $t('players.all_businesses') }}</option>
+					<option v-for="b in businessOptions" :key="b.id" :value="b.id">{{ b.name }}</option>
+				</select>
 				<!-- Search -->
 				<div class="relative hidden md:block">
 					<Icon name="ph:magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="14" />
@@ -262,7 +288,13 @@ onMounted(async () => {
 						</div>
 						<!-- Name + contact -->
 						<div class="flex-1 min-w-0">
-							<p class="font-medium text-slate-900 dark:text-white text-sm">{{ player.firstName }} {{ player.lastName }}</p>
+							<p class="font-medium text-slate-900 dark:text-white text-sm flex items-center gap-2">
+								{{ player.firstName }} {{ player.lastName }}
+								<span v-if="isSuperAdmin && selectedBusinessId === 'all' && player.business?.name"
+									class="inline-flex items-center gap-1 text-[10px] font-medium text-[#007AFF] dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">
+									<Icon name="ph:storefront-bold" size="9" />{{ player.business.name }}
+								</span>
+							</p>
 							<div class="flex items-center gap-2 mt-0.5">
 								<span v-if="player.email" class="text-xs text-slate-400 truncate max-w-[160px]">{{ player.email }}</span>
 								<span v-if="player.phone" class="text-xs text-slate-400">{{ player.phone }}</span>
