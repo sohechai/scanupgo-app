@@ -420,6 +420,18 @@
 		"preview_button": "Voir le jeu",
 		"delete_button": "Supprimer le jeu",
 		"qr_customize": "Personnaliser",
+		"qr_color": "Couleur du QR",
+		"qr_bg_color": "Couleur de fond",
+		"qr_save": "Enregistrer",
+		"qr_saving": "Enregistrement…",
+		"qr_saved": "QR code mis à jour",
+		"qr_logo": "Logo",
+		"qr_logo_add": "Ajouter",
+		"qr_logo_change": "Changer",
+		"qr_logo_remove": "Retirer",
+		"qr_logo_image_only": "Seules les images sont autorisées",
+		"qr_logo_too_large": "Image trop lourde (max 2 Mo)",
+		"qr_logo_upload_error": "Erreur lors de l’envoi du logo",
 		"new_game": "Nouveau Jeu",
 		"game_deleted": "Jeu supprimé avec succès",
 		"delete_error": "Erreur lors de la suppression",
@@ -2611,7 +2623,7 @@
 			"step_opened": "Google ouvert dans un nouvel onglet",
 			"step_review": "Laissez votre avis ⭐⭐⭐⭐⭐",
 			"step_return": "Revenez ici pour jouer",
-			"already_reviewed": "J'ai déjà laissé mon avis →"
+			"already_reviewed": "C'est fait →"
 		},
 		"form": {
 			"heading": "Récupérez votre lot",

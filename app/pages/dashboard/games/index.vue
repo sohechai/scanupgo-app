@@ -71,33 +71,118 @@ const qrCodeDataUrl = ref<string | null>(null)
 const generatingQR = ref(false)
 const config = useRuntimeConfig()
 
+// Personnalisation couleurs + logo du QR directement dans le modal
+const showQRCustomize = ref(false)
+const qrColor = ref('#000000')
+const qrBgColor = ref('#ffffff')
+const qrLogoUrl = ref<string | null>(null)
+const savingQR = ref(false)
+const uploadingQRLogo = ref(false)
+
 const getGamePlayUrl = (game: any) => {
 	const base = (config.public.siteUrl as string | undefined) || window.location.origin
 	return `${base}/play/${game.slug}`
 }
 
-const openQRModal = async (game: any) => {
-	selectedQRGame.value = game
-	qrCodeDataUrl.value = null
-	showQRModal.value = true
+const generateQR = async () => {
+	if (!selectedQRGame.value) return
 	generatingQR.value = true
 	try {
 		const QRCode = (await import('qrcode')).default
 		const canvas = document.createElement('canvas')
-		await QRCode.toCanvas(canvas, getGamePlayUrl(game), {
+		await QRCode.toCanvas(canvas, getGamePlayUrl(selectedQRGame.value), {
 			width: 400,
 			margin: 2,
 			errorCorrectionLevel: 'H',
-			color: {
-				dark: game.qrCodeColor || '#000000',
-				light: game.qrCodeBgColor || '#ffffff',
-			},
+			color: { dark: qrColor.value || '#000000', light: qrBgColor.value || '#ffffff' },
 		})
+		// Overlay du logo au centre (cercle), si défini
+		if (qrLogoUrl.value) {
+			const ctx = canvas.getContext('2d')
+			if (ctx) {
+				await new Promise<void>((resolve) => {
+					const logo = new Image()
+					logo.crossOrigin = 'anonymous'
+					logo.onload = () => {
+						const logoSize = canvas.width * 0.30
+						const cx = canvas.width / 2
+						const cy = canvas.height / 2
+						ctx.beginPath()
+						ctx.arc(cx, cy, logoSize / 2 + 8, 0, Math.PI * 2)
+						ctx.fillStyle = qrBgColor.value || '#ffffff'
+						ctx.fill()
+						ctx.save()
+						ctx.beginPath()
+						ctx.arc(cx, cy, logoSize / 2, 0, Math.PI * 2)
+						ctx.clip()
+						ctx.drawImage(logo, cx - logoSize / 2, cy - logoSize / 2, logoSize, logoSize)
+						ctx.restore()
+						resolve()
+					}
+					logo.onerror = () => resolve()
+					logo.src = qrLogoUrl.value as string
+				})
+			}
+		}
 		qrCodeDataUrl.value = canvas.toDataURL('image/png')
 	} catch (e) {
 		console.error('QR generation failed', e)
 	} finally {
 		generatingQR.value = false
+	}
+}
+
+const openQRModal = async (game: any) => {
+	selectedQRGame.value = game
+	qrCodeDataUrl.value = null
+	showQRCustomize.value = false
+	qrColor.value = game.qrCodeColor || '#000000'
+	qrBgColor.value = game.qrCodeBgColor || '#ffffff'
+	qrLogoUrl.value = game.qrCodeLogoUrl || null
+	showQRModal.value = true
+	await generateQR()
+}
+
+// Régénère l'aperçu en direct quand on change couleurs/logo
+watch([qrColor, qrBgColor, qrLogoUrl], () => { if (showQRModal.value) generateQR() })
+
+const uploadQRLogo = async (event: Event) => {
+	const input = event.target as HTMLInputElement
+	const file = input.files?.[0]
+	if (!file) return
+	if (!file.type.startsWith('image/')) { showToast(t('games.qr_logo_image_only'), 'error'); return }
+	if (file.size > 2 * 1024 * 1024) { showToast(t('games.qr_logo_too_large'), 'error'); return }
+	uploadingQRLogo.value = true
+	try {
+		const formData = new FormData()
+		formData.append('file', file)
+		const res = await $api<{ url: string }>('/uploads', { method: 'POST', body: formData })
+		if (res.url) qrLogoUrl.value = res.url
+	} catch {
+		showToast(t('games.qr_logo_upload_error'), 'error')
+	} finally {
+		uploadingQRLogo.value = false
+		input.value = ''
+	}
+}
+
+const removeQRLogo = () => { qrLogoUrl.value = null }
+
+const saveQRColors = async () => {
+	if (!selectedQRGame.value) return
+	savingQR.value = true
+	try {
+		await $api(`/games/${selectedQRGame.value.id}`, {
+			method: 'PATCH',
+			body: { qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: qrLogoUrl.value },
+		})
+		const idx = games.value.findIndex(g => g.id === selectedQRGame.value.id)
+		if (idx !== -1) games.value[idx] = { ...games.value[idx], qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: qrLogoUrl.value }
+		showToast(t('games.qr_saved'), 'success')
+	} catch (e: any) {
+		showToast(e?.data?.message || t('games.update_error'), 'error')
+	} finally {
+		savingQR.value = false
 	}
 }
 
@@ -109,18 +194,49 @@ const downloadQRPNG = () => {
 	link.click()
 }
 
+// Convertit une image (URL) en data URI base64, pour l'embarquer dans le SVG.
+const imageToDataUri = async (src: string): Promise<string | null> => {
+	try {
+		const res = await fetch(src, { mode: 'cors' })
+		const blob = await res.blob()
+		return await new Promise((resolve) => {
+			const reader = new FileReader()
+			reader.onloadend = () => resolve(reader.result as string)
+			reader.onerror = () => resolve(null)
+			reader.readAsDataURL(blob)
+		})
+	} catch {
+		return null
+	}
+}
+
 const downloadQRSVG = async () => {
 	if (!selectedQRGame.value?.slug) return
 	const QRCode = (await import('qrcode')).default
-	const svgString = await QRCode.toString(getGamePlayUrl(selectedQRGame.value), {
+	let svgString = await QRCode.toString(getGamePlayUrl(selectedQRGame.value), {
 		type: 'svg',
 		margin: 2,
 		errorCorrectionLevel: 'H',
-		color: {
-			dark: selectedQRGame.value.qrCodeColor || '#000000',
-			light: selectedQRGame.value.qrCodeBgColor || '#ffffff',
-		},
+		color: { dark: qrColor.value || '#000000', light: qrBgColor.value || '#ffffff' },
 	})
+
+	// Logo au centre : cercle de fond + image base64 (clip circulaire) injectés dans le SVG.
+	if (qrLogoUrl.value) {
+		const dataUri = await imageToDataUri(qrLogoUrl.value)
+		if (dataUri) {
+			const vbMatch = svgString.match(/viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"/)
+			const size = vbMatch ? parseFloat(vbMatch[1]) : 100
+			const c = size / 2
+			const logoR = size * 0.15        // rayon logo = 15% (diamètre 30%)
+			const bgR = logoR + size * 0.02   // anneau de fond
+			const overlay = `<defs><clipPath id="qrLogoClip"><circle cx="${c}" cy="${c}" r="${logoR}"/></clipPath></defs>` +
+				`<circle cx="${c}" cy="${c}" r="${bgR}" fill="${qrBgColor.value || '#ffffff'}"/>` +
+				`<image x="${c - logoR}" y="${c - logoR}" width="${logoR * 2}" height="${logoR * 2}" ` +
+				`href="${dataUri}" clip-path="url(#qrLogoClip)" preserveAspectRatio="xMidYMid slice"/>`
+			svgString = svgString.replace('</svg>', `${overlay}</svg>`)
+		}
+	}
+
 	const blob = new Blob([svgString], { type: 'image/svg+xml' })
 	const url = URL.createObjectURL(blob)
 	const link = document.createElement('a')
@@ -357,6 +473,39 @@ onMounted(async () => {
 							{{ getGamePlayUrl(selectedQRGame) }}
 						</p>
 
+						<!-- Panneau personnalisation couleurs (inline) -->
+						<div v-if="showQRCustomize" class="space-y-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+							<div class="flex items-center justify-between">
+								<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_color') }}</label>
+								<input type="color" v-model="qrColor" class="w-8 h-8 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent" />
+							</div>
+							<div class="flex items-center justify-between">
+								<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_bg_color') }}</label>
+								<input type="color" v-model="qrBgColor" class="w-8 h-8 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent" />
+							</div>
+							<!-- Logo au centre du QR -->
+							<div class="flex items-center justify-between">
+								<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_logo') }}</label>
+								<div class="flex items-center gap-2">
+									<img v-if="qrLogoUrl" :src="qrLogoUrl" class="w-8 h-8 rounded object-cover border border-slate-300 dark:border-slate-600" />
+									<button v-if="qrLogoUrl" @click="removeQRLogo" type="button"
+										class="text-[11px] text-red-500 hover:text-red-600 font-medium">{{ $t('games.qr_logo_remove') }}</button>
+									<label class="cursor-pointer text-[11px] font-semibold text-[#007AFF] hover:text-[#0066DD] flex items-center gap-1">
+										<Icon v-if="uploadingQRLogo" name="ph:spinner-gap-bold" size="13" class="animate-spin" />
+										<Icon v-else name="ph:upload-simple-bold" size="13" />
+										{{ qrLogoUrl ? $t('games.qr_logo_change') : $t('games.qr_logo_add') }}
+										<input type="file" accept="image/*" class="hidden" @change="uploadQRLogo" :disabled="uploadingQRLogo" />
+									</label>
+								</div>
+							</div>
+							<button @click="saveQRColors" :disabled="savingQR"
+								class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
+								<Icon v-if="savingQR" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+								<Icon v-else name="ph:check-bold" size="14" />
+								{{ savingQR ? $t('games.qr_saving') : $t('games.qr_save') }}
+							</button>
+						</div>
+
 						<!-- Download buttons -->
 						<div class="flex gap-2">
 							<button @click="downloadQRPNG" :disabled="!qrCodeDataUrl"
@@ -369,12 +518,12 @@ onMounted(async () => {
 								<Icon name="ph:file-svg-bold" size="15" class="text-orange-500" />
 								SVG
 							</button>
-							<NuxtLink :to="`/dashboard/games/${selectedQRGame?.id}?tab=flyers`"
-								@click="showQRModal = false"
-								class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors">
-								<Icon name="ph:pencil-simple-bold" size="15" />
+							<button @click="showQRCustomize = !showQRCustomize"
+								class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold rounded-xl transition-colors"
+								:class="showQRCustomize ? 'bg-[#007AFF]/10 text-[#007AFF]' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'">
+								<Icon name="ph:palette-bold" size="15" />
 								{{ $t('games.qr_customize') }}
-							</NuxtLink>
+							</button>
 						</div>
 					</div>
 				</div>
