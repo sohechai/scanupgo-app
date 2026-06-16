@@ -123,6 +123,44 @@ const getContrastColor = (hex: string) => {
 }
 const textColor = computed(() => getContrastColor(primaryColor.value))
 
+// Empreinte d'appareil (anti-rejeu) : hash stable de signaux du navigateur.
+// Non infaillible (navigation privée / autre appareil), mais bloque la plupart des doublons.
+const getDeviceFingerprint = (): string | undefined => {
+  if (!import.meta.client) return undefined
+  try {
+    const parts: string[] = [
+      navigator.userAgent,
+      navigator.language,
+      (navigator.languages || []).join(','),
+      `${screen.width}x${screen.height}x${screen.colorDepth}`,
+      String(new Date().getTimezoneOffset()),
+      String(navigator.hardwareConcurrency || ''),
+      String((navigator as any).deviceMemory || ''),
+      String(navigator.platform || ''),
+    ]
+    // Empreinte canvas (rendu de texte légèrement différent par appareil)
+    try {
+      const c = document.createElement('canvas')
+      const ctx = c.getContext('2d')
+      if (ctx) {
+        ctx.textBaseline = 'top'
+        ctx.font = '14px Arial'
+        ctx.fillStyle = '#f60'; ctx.fillRect(0, 0, 100, 20)
+        ctx.fillStyle = '#069'; ctx.fillText('scanupgo-fp', 2, 2)
+        parts.push(c.toDataURL().slice(-64))
+      }
+    } catch { /* canvas bloqué : ignore */ }
+
+    // Hash simple (djb2) -> chaîne courte
+    const str = parts.join('|')
+    let h = 5381
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0
+    return 'fp_' + h.toString(36)
+  } catch {
+    return undefined
+  }
+}
+
 // Actions
 const onStepsDone = () => {
   showStepsModal.value = false
@@ -147,7 +185,8 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
         playerEmail: formData.email || undefined,
         playerPhone: formData.phone || undefined,
         playerEmailOptIn: formData.email_opt_in,
-        playerSmsOptIn: formData.sms_opt_in
+        playerSmsOptIn: formData.sms_opt_in,
+        deviceFingerprint: getDeviceFingerprint()
       }
     })
 
