@@ -367,7 +367,7 @@
 		"save_button": "حفظ",
 		"saving": "جاري الحفظ...",
 		"incomplete_warning": "ملف تعريف غير مكتمل",
-		"incomplete_message": "لإكمال ملفك التعريفي، يجب إدخال اسم المؤسسة وإضافة شعار.",
+		"incomplete_message": "لإكمال ملفك التعريفي، أدخل اسم وعنوان مؤسستك.",
 		"information_section": "المعلومات الأساسية",
 		"information_subtitle": "بياناتك المرئية للعملاء",
 		"business_name": "اسم المؤسسة",

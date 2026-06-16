@@ -45,7 +45,11 @@ const cancelEdit = () => {
 }
 
 const isProfileComplete = computed(() => {
-	return !!(business.value.name && business.value.name.trim() !== '')
+	// Aligné avec la redirection post-connexion : nom + adresse requis.
+	return !!(
+		business.value.name && business.value.name.trim() !== '' &&
+		business.value.addressStreet && String(business.value.addressStreet).trim() !== ''
+	)
 })
 
 const canEdit = computed(() => {

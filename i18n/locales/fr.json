@@ -367,7 +367,7 @@
 		"save_button": "Enregistrer",
 		"saving": "Enregistrement...",
 		"incomplete_warning": "Profil incomplet",
-		"incomplete_message": "Pour compléter votre profil, vous devez renseigner le nom de l'établissement et ajouter un logo.",
+		"incomplete_message": "Pour compléter votre profil, renseignez le nom et l'adresse de votre établissement.",
 		"information_section": "Informations Clés",
 		"information_subtitle": "Vos coordonnées visibles par les clients",
 		"business_name": "Nom de l'établissement",
