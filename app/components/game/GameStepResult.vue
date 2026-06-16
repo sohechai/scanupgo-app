@@ -66,7 +66,7 @@ const confetti = computed(() => {
     <!-- Tagline "FÉLICITATIONS !" -->
     <div class="win-tagline relative z-10 px-5 mt-3 shrink-0 w-full max-w-sm mx-auto">
       <div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
-        style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+        style="background: linear-gradient(180deg, #3a3a42 0%, #1f1f25 100%);">
         <p class="text-[20px] uppercase leading-[1.1]"
           style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.5px;">
           {{ $t('play.result.win.title') }}
@@ -140,7 +140,7 @@ const confetti = computed(() => {
     <!-- Tagline "PERDU" -->
     <div class="relative z-10 px-5 mt-3 shrink-0 w-full max-w-sm mx-auto">
       <div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
-        style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+        style="background: linear-gradient(180deg, #3a3a42 0%, #1f1f25 100%);">
         <p class="text-[20px] uppercase leading-[1.1]"
           style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.4); letter-spacing: 0.5px;">
           {{ $t('play.result.lose.title') }}

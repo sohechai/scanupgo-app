@@ -200,7 +200,7 @@ const previewPrizes = computed(() => {
 					<!-- Tagline -->
 					<div class="relative z-10 px-4 mt-4 shrink-0 mx-auto w-full max-w-[90%]">
 						<div class="rounded-xl px-3 py-2.5 text-center shadow-xl border border-white/20"
-							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							style="background: linear-gradient(180deg, #3a3a42 0%, #1f1f25 100%);">
 							<p class="text-[12px] uppercase leading-[1.1]"
 								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.3px;">
 								{{ displayTagline }}
@@ -345,7 +345,7 @@ const previewPrizes = computed(() => {
 					<!-- Tagline "MERCI, BONNE CHANCE!" -->
 					<div class="relative z-10 px-3 mt-3 shrink-0 mx-auto w-full max-w-[90%]">
 						<div class="rounded-xl px-2 py-2 text-center shadow-xl border border-white/20"
-							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							style="background: linear-gradient(180deg, #3a3a42 0%, #1f1f25 100%);">
 							<p class="text-[10px] uppercase leading-[1.1]"
 								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.3px;">
 								{{ $t('play.playing.merci') }}<br>{{ $t('play.playing.bonne_chance') }}
@@ -399,7 +399,7 @@ const previewPrizes = computed(() => {
 					<!-- Tagline WIN / LOSE -->
 					<div class="relative z-10 px-3 mt-2 shrink-0 mx-auto w-full max-w-[92%]">
 						<div class="rounded-2xl px-3 py-2 text-center shadow-2xl border border-white/20"
-							style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
+							style="background: linear-gradient(180deg, #3a3a42 0%, #1f1f25 100%);">
 							<p class="text-[13px] uppercase leading-[1.1]"
 								style="font-family: 'Impact', 'Arial Black', sans-serif; color: white; text-shadow: 0px 2px 4px rgba(0,0,0,0.4), 0px 1px 1px rgba(0,0,0,0.8); letter-spacing: 0.5px;">
 								{{ previewIsWin ? $t('play.result.win.title') : $t('play.result.lose.title') }}
