@@ -404,6 +404,7 @@
 	"games": {
 		"title": "My Games",
 		"subtitle": "Manage your contest game campaigns.",
+		"all_businesses": "All businesses",
 		"create_button": "Create a game",
 		"no_games": "No games found",
 		"no_games_description": "You haven't created any games yet. Start now to engage your customers!",
@@ -466,6 +467,7 @@
 			"win_probability_guaranteed": "100% (Guaranteed)",
 			"tagline": "Tagline",
 			"tagline_placeholder": "Try your luck and win exclusive prizes!",
+			"actions_after_save": "Save the game to configure networks (Google, Instagram, etc.).",
 			"google_review_link": "Google Reviews Link",
 			"google_review_help": "Help",
 			"google_review_description": "Link to your Google Reviews page",
@@ -693,6 +695,7 @@
 		"access_required": "Access your Players",
 		"access_description": "View and manage your customer database. Export contacts who have participated in your games.",
 		"search_placeholder": "Search...",
+		"all_businesses": "All businesses",
 		"filters_button": "Filters",
 		"clear_filters": "Clear all",
 		"export_button": "Export",

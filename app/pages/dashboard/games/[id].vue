@@ -30,6 +30,11 @@ const isNew = route.params.id === 'new'
 const wizardMode = ref(route.params.id === 'new')
 const createdGameId = ref<string | null>(null)
 const loading = ref(true)
+
+// gameId réel (UUID) : existant, ou créé pendant le wizard. Jamais "new".
+const effectiveGameId = computed<string | null>(() =>
+	isNew ? createdGameId.value : (route.params.id as string)
+)
 const saving = ref(false)
 const initialTab = (route.query.tab as string) || 'content'
 const activeTab = ref(initialTab) // content, appearance, prizes, flyers
@@ -52,7 +57,9 @@ const canGoNext = computed(() => {
 const goToNextStep = async () => {
 	if (currentWizardStep.value < wizardSteps.value.length - 1) {
 		const nextStep = currentWizardStep.value + 1
-		if (wizardMode.value && nextStep === 2) {
+		// Crée le jeu dès la sortie de l'étape 0 (contenu) pour obtenir un UUID,
+		// indispensable pour configurer les actions (réseaux). Resync aux étapes suivantes.
+		if (wizardMode.value && nextStep >= 1) {
 			try {
 				await syncGameToServer()
 			} catch {
@@ -90,11 +97,9 @@ const syncGameToServer = async () => {
 	saving.value = true
 	try {
 		game.value.description = game.value.tagline
+		// Lien Google Avis optionnel : le jeu peut utiliser d'autres réseaux (actions)
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
-		} else {
-			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de créer ce jeu.', 'error')
-			throw new Error('googleReviewUrl missing')
 		}
 		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
 		const payload = sanitizeHours(rest)
@@ -113,7 +118,12 @@ const syncGameToServer = async () => {
 	}
 }
 
-const finishWizard = () => {
+const finishWizard = async () => {
+	// Le commerçant a terminé le wizard : le jeu n'est plus un brouillon.
+	if (createdGameId.value) {
+		try { await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: { isDraft: false } }) }
+		catch (e) { console.error('finalize draft failed', e) }
+	}
 	wizardMode.value = false
 	router.push(`/dashboard/games/${createdGameId.value}`)
 }
@@ -272,11 +282,29 @@ onMounted(async () => {
 			} catch (e) {
 				console.error(e)
 			}
+		} else {
+			// Crée un brouillon dès l'ouverture pour obtenir un UUID
+			// (nécessaire à la configuration des actions/réseaux dès l'étape 1).
+			await ensureDraftGame()
 		}
 	} finally {
 		loading.value = false
 	}
 })
+
+// Crée le jeu brouillon une seule fois (mode création) pour récupérer son id.
+const ensureDraftGame = async () => {
+	if (createdGameId.value) return
+	try {
+		const created = await $api<any>('/games', {
+			method: 'POST',
+			body: { title: game.value.title || '' },
+		})
+		createdGameId.value = created.id
+	} catch (e) {
+		console.error('draft game creation failed', e)
+	}
+}
 
 // Scroll to top when tab changes
 watch(activeTab, () => {
@@ -348,12 +376,9 @@ const saveGame = async () => {
 			showToast(t('games.detail.slug_format'), 'error')
 			return
 		}
-		// Sync googleReviewUrl from business
+		// Lien Google Avis optionnel : sync si présent (le jeu peut utiliser d'autres réseaux)
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
-		} else {
-			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de publier ce jeu.', 'error')
-			return
 		}
 
 		// Sync tagline to description if needed
@@ -637,7 +662,11 @@ const saveGame = async () => {
 										:placeholder="$t('games.detail.tagline_placeholder')"></textarea>
 								</div>
 
-								<GameActions :game-id="route.params.id as string" :google-review-url="businessObject?.googleReviewUrl" />
+								<!-- Actions réseaux : nécessite un jeu déjà créé (UUID) -->
+								<GameActions v-if="effectiveGameId" :game-id="effectiveGameId" :google-review-url="businessObject?.googleReviewUrl" />
+								<div v-else class="col-span-2 rounded-md border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/40 px-4 py-5 text-center">
+									<p class="text-sm text-slate-500 dark:text-slate-400">{{ $t('games.detail.actions_after_save') }}</p>
+								</div>
 							</div>
 
 							<!-- Advanced Settings -->

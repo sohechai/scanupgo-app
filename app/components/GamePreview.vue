@@ -168,8 +168,6 @@ const previewPrizes = computed(() => {
 					class="absolute inset-0 z-0" :style="{ backgroundColor: backgroundImage }" />
 				<img v-else-if="backgroundImage" :src="backgroundImage"
 					class="absolute inset-0 w-full h-full object-cover z-0" />
-				<!-- Overlay sombre seulement pour les vraies images (pas une couleur unie) -->
-				<div v-if="isImageBackground" class="absolute inset-0 bg-black/30 z-0" />
 
 				<!-- Fake Status Bar -->
 				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-30 text-[10px] font-bold tracking-widest opacity-80"

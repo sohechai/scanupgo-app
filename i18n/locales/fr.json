@@ -404,6 +404,7 @@
 	"games": {
 		"title": "Mes Jeux",
 		"subtitle": "Gérez vos campagnes de jeux concours.",
+		"all_businesses": "Tous les établissements",
 		"create_button": "Créer un jeu",
 		"no_games": "Aucun jeu trouvé",
 		"no_games_description": "Vous n'avez pas encore créé de jeu. Commencez dès maintenant pour engager vos clients !",
@@ -466,6 +467,7 @@
 			"win_probability_guaranteed": "100% (Garanti)",
 			"tagline": "Message d'accroche",
 			"tagline_placeholder": "Tentez votre chance et gagnez des cadeaux exclusifs !",
+			"actions_after_save": "Enregistrez le jeu pour configurer les réseaux (Google, Instagram, etc.).",
 			"google_review_link": "Lien Google Avis",
 			"google_review_help": "Aide",
 			"google_review_description": "Lien vers votre page Google Reviews",
@@ -693,6 +695,7 @@
 		"access_required": "Accédez à vos Joueurs",
 		"access_description": "Visualisez et gérez votre base de données clients. Exportez les contacts qui ont participé à vos jeux.",
 		"search_placeholder": "Rechercher...",
+		"all_businesses": "Tous les établissements",
 		"filters_button": "Filtres",
 		"clear_filters": "Tout effacer",
 		"export_button": "Exporter",

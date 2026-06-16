@@ -404,6 +404,7 @@
 	"games": {
 		"title": "ألعابي",
 		"subtitle": "أدر حملات الألعاب والمسابقات.",
+		"all_businesses": "كل المنشآت",
 		"create_button": "إنشاء لعبة",
 		"no_games": "لم يتم العثور على أي لعبة",
 		"no_games_description": "لم تقم بإنشاء أي لعبة بعد. ابدأ الآن لإشراك عملائك!",
@@ -466,6 +467,7 @@
 			"win_probability_guaranteed": "100% (مضمون)",
 			"tagline": "رسالة الجذب",
 			"tagline_placeholder": "جرب حظك واربح هدايا حصرية!",
+			"actions_after_save": "احفظ اللعبة لإعداد الشبكات (Google، Instagram، إلخ).",
 			"google_review_link": "رابط تقييمات Google",
 			"google_review_help": "مساعدة",
 			"google_review_description": "رابط صفحة Google Reviews الخاصة بك",
@@ -693,6 +695,7 @@
 		"access_required": "الوصول إلى اللاعبين",
 		"access_description": "اعرض وأدر قاعدة بيانات عملائك. قم بتصدير جهات الاتصال التي شاركت في ألعابك.",
 		"search_placeholder": "بحث...",
+		"all_businesses": "كل المنشآت",
 		"filters_button": "فلاتر",
 		"clear_filters": "مسح الكل",
 		"export_button": "تصدير",
