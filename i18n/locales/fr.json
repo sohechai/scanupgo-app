@@ -425,6 +425,8 @@
 		"qr_save": "Enregistrer",
 		"qr_saving": "Enregistrement…",
 		"qr_saved": "QR code mis à jour",
+		"qr_logo_brand": "Logo de la marque",
+		"qr_logo_none": "Aucun logo défini",
 		"qr_logo": "Logo",
 		"qr_logo_add": "Ajouter",
 		"qr_logo_change": "Changer",
