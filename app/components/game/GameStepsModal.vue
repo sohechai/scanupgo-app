@@ -47,11 +47,36 @@ const current = computed<Action | undefined>(() => actions.value[currentIndex.va
 
 const clearTimer = () => { if (timer) { clearInterval(timer); timer = null } }
 
+// Persistance de la progression : sur mobile, ouvrir un réseau navigue hors de la
+// page ; au retour, on restaure l'étape pour ne pas tout recommencer.
+const storageKey = computed(() => `game-steps-progress-${props.game?.id || props.game?.slug || 'x'}`)
+
+const saveProgress = () => {
+  try {
+    sessionStorage.setItem(storageKey.value, JSON.stringify({ i: currentIndex.value, p: phase.value }))
+  } catch { /* ignore */ }
+}
+const restoreProgress = () => {
+  try {
+    const raw = sessionStorage.getItem(storageKey.value)
+    if (!raw) return
+    const { i, p } = JSON.parse(raw)
+    if (typeof i === 'number' && i >= 0 && i < actions.value.length) {
+      currentIndex.value = i
+      // On reprend toujours en "idle" : le joueur revalide l'action manuellement.
+      phase.value = 'idle'
+      remaining.value = ACTION_TIMER_SECONDS
+    }
+  } catch { /* ignore */ }
+}
+const clearProgress = () => { try { sessionStorage.removeItem(storageKey.value) } catch { /* ignore */ } }
+
 const reset = () => {
   clearTimer()
   currentIndex.value = 0
   phase.value = 'idle'
   remaining.value = ACTION_TIMER_SECONDS
+  clearProgress()
 }
 
 // Étape suivante (ou fin → débloque la roue)
@@ -61,7 +86,9 @@ const goNext = () => {
     currentIndex.value++
     phase.value = 'idle'
     remaining.value = ACTION_TIMER_SECONDS
+    saveProgress()
   } else {
+    clearProgress()
     emit('done')
   }
 }
@@ -72,9 +99,19 @@ const openCurrent = () => {
   if (a.link && a.link.trim()) {
     let url = a.link.trim()
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url
-    // Évite l'onglet about:blank si l'URL est invalide / vide après nettoyage.
     if (/^https?:\/\/.+\..+/i.test(url)) {
-      window.open(url, '_blank', 'noopener,noreferrer')
+      const isMobile = typeof navigator !== 'undefined' &&
+        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+      if (isMobile) {
+        // Mobile : on mémorise l'étape avant de quitter la page, puis on navigue
+        // dans l'onglet courant. App native si installée, sinon site web — et
+        // aucun onglet about:blank résiduel (contrairement à window.open).
+        saveProgress()
+        window.location.href = url
+      } else {
+        // Desktop : nouvel onglet classique.
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
     }
   }
   phase.value = 'pending'
@@ -89,7 +126,19 @@ const openCurrent = () => {
 // Valider manuellement après 30s
 const validateNow = () => goNext()
 
-watch(() => props.show, (val) => { if (val) reset(); else clearTimer() })
+watch(() => props.show, (val) => {
+  if (val) {
+    // À l'ouverture : reprendre la progression sauvegardée (retour mobile depuis
+    // un réseau), sinon repartir de zéro.
+    clearTimer()
+    currentIndex.value = 0
+    phase.value = 'idle'
+    remaining.value = ACTION_TIMER_SECONDS
+    restoreProgress()
+  } else {
+    clearTimer()
+  }
+})
 watch(actions, reset)
 onUnmounted(clearTimer)
 
