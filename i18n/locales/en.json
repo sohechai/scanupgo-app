@@ -425,6 +425,8 @@
 		"qr_save": "Save",
 		"qr_saving": "Saving…",
 		"qr_saved": "QR code updated",
+		"qr_logo_brand": "Brand logo",
+		"qr_logo_none": "No logo set",
 		"qr_logo": "Logo",
 		"qr_logo_add": "Add",
 		"qr_logo_change": "Change",

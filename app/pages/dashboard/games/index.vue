@@ -71,13 +71,15 @@ const qrCodeDataUrl = ref<string | null>(null)
 const generatingQR = ref(false)
 const config = useRuntimeConfig()
 
-// Personnalisation couleurs + logo du QR directement dans le modal
+// Personnalisation couleurs + logo de marque du QR directement dans le modal
 const showQRCustomize = ref(false)
 const qrColor = ref('#000000')
 const qrBgColor = ref('#ffffff')
-const qrLogoUrl = ref<string | null>(null)
+const qrShowLogo = ref(false)
 const savingQR = ref(false)
-const uploadingQRLogo = ref(false)
+// Logo = celui de la marque (établissement), affiché au centre si activé
+const brandLogoUrl = computed<string | null>(() => selectedQRGame.value?.business?.logo || null)
+const qrLogoUrl = computed<string | null>(() => (qrShowLogo.value ? brandLogoUrl.value : null))
 
 const getGamePlayUrl = (game: any) => {
 	const base = (config.public.siteUrl as string | undefined) || window.location.origin
@@ -138,46 +140,27 @@ const openQRModal = async (game: any) => {
 	showQRCustomize.value = false
 	qrColor.value = game.qrCodeColor || '#000000'
 	qrBgColor.value = game.qrCodeBgColor || '#ffffff'
-	qrLogoUrl.value = game.qrCodeLogoUrl || null
+	// Logo activé si le jeu en a un enregistré (= logo de la marque)
+	qrShowLogo.value = !!game.qrCodeLogoUrl
 	showQRModal.value = true
 	await generateQR()
 }
 
 // Régénère l'aperçu en direct quand on change couleurs/logo
-watch([qrColor, qrBgColor, qrLogoUrl], () => { if (showQRModal.value) generateQR() })
-
-const uploadQRLogo = async (event: Event) => {
-	const input = event.target as HTMLInputElement
-	const file = input.files?.[0]
-	if (!file) return
-	if (!file.type.startsWith('image/')) { showToast(t('games.qr_logo_image_only'), 'error'); return }
-	if (file.size > 2 * 1024 * 1024) { showToast(t('games.qr_logo_too_large'), 'error'); return }
-	uploadingQRLogo.value = true
-	try {
-		const formData = new FormData()
-		formData.append('file', file)
-		const res = await $api<{ url: string }>('/uploads', { method: 'POST', body: formData })
-		if (res.url) qrLogoUrl.value = res.url
-	} catch {
-		showToast(t('games.qr_logo_upload_error'), 'error')
-	} finally {
-		uploadingQRLogo.value = false
-		input.value = ''
-	}
-}
-
-const removeQRLogo = () => { qrLogoUrl.value = null }
+watch([qrColor, qrBgColor, qrShowLogo], () => { if (showQRModal.value) generateQR() })
 
 const saveQRColors = async () => {
 	if (!selectedQRGame.value) return
 	savingQR.value = true
 	try {
+		// On stocke l'URL du logo de marque si activé, sinon null
+		const logoToSave = qrShowLogo.value ? brandLogoUrl.value : null
 		await $api(`/games/${selectedQRGame.value.id}`, {
 			method: 'PATCH',
-			body: { qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: qrLogoUrl.value },
+			body: { qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: logoToSave },
 		})
 		const idx = games.value.findIndex(g => g.id === selectedQRGame.value.id)
-		if (idx !== -1) games.value[idx] = { ...games.value[idx], qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: qrLogoUrl.value }
+		if (idx !== -1) games.value[idx] = { ...games.value[idx], qrCodeColor: qrColor.value, qrCodeBgColor: qrBgColor.value, qrCodeLogoUrl: logoToSave }
 		showToast(t('games.qr_saved'), 'success')
 	} catch (e: any) {
 		showToast(e?.data?.message || t('games.update_error'), 'error')
@@ -483,20 +466,17 @@ onMounted(async () => {
 								<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_bg_color') }}</label>
 								<input type="color" v-model="qrBgColor" class="w-8 h-8 rounded cursor-pointer border border-slate-300 dark:border-slate-600 bg-transparent" />
 							</div>
-							<!-- Logo au centre du QR -->
+							<!-- Logo de la marque au centre du QR (toggle) -->
 							<div class="flex items-center justify-between">
-								<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_logo') }}</label>
 								<div class="flex items-center gap-2">
-									<img v-if="qrLogoUrl" :src="qrLogoUrl" class="w-8 h-8 rounded object-cover border border-slate-300 dark:border-slate-600" />
-									<button v-if="qrLogoUrl" @click="removeQRLogo" type="button"
-										class="text-[11px] text-red-500 hover:text-red-600 font-medium">{{ $t('games.qr_logo_remove') }}</button>
-									<label class="cursor-pointer text-[11px] font-semibold text-[#007AFF] hover:text-[#0066DD] flex items-center gap-1">
-										<Icon v-if="uploadingQRLogo" name="ph:spinner-gap-bold" size="13" class="animate-spin" />
-										<Icon v-else name="ph:upload-simple-bold" size="13" />
-										{{ qrLogoUrl ? $t('games.qr_logo_change') : $t('games.qr_logo_add') }}
-										<input type="file" accept="image/*" class="hidden" @change="uploadQRLogo" :disabled="uploadingQRLogo" />
-									</label>
+									<img v-if="brandLogoUrl" :src="brandLogoUrl" class="w-7 h-7 rounded object-cover border border-slate-300 dark:border-slate-600" />
+									<label class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ $t('games.qr_logo_brand') }}</label>
 								</div>
+								<label v-if="brandLogoUrl" class="relative inline-flex items-center cursor-pointer">
+									<input v-model="qrShowLogo" type="checkbox" class="sr-only peer">
+									<div class="w-9 h-5 bg-slate-200 dark:bg-slate-600 rounded-full peer peer-checked:bg-[#007AFF] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+								</label>
+								<span v-else class="text-[11px] text-slate-400">{{ $t('games.qr_logo_none') }}</span>
 							</div>
 							<button @click="saveQRColors" :disabled="savingQR"
 								class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#007AFF] hover:bg-[#0066DD] text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
