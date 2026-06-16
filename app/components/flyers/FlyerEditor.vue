@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import SmartFlyer from './SmartFlyer.vue'
 import FlyerSidebar from './FlyerSidebar.vue'
-import FlyerSmartControls from './FlyerSmartControls.vue'
 import FlyerModals from './FlyerModals.vue'
 import FlyerToolbar from './FlyerToolbar.vue'
 import SmartFlyerOnboarding from './SmartFlyerOnboarding.vue'
@@ -58,16 +57,29 @@ const selectedObject = ref<any>(null)
 const selectedObjectColor = ref('#000000')
 
 // Smart Flyer Customization Options
+// Contraste : noir sur fond clair, blanc sur fond foncé
+const contrastColor = (hex: string) => {
+	const h = (hex || '').replace('#', '')
+	if (h.length !== 6) return '#ffffff'
+	const r = parseInt(h.slice(0, 2), 16)
+	const g = parseInt(h.slice(2, 4), 16)
+	const b = parseInt(h.slice(4, 6), 16)
+	return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? '#000000' : '#ffffff'
+}
+
+// Couleurs par défaut = couleurs de la marque (héritées du jeu / établissement)
+const brandColor = props.game?.primaryColor || '#fb923c'
 const smartOptions = ref({
-	backgroundColor: props.game?.primaryColor || '#fb923c',
-	accentColor: '#fb923c',
-	buttonColor: props.game?.primaryColor || '#fb923c',
+	backgroundColor: brandColor,
+	accentColor: brandColor,
+	buttonColor: brandColor,
 	fontFamily: 'Luckiest Guy',
 	conditions: '',
-	footerIconColor: '#000000',
-	lostColor: '#000000',
-	qrColor: '#000000',
-	qrBgColor: '#ffffff',
+	footerIconColor: contrastColor(brandColor), // blanc si marque foncée, noir si claire
+	lostColor: props.game?.wheelLostColor || '#000000',
+	qrColor: props.game?.qrCodeColor || '#000000',
+	qrBgColor: props.game?.qrCodeBgColor || '#ffffff',
+	qrLogo: false, // logo au centre du QR (option)
 })
 
 // Watch game prop changes to update defaults if needed
@@ -76,10 +88,23 @@ watch(() => props.game, (newGame) => {
 		smartOptions.value.backgroundColor = newGame.primaryColor
 		smartOptions.value.buttonColor = newGame.primaryColor
 		smartOptions.value.accentColor = newGame.primaryColor
+		smartOptions.value.footerIconColor = contrastColor(newGame.primaryColor)
 	}
 	if (newGame?.qrCodeColor) smartOptions.value.qrColor = newGame.qrCodeColor
 	if (newGame?.qrCodeBgColor) smartOptions.value.qrBgColor = newGame.qrCodeBgColor
 }, { immediate: true })
+
+// Réinitialise les couleurs du flyer intelligent sur celles de la marque
+const resetSmartColors = () => {
+	const c = props.game?.primaryColor || '#fb923c'
+	smartOptions.value.backgroundColor = c
+	smartOptions.value.accentColor = c
+	smartOptions.value.buttonColor = c
+	smartOptions.value.footerIconColor = contrastColor(c)
+	smartOptions.value.lostColor = props.game?.wheelLostColor || '#000000'
+	smartOptions.value.qrColor = props.game?.qrCodeColor || '#000000'
+	smartOptions.value.qrBgColor = props.game?.qrCodeBgColor || '#ffffff'
+}
 
 const updateSelectedColor = (event: Event) => {
 	// This function was likely intended to be part of the original code,
@@ -90,6 +115,8 @@ const selectedBaseTemplate = ref<string>('blank')
 const loadingTemplate = ref(false)
 const converting = ref(false)
 const mode = ref<'canvas' | 'smart'>('canvas') // New: Mode for editor
+// Vrai si le canvas provient d'un flyer intelligent converti (QR + logo déjà dans l'image)
+const convertedFromSmart = ref(false)
 const smartFlyerRef = ref<any>(null) // New: Ref for SmartFlyer component
 
 // Onboarding modal — shown when user selects smart template
@@ -119,8 +146,8 @@ const cancelConversion = () => {
 
 // Static templates (special modes, not images)
 const staticTemplates = computed(() => [
-	{ id: 'smart', name: t('flyers.editor.template_smart'), description: t('flyers.editor.template_smart_desc'), icon: 'ph:magic-wand-fill', image: null, isSmart: true },
 	{ id: 'blank', name: t('flyers.editor.template_blank'), description: t('flyers.editor.template_blank_desc'), icon: 'ph:file-dashed', image: null },
+	{ id: 'smart', name: t('flyers.editor.template_smart'), description: t('flyers.editor.template_smart_desc'), icon: 'ph:magic-wand-fill', image: null, isSmart: true },
 ])
 
 // Templates loaded from API
@@ -186,6 +213,7 @@ onMounted(async () => {
 const loadTemplate = async (templateId: string) => {
 	const template = templates.value.find((t: any) => t.id === templateId)
 	if (!template) return
+	convertedFromSmart.value = false // on quitte le contexte "smart converti"
 
 	if (template.isSmart) {
 		// Save ref and clear it BEFORE switching mode so Vue removes the canvas
@@ -328,7 +356,10 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 	const savedSmartOptions = { ...smartOptions.value }
 	canvas.value = null
 	mode.value = 'canvas'
-	selectedBaseTemplate.value = 'blank'
+	// On garde "smart" sélectionné (le contenu vient du flyer intelligent) : seul le mode
+	// passe en canvas. Évite que la sélection saute sur "Canvas vierge".
+	selectedBaseTemplate.value = 'smart'
+	convertedFromSmart.value = true // QR + logo sont déjà dans l'image exportée
 
 	await nextTick()
 	await new Promise(resolve => setTimeout(resolve, 100))
@@ -476,6 +507,9 @@ const addLogo = async () => {
 		showToast('Erreur lors du chargement du logo', 'error')
 	})
 }
+
+// Référence de l'image importée (flyer perso), pour la remplacer au lieu de cumuler
+const importedFlyerObject = ref<any>(null)
 
 // QR Code Customizer Modal
 const showQRCodeModal = ref(false)
@@ -685,13 +719,10 @@ const handleImageFile = async (file: File) => {
 			FabricImage.fromURL(response.url, { crossOrigin: 'anonymous' }).then((img) => {
 				if (!canvas.value) return
 
-				// Scale to fit canvas
+				// Scale to fit canvas (image ajoutée comme élément déplaçable)
 				const scale = Math.min(250 / (img.width || 1), 250 / (img.height || 1))
 				img.scale(scale)
-				img.set({
-					left: 100,
-					top: 200,
-				})
+				img.set({ left: 100, top: 200 })
 
 				configureObjectControls(img)
 
@@ -705,6 +736,53 @@ const handleImageFile = async (file: File) => {
 	} catch (e) {
 		console.error('Upload failed', e)
 		showToast('Erreur lors de l\'upload de l\'image', 'error')
+	} finally {
+		uploading.value = false
+	}
+}
+
+// Importer son propre flyer : image placée en fond, à la largeur du canvas (ratio gardé).
+// Disponible uniquement sur canvas vierge.
+const handleFlyerFile = async (file: File) => {
+	if (!canvas.value) return
+	const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+	if (!allowedTypes.includes(file.type)) {
+		showToast('Format non supporté. Utilisez JPG, PNG, WebP ou GIF.', 'error')
+		return
+	}
+	if (file.size > 5 * 1024 * 1024) {
+		showToast('Le fichier est trop volumineux (max 5MB)', 'error')
+		return
+	}
+
+	uploading.value = true
+	try {
+		const formData = new FormData()
+		formData.append('file', file)
+		const response = await $api<{ url: string }>('/uploads', { method: 'POST', body: formData })
+		if (!response?.url || !canvas.value) return
+
+		const { FabricImage } = await import('fabric')
+		const img = await FabricImage.fromURL(response.url, { crossOrigin: 'anonymous' })
+
+		// Remplace un flyer importé précédemment (ne pas cumuler)
+		if (importedFlyerObject.value) {
+			canvas.value.remove(importedFlyerObject.value)
+			importedFlyerObject.value = null
+		}
+
+		// Largeur du canvas, ratio préservé, placé en fond
+		img.scaleToWidth(CANVAS_WIDTH)
+		img.set({ left: 0, top: 0, originX: 'left', originY: 'top', selectable: false, evented: false })
+		canvas.value.add(img)
+		if (typeof canvas.value.sendObjectToBack === 'function') canvas.value.sendObjectToBack(img)
+		else canvas.value.moveObjectTo(img, 0)
+		importedFlyerObject.value = img
+		canvas.value.renderAll()
+		showToast('Flyer importé avec succès', 'success')
+	} catch (e) {
+		console.error('Flyer import failed', e)
+		showToast('Erreur lors de l\'import du flyer', 'error')
 	} finally {
 		uploading.value = false
 	}
@@ -1152,10 +1230,14 @@ const previewFlyer = async () => {
 		<FlyerSidebar
 			:has-logo="!!businessLogo"
 			:has-qr-code="!!qrCodeUrl"
+			:converted-from-smart="convertedFromSmart"
 			:uploading="uploading"
 			:loading-template="loadingTemplate"
 			:selected-template="selectedBaseTemplate"
 			:templates="templates"
+			:mode="mode"
+			:smart-options="smartOptions"
+			@reset-colors="resetSmartColors"
 			@add-text="addText"
 			@add-logo="addLogo"
 			@add-qr-code="addQRCode"
@@ -1163,6 +1245,7 @@ const previewFlyer = async () => {
 			@center-vertically="centerVertically"
 			@load-template="loadTemplate"
 			@image-file-selected="handleImageFile"
+			@flyer-file-selected="handleFlyerFile"
 		/>
 
 		<!-- MAIN CANVAS AREA -->
@@ -1206,10 +1289,8 @@ const previewFlyer = async () => {
 						:prizes="game?.prizes" :conditions="smartOptions.conditions"
 						:footer-icon-color="smartOptions.footerIconColor" :lost-color="smartOptions.lostColor"
 						:qr-color="smartOptions.qrColor" :qr-bg-color="smartOptions.qrBgColor"
+						:qr-logo="smartOptions.qrLogo"
 						:qr-play-url="getGameUrl()" />
-
-					<!-- Floating Smart Controls -->
-					<FlyerSmartControls v-model="smartOptions" />
 				</div><!-- Canvas Mode -->
 				<div v-else class="relative shadow-2xl shadow-slate-400/20 rounded-sm">
 					<canvas ref="canvasRef"></canvas>
