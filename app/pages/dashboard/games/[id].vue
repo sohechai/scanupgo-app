@@ -101,7 +101,9 @@ const syncGameToServer = async () => {
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
 		}
-		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
+		// `active`/`isDraft` gérés par l'activation (toggle) et le backend, jamais
+		// envoyés pendant la config — sinon le backend tente d'activer et exige des lots.
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, active, isDraft, ...rest } = game.value as any
 		const payload = sanitizeHours(rest)
 		if (createdGameId.value) {
 			await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: payload })
@@ -566,8 +568,9 @@ const saveGame = async () => {
 						<!-- TAB: CONTENT -->
 						<form v-show="activeTab === 'content'" @submit.prevent="saveGame" class="space-y-8">
 
-							<!-- Active Toggle -->
-							<div
+							<!-- Active Toggle — masqué pendant la création (wizard) :
+							     l'activation se fait après configuration complète des lots. -->
+							<div v-if="!wizardMode"
 								class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600 flex items-center justify-between">
 								<div>
 									<h3 class="font-medium text-slate-900 dark:text-white text-sm">{{ $t('games.detail.game_state') }}</h3>
