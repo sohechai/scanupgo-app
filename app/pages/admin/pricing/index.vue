@@ -104,6 +104,19 @@ const fetchPlans = async () => {
 	finally { loadingPlans.value = false }
 }
 
+// L'essai n'est réellement actif que si activé globalement dans les paramètres.
+// Le badge "Nj trial" ne doit donc s'afficher que dans ce cas.
+// La durée affichée vient des paramètres (freeTrialDays), pas du plan.
+const freeTrialEnabled = ref(false)
+const freeTrialDays = ref(0)
+const fetchTrialSetting = async () => {
+	try {
+		const s = await $api<any>('/admin/settings')
+		freeTrialEnabled.value = s?.freeTrialEnabled ?? false
+		freeTrialDays.value = s?.freeTrialDays ?? 0
+	} catch { /* silencieux */ }
+}
+
 // Snapshot des Price IDs avant édition (pour détecter un changement → avertir l'admin)
 const priceIdsBeforeEdit = ref({ monthly: '', annual: '', lifetime: '' })
 const showPriceChangeInfo = ref(false)
@@ -322,7 +335,7 @@ const newButtonLabel = computed(() => {
 	return null
 })
 
-onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks() })
+onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks(); fetchTrialSetting() })
 </script>
 
 <template>
@@ -420,9 +433,9 @@ onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks() })
 									</a>
 									<span v-else class="ml-1 text-[10px] text-slate-600">non lié</span>
 								</div>
-								<div v-if="plan.trialDays > 0" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/20 rounded-md">
+								<div v-if="freeTrialEnabled && freeTrialDays > 0" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/20 rounded-md">
 									<Icon name="ph:clock-countdown-bold" size="12" class="text-amber-400" />
-									<span class="text-xs text-amber-400">{{ plan.trialDays }}j trial</span>
+									<span class="text-xs text-amber-400">{{ freeTrialDays }}j trial</span>
 								</div>
 							</div>
 
