@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import GamePrizes from './components/GamePrizes.vue'
 import GameFlyersTab from './components/GameFlyersTab.vue'
+import GameActions from './components/GameActions.vue'
 
 definePageMeta({
 	middleware: 'auth',
@@ -636,38 +637,7 @@ const saveGame = async () => {
 										:placeholder="$t('games.detail.tagline_placeholder')"></textarea>
 								</div>
 
-								<div class="col-span-2">
-									<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
-										<span class="flex items-center gap-2">
-											<Icon name="ph:google-logo-bold" size="14" />
-											{{ $t('games.detail.google_review_link') }}
-										</span>
-									</label>
-									<div v-if="businessObject?.googleReviewUrl"
-										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2.5">
-										<Icon name="ph:check-circle-fill" size="16" class="text-emerald-500 shrink-0" />
-										<span class="text-xs text-slate-700 dark:text-slate-300 truncate flex-1 font-mono">{{ businessObject.googleReviewUrl }}</span>
-										<a :href="businessObject.googleReviewUrl" target="_blank" rel="noopener noreferrer"
-											class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shrink-0 flex items-center gap-1 transition-colors"
-											title="Prévisualiser la page d'avis">
-											<Icon name="ph:arrow-square-out-bold" size="14" />
-										</a>
-										<NuxtLink to="/dashboard/account" class="text-xs text-[#007AFF] hover:opacity-70 shrink-0 font-medium">
-											{{ $t('common.edit') }}
-										</NuxtLink>
-									</div>
-									<div v-else
-										class="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2.5">
-										<Icon name="ph:warning-bold" size="16" class="text-amber-500 shrink-0" />
-										<span class="text-xs text-amber-700 dark:text-amber-300 flex-1">Lien Google Avis non configuré</span>
-										<NuxtLink to="/dashboard/account" class="text-xs text-amber-700 dark:text-amber-300 hover:opacity-70 shrink-0 font-bold underline">
-											Configurer
-										</NuxtLink>
-									</div>
-									<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-										{{ $t('games.detail.google_review_description') }}
-									</p>
-								</div>
+								<GameActions :game-id="route.params.id as string" :google-review-url="businessObject?.googleReviewUrl" />
 							</div>
 
 							<!-- Advanced Settings -->

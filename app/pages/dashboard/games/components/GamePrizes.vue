@@ -36,13 +36,13 @@ const form = ref<Prize>({
 	description: '',
 	rank: 1,
 	quantity: 10,
-	probability: 20,
+	probability: 50,
 	winningMessage: t('games.prizes.default_message'),
 	status: 'active'
 })
 
 // Minimum 10% de chance par lot (garantit une bonne expérience client)
-const MIN_PROBABILITY = 10
+const MIN_PROBABILITY = 50
 const probabilityError = computed(() => (form.value.probability ?? 0) < MIN_PROBABILITY)
 
 const fetchPrizes = async () => {
@@ -69,7 +69,7 @@ const openModal = (prize?: Prize) => {
 			description: '',
 			rank: 1,
 			quantity: 10,
-			probability: 20,
+			probability: 50,
 			winningMessage: t('games.prizes.default_message'),
 			minOrderAmount: null,
 			validityDays: null,
@@ -252,7 +252,7 @@ watch(() => props.gameId, (newId) => {
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.probability') }}</label>
 							<div class="relative flex items-center bg-slate-50 dark:bg-slate-700 border rounded-xl focus-within:border-[#007AFF]/40 transition-colors"
 								:class="probabilityError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'">
-								<input v-model.number="form.probability" type="number" min="10" max="100" step="1"
+								<input v-model.number="form.probability" type="number" min="50" max="100" step="1"
 									class="prob-input flex-1 min-w-0 bg-transparent pl-4 pr-1 py-2 text-slate-900 dark:text-white outline-none">
 								<span class="text-slate-400 dark:text-slate-500 text-sm font-bold pr-2">%</span>
 								<div class="flex flex-col border-l border-slate-200 dark:border-slate-600">
@@ -260,7 +260,7 @@ watch(() => props.gameId, (newId) => {
 										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
 										<Icon name="ph:caret-up-bold" size="11" />
 									</button>
-									<button type="button" @click="form.probability = Math.max(10, (form.probability || 0) - 1)"
+									<button type="button" @click="form.probability = Math.max(50, (form.probability || 0) - 1)"
 										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors border-t border-slate-200 dark:border-slate-600">
 										<Icon name="ph:caret-down-bold" size="11" />
 									</button>
