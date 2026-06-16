@@ -100,17 +100,33 @@ const openCurrent = () => {
     let url = a.link.trim()
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url
     if (/^https?:\/\/.+\..+/i.test(url)) {
-      const isMobile = typeof navigator !== 'undefined' &&
-        /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-      if (isMobile) {
-        // Mobile : on mémorise l'étape avant de quitter la page, puis on navigue
-        // dans l'onglet courant. App native si installée, sinon site web — et
-        // aucun onglet about:blank résiduel (contrairement à window.open).
-        saveProgress()
-        window.location.href = url
-      } else {
-        // Desktop : nouvel onglet classique.
-        window.open(url, '_blank', 'noopener,noreferrer')
+      // Toujours ouvrir le réseau dans un nouvel onglet (comportement attendu).
+      const win = window.open(url, '_blank')
+      saveProgress()
+      // Cas mobile : si l'app native du réseau prend le relais, l'onglet web
+      // ouvert reste un about:blank résiduel. On le ferme UNIQUEMENT si la page
+      // jeu redevient visible très vite (retour d'app) sans que l'onglet ait
+      // été réellement consulté. Si l'utilisateur reste sur l'onglet web
+      // (réseau sans app installée), on n'y touche pas.
+      if (win) {
+        const openedAt = Date.now()
+        let leftPage = false
+        const onVisibility = () => {
+          if (document.visibilityState === 'hidden') {
+            leftPage = true
+          } else if (document.visibilityState === 'visible' && leftPage) {
+            // De retour sur le jeu rapidement -> l'app native a géré l'ouverture,
+            // l'onglet web est inutile : on le ferme.
+            if (Date.now() - openedAt < 4000) {
+              try { if (!win.closed) win.close() } catch { /* ignore */ }
+            }
+            cleanup()
+          }
+        }
+        const cleanup = () => document.removeEventListener('visibilitychange', onVisibility)
+        document.addEventListener('visibilitychange', onVisibility)
+        // Filet : on retire l'écouteur après 12s (onglet web normal conservé).
+        setTimeout(cleanup, 12000)
       }
     }
   }
