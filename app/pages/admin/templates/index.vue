@@ -17,8 +17,53 @@ const loading = ref(true)
 const templates = ref<any[]>([])
 
 const showModal = ref(false)
+const step = ref(1) // wizard : 1 = infos/image, 2 = position QR
 const editingTemplate = ref<any>(null)
-const modalForm = ref({ name: '', description: '', imageUrl: '' })
+const modalForm = ref({ name: '', description: '', imageUrl: '', qrZone: { x: 246, y: 420, size: 120, angle: -13 } })
+
+// Canvas de référence du flyer (doit matcher CANVAS_WIDTH/HEIGHT côté éditeur)
+const FLYER_W = 420
+const FLYER_H = 595
+
+// Carré QR positionné en % sur l'aperçu (size = côté, x/y = centre)
+const qrPreviewStyle = computed(() => {
+	const z = modalForm.value.qrZone
+	const size = z.size || 0
+	return {
+		left: `${((z.x - size / 2) / FLYER_W) * 100}%`,
+		top: `${((z.y - size / 2) / FLYER_H) * 100}%`,
+		width: `${(size / FLYER_W) * 100}%`,
+		height: `${(size / FLYER_H) * 100}%`,
+		transform: `rotate(${z.angle || 0}deg)`,
+	}
+})
+
+// Positionnement du QR par glisser (étape 2 du wizard)
+const qrStageRef = ref<HTMLElement | null>(null)
+const qrDragging = ref(false)
+
+// Place le centre du QR aux coordonnées canvas selon la position pointeur dans l'aperçu
+const updateQrFromPointer = (e: PointerEvent) => {
+	const stage = qrStageRef.value
+	if (!stage) return
+	const rect = stage.getBoundingClientRect()
+	const x = Math.round(((e.clientX - rect.left) / rect.width) * FLYER_W)
+	const y = Math.round(((e.clientY - rect.top) / rect.height) * FLYER_H)
+	modalForm.value.qrZone.x = Math.max(0, Math.min(FLYER_W, x))
+	modalForm.value.qrZone.y = Math.max(0, Math.min(FLYER_H, y))
+}
+
+const onQrPointerDown = (e: PointerEvent) => {
+	qrDragging.value = true
+	;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+	updateQrFromPointer(e)
+}
+const onQrPointerMove = (e: PointerEvent) => {
+	if (qrDragging.value) updateQrFromPointer(e)
+}
+const onQrPointerUp = () => {
+	qrDragging.value = false
+}
 const uploading = ref(false)
 const saving = ref(false)
 const uploadError = ref('')
@@ -49,14 +94,21 @@ const fetchTemplates = async () => {
 
 const openCreateModal = () => {
 	editingTemplate.value = null
-	modalForm.value = { name: '', description: '', imageUrl: '' }
+	step.value = 1
+	modalForm.value = { name: '', description: '', imageUrl: '', qrZone: { x: 246, y: 420, size: 120, angle: -13 } }
 	uploadError.value = ''
 	showModal.value = true
 }
 
 const openEditModal = (template: any) => {
 	editingTemplate.value = template
-	modalForm.value = { name: template.name, description: template.description || '', imageUrl: template.imageUrl }
+	step.value = 1
+	modalForm.value = {
+		name: template.name,
+		description: template.description || '',
+		imageUrl: template.imageUrl,
+		qrZone: template.qrZone || { x: 246, y: 420, size: 120, angle: -13 },
+	}
 	uploadError.value = ''
 	showModal.value = true
 }
@@ -467,7 +519,8 @@ onMounted(() => {
 		<Teleport to="body">
 			<div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 				<div class="absolute inset-0 bg-black/60" @click="showModal = false"></div>
-				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full shadow-2xl overflow-hidden transition-all"
+					:class="step === 2 ? 'max-w-3xl' : 'max-w-lg'">
 					<div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
 						<h2 class="text-base font-semibold text-white">
 							{{ editingTemplate ? $t('admin.templates.modal_edit_title') : $t('admin.templates.modal_add_title') }}
@@ -476,7 +529,22 @@ onMounted(() => {
 							<Icon name="ph:x-bold" size="16" />
 						</button>
 					</div>
-					<div class="p-5 space-y-4">
+					<!-- Indicateur d'étapes -->
+					<div class="px-5 pt-4 flex items-center gap-2 text-xs">
+						<span class="flex items-center gap-1.5" :class="step === 1 ? 'text-white font-medium' : 'text-slate-500'">
+							<span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
+								:class="step === 1 ? 'bg-white text-slate-900' : 'bg-white/[0.08] text-slate-400'">1</span>
+							Infos
+						</span>
+						<span class="flex-1 h-px bg-white/[0.08]"></span>
+						<span class="flex items-center gap-1.5" :class="step === 2 ? 'text-white font-medium' : 'text-slate-500'">
+							<span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
+								:class="step === 2 ? 'bg-white text-slate-900' : 'bg-white/[0.08] text-slate-400'">2</span>
+							Position du QR
+						</span>
+					</div>
+					<!-- ÉTAPE 1 : infos + image -->
+					<div v-if="step === 1" class="p-5 space-y-4">
 						<div>
 							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.templates.modal_name_label') }}</label>
 							<input v-model="modalForm.name" type="text" :placeholder="$t('admin.templates.modal_name_placeholder')"
@@ -518,17 +586,57 @@ onMounted(() => {
 							</div>
 						</div>
 					</div>
-					<div class="px-5 py-4 border-t border-white/[0.06] flex gap-2 justify-end">
+						<!-- ÉTAPE 2 : positionnement du QR (grand aperçu draggable) -->
+						<div v-else class="p-5">
+							<p class="text-xs text-slate-500 mb-3">Glisse le carré vert à l'emplacement du QR code sur le flyer, puis ajuste la taille et l'angle.</p>
+							<div class="flex flex-col md:flex-row gap-5">
+								<div class="shrink-0 mx-auto">
+									<div ref="qrStageRef"
+										class="relative h-[420px] aspect-[420/595] bg-slate-950 rounded-lg overflow-hidden border border-white/[0.08] select-none touch-none cursor-crosshair"
+										@pointerdown="onQrPointerDown" @pointermove="onQrPointerMove" @pointerup="onQrPointerUp" @pointerleave="onQrPointerUp">
+										<img :src="modalForm.imageUrl" class="w-full h-full object-contain pointer-events-none" />
+										<div class="absolute border-2 border-emerald-400 bg-emerald-400/30 cursor-move flex items-center justify-center"
+											:style="qrPreviewStyle">
+											<Icon name="ph:qr-code-bold" class="text-emerald-300/70" size="20" />
+										</div>
+									</div>
+								</div>
+								<div class="flex-1 space-y-4">
+									<div>
+										<span class="block text-[11px] text-slate-500 mb-1">Taille — {{ modalForm.qrZone.size }} px</span>
+										<input v-model.number="modalForm.qrZone.size" type="range" min="40" max="300" step="1"
+											class="w-full accent-emerald-400" />
+									</div>
+									<div>
+										<span class="block text-[11px] text-slate-500 mb-1">Angle — {{ modalForm.qrZone.angle }}°</span>
+										<input v-model.number="modalForm.qrZone.angle" type="range" min="-45" max="45" step="1"
+											class="w-full accent-emerald-400" />
+									</div>
+								</div>
+							</div>
+						</div>
+					<!-- Footer wizard -->
+					<div class="px-5 py-4 border-t border-white/[0.06] flex gap-2 justify-between">
 						<button @click="showModal = false"
 							class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors">
 							{{ $t('admin.templates.modal_cancel') }}
 						</button>
-						<button @click="saveTemplate" :disabled="!modalForm.name || !modalForm.imageUrl || saving"
-							class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
-							:class="(!modalForm.name || !modalForm.imageUrl || saving) ? 'bg-white/[0.04] text-slate-500 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100'">
-							<Icon v-if="saving" name="ph:spinner" class="animate-spin" size="14" />
-							{{ editingTemplate ? $t('admin.templates.modal_save') : $t('admin.templates.modal_create') }}
-						</button>
+						<div class="flex gap-2">
+							<button v-if="step === 2" @click="step = 1"
+								class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors flex items-center gap-1.5">
+								<Icon name="ph:arrow-left-bold" size="13" /> Retour
+							</button>
+							<button v-if="step === 1" @click="step = 2" :disabled="!modalForm.name || !modalForm.imageUrl"
+								class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5"
+								:class="(!modalForm.name || !modalForm.imageUrl) ? 'bg-white/[0.04] text-slate-500 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100'">
+								Suivant <Icon name="ph:arrow-right-bold" size="13" />
+							</button>
+							<button v-else @click="saveTemplate" :disabled="saving"
+								class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-100 disabled:opacity-50">
+								<Icon v-if="saving" name="ph:spinner" class="animate-spin" size="14" />
+								{{ editingTemplate ? $t('admin.templates.modal_save') : $t('admin.templates.modal_create') }}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

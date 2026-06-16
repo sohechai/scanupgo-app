@@ -2,11 +2,35 @@
 const props = defineProps<{
 	hasLogo: boolean
 	hasQrCode: boolean
+	convertedFromSmart?: boolean
 	uploading: boolean
 	loadingTemplate: boolean
 	selectedTemplate: string
 	templates: any[]
+	mode: 'canvas' | 'smart'
+	// Objet réactif partagé depuis FlyerEditor — muter ses clés se propage (même référence)
+	smartOptions?: {
+		fontFamily: string
+		backgroundColor: string
+		accentColor: string
+		buttonColor: string
+		footerIconColor: string
+		lostColor: string
+		qrColor: string
+		qrBgColor: string
+		qrLogo: boolean
+	}
 }>()
+
+const smartSwatches = [
+	{ model: 'backgroundColor', label: 'Fond' },
+	{ model: 'accentColor', label: 'Texte' },
+	{ model: 'buttonColor', label: 'Bouton' },
+	{ model: 'footerIconColor', label: 'Icônes' },
+	{ model: 'lostColor', label: 'Perdu' },
+	{ model: 'qrColor', label: 'QR' },
+	{ model: 'qrBgColor', label: 'Fond QR' },
+]
 
 const emit = defineEmits<{
 	'add-text': []
@@ -16,12 +40,22 @@ const emit = defineEmits<{
 	'center-vertically': []
 	'load-template': [id: string]
 	'image-file-selected': [file: File]
+	'flyer-file-selected': [file: File]
+	'reset-colors': []
 }>()
 
 const { t } = useI18n()
 const fileInputRef = ref<HTMLInputElement>()
+const flyerInputRef = ref<HTMLInputElement>()
 
 const triggerImageUpload = () => fileInputRef.value?.click()
+const triggerFlyerUpload = () => flyerInputRef.value?.click()
+
+const onFlyerChange = (event: Event) => {
+	const file = (event.target as HTMLInputElement).files?.[0]
+	if (file) emit('flyer-file-selected', file)
+	;(event.target as HTMLInputElement).value = ''
+}
 
 const onFileChange = (event: Event) => {
 	const file = (event.target as HTMLInputElement).files?.[0]
@@ -41,9 +75,11 @@ const onFileChange = (event: Event) => {
 					{{ t('flyers.editor.tools_title') }}
 				</h3>
 			</div>
+
+			<!-- Outils (toujours visibles) -->
 			<div class="p-3 grid grid-cols-2 gap-2">
 
-				<!-- Image upload — featured, full width, top -->
+				<!-- Importer une image — élément déplaçable (comportement standard) -->
 				<button @click="triggerImageUpload" type="button" :disabled="uploading"
 					class="col-span-2 flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white border border-brand-500 transition-all shadow-md shadow-brand-500/20 disabled:opacity-50 group">
 					<div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -54,6 +90,16 @@ const onFileChange = (event: Event) => {
 				</button>
 				<input type="file" ref="fileInputRef" @change="onFileChange" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
 
+				<!-- Importer mon flyer — image plein cadre, uniquement sur canvas vierge -->
+				<button v-if="selectedTemplate === 'blank'" @click="triggerFlyerUpload" type="button" :disabled="uploading"
+					class="col-span-2 flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-slate-700 border border-brand-300 dark:border-slate-500 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-600 transition-all disabled:opacity-50 group">
+					<div class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+						<Icon name="ph:image-bold" size="18" />
+					</div>
+					<span class="text-sm font-bold">Importer mon flyer</span>
+				</button>
+				<input type="file" ref="flyerInputRef" @change="onFlyerChange" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
+
 				<button @click="emit('add-text')" type="button"
 					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group">
 					<div class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -62,7 +108,8 @@ const onFileChange = (event: Event) => {
 					<span class="text-xs font-bold">{{ t('flyers.editor.tool_text') }}</span>
 				</button>
 
-				<button @click="emit('add-logo')" type="button" :disabled="!hasLogo"
+				<!-- Logo + QR : disponibles hors flyer intelligent -->
+				<button v-if="mode !== 'smart'" @click="emit('add-logo')" type="button" :disabled="!hasLogo"
 					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50 disabled:grayscale">
 					<div class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 						<Icon name="ph:image-square-bold" size="20" />
@@ -70,7 +117,7 @@ const onFileChange = (event: Event) => {
 					<span class="text-xs font-bold">{{ t('flyers.editor.tool_logo') }}</span>
 				</button>
 
-				<button @click="emit('add-qr-code')" type="button" :disabled="!hasQrCode"
+				<button v-if="mode !== 'smart'" @click="emit('add-qr-code')" type="button" :disabled="!hasQrCode"
 					class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-white border border-transparent hover:border-brand-200 dark:hover:border-slate-500 transition-all group disabled:opacity-50 disabled:grayscale">
 					<div class="w-10 h-10 rounded-full bg-white dark:bg-slate-600 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
 						<Icon name="ph:qr-code-bold" size="20" />
@@ -94,6 +141,54 @@ const onFileChange = (event: Event) => {
 					<span class="text-xs font-bold">{{ t('flyers.editor.tool_center_v') }}</span>
 				</button>
 
+			</div>
+
+			<!-- Personnalisation du flyer intelligent -->
+			<div v-if="mode === 'smart' && smartOptions" class="p-4 space-y-4 border-t border-slate-100 dark:border-slate-700">
+				<div class="flex items-center gap-2 text-brand-600 dark:text-brand-400">
+					<Icon name="ph:magic-wand-fill" size="15" />
+					<span class="text-xs font-bold uppercase tracking-wide">{{ $t('flyers.editor.smart_customize') }}</span>
+				</div>
+				<!-- Police -->
+				<div>
+					<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">Police</label>
+					<div class="relative">
+						<select v-model="smartOptions.fontFamily"
+							class="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-400 dark:text-white text-slate-700">
+							<option value="Luckiest Guy">Fun</option>
+							<option value="Anton">Impact</option>
+							<option value="Bangers">Comics</option>
+							<option value="Righteous">Moderne</option>
+						</select>
+						<Icon name="ph:caret-down-bold" size="12" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+					</div>
+				</div>
+				<!-- Couleurs -->
+				<div>
+					<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">Couleurs</label>
+					<div class="grid grid-cols-4 gap-2">
+						<div v-for="item in smartSwatches" :key="item.model" class="flex flex-col items-center gap-1">
+							<div class="relative w-9 h-9 rounded-full ring-2 ring-slate-200 dark:ring-slate-600 ring-offset-1 overflow-hidden shadow-sm">
+								<input v-model="(smartOptions as any)[item.model]" type="color"
+									class="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 p-0 border-0 cursor-pointer opacity-0" />
+								<div class="w-full h-full pointer-events-none rounded-full" :style="{ backgroundColor: (smartOptions as any)[item.model] }"></div>
+							</div>
+							<span class="text-[8px] font-bold text-slate-400 uppercase tracking-wide leading-none text-center">{{ item.label }}</span>
+						</div>
+					</div>
+					<!-- Revenir aux couleurs de la marque -->
+					<button @click="emit('reset-colors')" type="button"
+						class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors">
+						<Icon name="ph:arrow-counter-clockwise-bold" size="12" />
+						Couleurs de la marque
+					</button>
+				</div>
+				<!-- Option : logo au centre du QR -->
+				<label v-if="hasLogo" class="flex items-center justify-between gap-2 cursor-pointer">
+					<span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Logo dans le QR</span>
+					<input v-model="smartOptions.qrLogo" type="checkbox" class="sr-only peer">
+					<div class="relative w-9 h-5 bg-slate-200 dark:bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-brand-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+				</label>
 			</div>
 		</div>
 

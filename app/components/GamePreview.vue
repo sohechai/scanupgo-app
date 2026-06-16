@@ -82,10 +82,11 @@ const logoUrl = computed(() => {
 	return props.logo
 })
 
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 const isImageBackground = computed(() => {
 	const bg = props.backgroundImage
 	if (!bg) return false
-	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+	return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const displayTitle = computed(() => props.title || t('components.game_preview.default_title'))
@@ -160,12 +161,13 @@ const previewPrizes = computed(() => {
 			<!-- Screen -->
 			<div class="rounded-[2rem] overflow-hidden w-full h-full relative font-display transition-colors duration-500"
 				:style="{ backgroundColor: primaryColor || '#00e5ff' }">
-				<!-- Background Image / Gradient -->
+				<!-- Background : dégradé / couleur unie / image -->
 				<div v-if="backgroundImage && (backgroundImage.startsWith('linear-gradient') || backgroundImage.startsWith('radial-gradient'))"
 					class="absolute inset-0 z-0" :style="{ background: backgroundImage }" />
+				<div v-else-if="backgroundImage && isHexColor(backgroundImage)"
+					class="absolute inset-0 z-0" :style="{ backgroundColor: backgroundImage }" />
 				<img v-else-if="backgroundImage" :src="backgroundImage"
 					class="absolute inset-0 w-full h-full object-cover z-0" />
-				<div v-if="backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
 
 				<!-- Fake Status Bar -->
 				<div class="absolute top-0 w-full h-8 px-5 flex justify-between items-center z-30 text-[10px] font-bold tracking-widest opacity-80"
@@ -188,20 +190,11 @@ const previewPrizes = computed(() => {
 				<!-- STEP 1: INTRO -->
 				<div v-if="currentStep === 'intro'" class="relative h-full overflow-hidden flex flex-col">
 
-					<!-- Logo -->
+					<!-- Logo (affiché selon le toggle showLogo, géré côté parent via la prop logo) -->
 					<div class="relative z-10 flex justify-center pt-7 px-3 shrink-0">
-						<template v-if="isImageBackground">
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-14 max-w-[180px] object-contain" style="visibility:hidden" />
-							<div v-else class="h-14"></div>
-						</template>
-						<template v-else>
-							<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
-								class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
-							<div v-else class="h-14 w-28 rounded-xl border-2 border-dashed border-white/40 flex items-center justify-center">
-								<Icon name="ph:storefront-duotone" size="22" class="text-white/50" />
-							</div>
-						</template>
+						<img v-if="logoUrl && !imgError" :src="logoUrl" @error="() => { imgError = true }"
+							class="h-14 max-w-[180px] object-contain drop-shadow-xl" />
+						<div v-else class="h-14"></div>
 					</div>
 
 					<!-- Tagline -->
@@ -416,7 +409,7 @@ const previewPrizes = computed(() => {
 
 					<!-- WIN card -->
 					<div v-if="previewIsWin" class="relative z-10 flex-1 flex flex-col px-3 mt-2 pb-[52px] overflow-hidden min-h-0">
-						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
+						<div class="rounded-3xl p-3 shadow-2xl flex flex-col items-center justify-center text-center gap-2 flex-1 overflow-y-auto min-h-0" :style="{ backgroundColor: popupColor, color: cardTextColor }">
 							<div class="shrink-0">
 								<p class="opacity-60 text-[8px] font-bold uppercase tracking-widest mb-0.5">{{ $t('play.result.win.subtitle') }}</p>
 								<h2 class="text-sm font-black">{{ previewPrizes[0]?.name || '-10%' }}</h2>

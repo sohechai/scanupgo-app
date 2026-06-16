@@ -27,6 +27,7 @@ onUnmounted(() => { if (import.meta.client) window.removeEventListener('resize',
 // Data
 const slug = route.params.slug as string
 const error = ref<string | null>(null)
+const gameInactive = ref(false)
 const game = ref<any>(null)
 const business = ref<any>(null)
 
@@ -35,6 +36,7 @@ const step = ref<GameStep>('intro')
 const showStepsModal = ref(false)
 const showRules = ref(false)
 const showSplash = ref(true)
+const splashLogoError = ref(false) // masque le logo splash si son URL est cassée
 
 // Game state
 const isWin = ref(false)
@@ -59,7 +61,32 @@ if (fetchError.value) {
 } else if (gameData.value) {
   game.value = gameData.value.game
   business.value = gameData.value.business
-  if (!game.value.active) error.value = t('play.error.game_closed')
+  if (!game.value.active) gameInactive.value = true
+}
+
+// Signale une erreur technique au backend (alerte équipe) — best-effort
+const hasCrashed = ref(false)
+const reportError = (message: string) => {
+  $api('/gameplay/report-error', {
+    method: 'POST',
+    body: {
+      slug,
+      message,
+      url: import.meta.client ? window.location.href : `/play/${slug}`,
+      userAgent: import.meta.client ? navigator.userAgent : undefined,
+    },
+  }).catch(() => {})
+}
+
+// Capture tout crash de rendu dans la page de jeu → écran propre + alerte
+onErrorCaptured((err) => {
+  hasCrashed.value = true
+  reportError(`Crash rendu: ${err?.message || err}`)
+  return false // empêche la propagation (pas d'écran blanc)
+})
+
+const reloadPage = () => {
+  if (import.meta.client) window.location.reload()
 }
 
 // Analytics
@@ -69,7 +96,7 @@ const trackEvent = (eventType: string) => {
 }
 
 onMounted(() => {
-  if (game.value && !error.value) {
+  if (game.value && !error.value && !gameInactive.value) {
     trackEvent('page_visit')
     if (game.value.gameLanguage) switchLocale(game.value.gameLanguage)
   }
@@ -96,6 +123,44 @@ const getContrastColor = (hex: string) => {
 }
 const textColor = computed(() => getContrastColor(primaryColor.value))
 
+// Empreinte d'appareil (anti-rejeu) : hash stable de signaux du navigateur.
+// Non infaillible (navigation privée / autre appareil), mais bloque la plupart des doublons.
+const getDeviceFingerprint = (): string | undefined => {
+  if (!import.meta.client) return undefined
+  try {
+    const parts: string[] = [
+      navigator.userAgent,
+      navigator.language,
+      (navigator.languages || []).join(','),
+      `${screen.width}x${screen.height}x${screen.colorDepth}`,
+      String(new Date().getTimezoneOffset()),
+      String(navigator.hardwareConcurrency || ''),
+      String((navigator as any).deviceMemory || ''),
+      String(navigator.platform || ''),
+    ]
+    // Empreinte canvas (rendu de texte légèrement différent par appareil)
+    try {
+      const c = document.createElement('canvas')
+      const ctx = c.getContext('2d')
+      if (ctx) {
+        ctx.textBaseline = 'top'
+        ctx.font = '14px Arial'
+        ctx.fillStyle = '#f60'; ctx.fillRect(0, 0, 100, 20)
+        ctx.fillStyle = '#069'; ctx.fillText('scanupgo-fp', 2, 2)
+        parts.push(c.toDataURL().slice(-64))
+      }
+    } catch { /* canvas bloqué : ignore */ }
+
+    // Hash simple (djb2) -> chaîne courte
+    const str = parts.join('|')
+    let h = 5381
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0
+    return 'fp_' + h.toString(36)
+  } catch {
+    return undefined
+  }
+}
+
 // Actions
 const onStepsDone = () => {
   showStepsModal.value = false
@@ -120,7 +185,8 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
         playerEmail: formData.email || undefined,
         playerPhone: formData.phone || undefined,
         playerEmailOptIn: formData.email_opt_in,
-        playerSmsOptIn: formData.sms_opt_in
+        playerSmsOptIn: formData.sms_opt_in,
+        deviceFingerprint: getDeviceFingerprint()
       }
     })
 
@@ -144,9 +210,13 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
       throw new Error(t('play.error.unknown'))
     }
   } catch (e: any) {
+    const offline = (import.meta.client && !navigator.onLine) || e?.message?.includes('fetch') || e?.name === 'FetchError' && !e?.data
     if (e?.data?.message?.includes('already played')) {
       rateLimitError.value = true
       error.value = e.data.message
+    } else if (offline) {
+      // Réseau coupé au moment de jouer — message clair, le joueur réessaie
+      error.value = t('play.error.offline')
     } else {
       error.value = e?.data?.message || t('play.error.unknown')
     }
@@ -167,8 +237,45 @@ const onSpinEnd = () => {
 </script>
 
 <template>
+  <!-- Écran propre en cas de crash (jamais d'écran blanc) -->
+  <div v-if="hasCrashed" class="min-h-[100dvh] flex flex-col items-center justify-center bg-white text-center px-6">
+    <img v-if="business?.logo" :src="business.logo" class="h-20 max-w-[200px] object-contain mb-8 drop-shadow" :alt="business?.name" />
+    <div v-else class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
+      <Icon name="ph:smiley-sad-duotone" size="36" class="text-slate-400" />
+    </div>
+    <h1 class="text-xl font-bold text-slate-900 mb-3">{{ $t('play.crash.title') }}</h1>
+    <p class="text-slate-500 leading-relaxed max-w-xs mb-8">{{ $t('play.crash.message') }}</p>
+    <button @click="reloadPage"
+      class="px-6 py-3 bg-slate-900 text-white font-semibold rounded-xl active:scale-95 transition">
+      {{ $t('play.crash.retry') }}
+    </button>
+  </div>
+
+  <!-- Jeu pas encore actif -->
+  <div v-else-if="gameInactive" class="min-h-[100dvh] flex flex-col items-center justify-center bg-white text-center px-6">
+    <!-- Sélecteur de langue -->
+    <div class="fixed top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex gap-1.5">
+      <button v-for="lang in playerLocales" :key="lang.code" @click="switchLocale(lang.code)"
+        class="w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all"
+        :class="locale === lang.code ? 'bg-slate-200 shadow-md scale-110' : 'bg-slate-100 hover:bg-slate-200 opacity-60 hover:opacity-100'">
+        {{ lang.flag }}
+      </button>
+    </div>
+    <img v-if="business?.logo" :src="business.logo"
+      class="h-24 max-w-[220px] object-contain mb-8 drop-shadow" :alt="business?.name" />
+    <div v-else class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-8">
+      <Icon name="ph:gift-duotone" size="40" class="text-slate-400" />
+    </div>
+    <h1 class="text-xl font-bold text-slate-900 mb-3">
+      {{ $t('play.inactive.title') }}
+    </h1>
+    <p class="text-slate-500 leading-relaxed max-w-sm">
+      {{ $t('play.inactive.message', { business: business?.name || $t('play.inactive.fallback_business') }) }}
+    </p>
+  </div>
+
   <!-- Desktop block -->
-  <div v-if="!isMobile" class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+  <div v-else-if="!isMobile" class="min-h-[100dvh] flex flex-col items-center justify-center relative overflow-hidden"
     :style="{ backgroundColor: primaryColor, color: textColor }">
     <div class="absolute inset-0 opacity-10">
       <div class="absolute inset-0"
@@ -200,7 +307,7 @@ const onSpinEnd = () => {
   </div>
 
   <!-- Mobile -->
-  <div v-else class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-display"
+  <div v-else class="min-h-[100dvh] flex flex-col items-center justify-center relative overflow-hidden font-display"
     :style="{ color: textColor }">
     <div class="absolute inset-0 z-0" :style="{ backgroundColor: primaryColor }"></div>
 
@@ -269,7 +376,8 @@ const onSpinEnd = () => {
   <!-- Splash screen -->
   <Transition name="splash">
     <div v-if="showSplash" class="fixed inset-0 z-[500] flex items-center justify-center" style="background: rgba(255,255,255,0.94);">
-      <img v-if="business?.logo" :src="business.logo" class="h-32 max-w-[260px] object-contain rounded-2xl logo-spin drop-shadow-2xl" />
+      <img v-if="business?.logo && !splashLogoError" :src="business.logo" class="h-32 max-w-[260px] object-contain rounded-2xl logo-spin" @error="splashLogoError = true" />
+      <div v-else-if="business?.logo && splashLogoError" class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
       <div v-else class="w-20 h-20 rounded-full logo-spin" :style="{ backgroundColor: primaryColor }"></div>
     </div>
   </Transition>

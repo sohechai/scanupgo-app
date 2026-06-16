@@ -22,6 +22,7 @@ const props = defineProps<{
 	lostColor?: string
 	qrColor?: string
 	qrBgColor?: string
+	qrLogo?: boolean
 	qrPlayUrl?: string
 }>()
 
@@ -53,15 +54,53 @@ const generateQR = async () => {
 	try {
 		const QRCode = (await import('qrcode')).default
 		const canvas = document.createElement('canvas')
+		// Sécurise les couleurs (valeur hex valide) pour éviter que toCanvas échoue
+		const isHex = (v?: string) => !!v && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 		await QRCode.toCanvas(canvas, playUrl, {
 			width: 400,
 			margin: 2,
 			errorCorrectionLevel: 'H',
 			color: {
-				dark: props.qrColor || '#000000',
-				light: props.qrBgColor || '#ffffff',
+				dark: isHex(props.qrColor) ? props.qrColor : '#000000',
+				light: isHex(props.qrBgColor) ? props.qrBgColor : '#ffffff',
 			},
 		})
+
+		// Logo au centre du QR (option) — 'H' tolère ~30% d'occlusion
+		if (props.qrLogo && props.businessLogo) {
+			try {
+				const ctx = canvas.getContext('2d')
+				if (ctx) {
+					const logo = new Image()
+					logo.crossOrigin = 'anonymous'
+					await new Promise<void>((resolve, reject) => {
+						logo.onload = () => resolve()
+						logo.onerror = reject
+						logo.src = props.businessLogo as string
+					})
+					const W = canvas.width
+					const box = W * 0.24 // taille de la zone logo (24% du QR)
+					const cx = (W - box) / 2
+					// Pastille blanche arrondie derrière le logo (lisibilité)
+					const r = box * 0.18
+					ctx.fillStyle = '#ffffff'
+					ctx.beginPath()
+					ctx.moveTo(cx + r, cx)
+					ctx.arcTo(cx + box, cx, cx + box, cx + box, r)
+					ctx.arcTo(cx + box, cx + box, cx, cx + box, r)
+					ctx.arcTo(cx, cx + box, cx, cx, r)
+					ctx.arcTo(cx, cx, cx + box, cx, r)
+					ctx.closePath()
+					ctx.fill()
+					// Logo (contain dans la pastille avec une petite marge)
+					const pad = box * 0.12
+					ctx.drawImage(logo, cx + pad, cx + pad, box - pad * 2, box - pad * 2)
+				}
+			} catch (e) {
+				console.warn('QR center logo failed', e)
+			}
+		}
+
 		generatedQrDataUrl.value = canvas.toDataURL('image/png')
 	} catch (e) {
 		console.error('QR generation failed', e)
@@ -69,7 +108,7 @@ const generateQR = async () => {
 	}
 }
 
-watch([() => props.qrPlayUrl, () => props.qrColor, () => props.qrBgColor], generateQR, { immediate: true })
+watch([() => props.qrPlayUrl, () => props.qrColor, () => props.qrBgColor, () => props.businessLogo, () => props.qrLogo], generateQR, { immediate: true })
 
 const displayQrCodeUrl = computed(() => generatedQrDataUrl.value || props.qrCodeUrl)
 

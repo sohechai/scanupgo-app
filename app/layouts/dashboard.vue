@@ -5,12 +5,6 @@ const route = useRoute()
 const { startPolling, stopPolling, reset: resetNotifications } = useNotifications()
 const { fetchSubscription, hasActiveSubscription, isAdmin } = useSubscription()
 
-const freeRoutes = ['/dashboard/subscription', '/dashboard/account', '/dashboard/profile', '/dashboard/onboarding']
-const requiresSubscription = computed(() => {
-	if (route.path === '/dashboard') return false
-	return !freeRoutes.some(r => route.path === r || route.path.startsWith(r + '/'))
-})
-
 const handleLogout = async () => {
 	resetNotifications()
 	await signOut()
@@ -177,12 +171,7 @@ const toggleDarkMode = () => {
 				<!-- Page Content -->
 				<div class="flex-1 overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
 					<div class="p-6 lg:p-7">
-						<template v-if="requiresSubscription">
-							<SubscriptionGate>
-								<slot />
-							</SubscriptionGate>
-						</template>
-						<slot v-else />
+						<slot />
 					</div>
 				</div>
 

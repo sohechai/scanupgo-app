@@ -24,6 +24,7 @@ const business = ref({
 	addressCity: '',
 	addressZip: '',
 	addressCountry: '',
+	addressCountryCode: '',
 	googlePlaceId: null as string | null,
 	googleReviewUrl: null as string | null,
 	googleRating: null as number | null,
@@ -71,7 +72,9 @@ const hidePredictions = () => {
 	setTimeout(() => { showPredictions.value = false }, 150)
 }
 
-const { normalizePhone } = usePhone()
+const { normalizePhone, dialForCountryCode, countryCodeFromIp } = usePhone()
+// Code pays détecté par IP (fallback si Google Places ne donne pas un pays connu)
+const ipCountryCode = ref('')
 
 const selectPlace = async (prediction: typeof predictions.value[0]) => {
 	showPredictions.value = false
@@ -84,7 +87,16 @@ const selectPlace = async (prediction: typeof predictions.value[0]) => {
 		business.value.addressCity = details.addressCity || ''
 		business.value.addressZip = details.addressZip || ''
 		business.value.addressCountry = details.addressCountry || ''
-		business.value.phone = details.phone ? normalizePhone(details.phone, details.addressCountry || '') : (business.value.phone || '')
+		business.value.addressCountryCode = details.addressCountryCode || ''
+		business.value.phone = details.phone
+			? normalizePhone(details.phone, details.addressCountry || '', details.addressCountryCode || '')
+			: (business.value.phone || '')
+		// Si Places ne donne pas un pays connu, on tente la détection IP (fallback gratuit).
+		if (!dialForCountryCode(details.addressCountryCode || '')) {
+			countryCodeFromIp().then((code) => {
+				if (code && !business.value.phone) ipCountryCode.value = code
+			})
+		}
 		business.value.googlePlaceId = details.placeId
 		business.value.googleReviewUrl = details.googleReviewUrl
 		business.value.googleRating = details.rating ?? null
@@ -139,6 +151,8 @@ const fetchBusiness = async () => {
 	}
 }
 
+const goToDashboard = () => router.push('/dashboard')
+
 const handleSubmit = async () => {
 	if (!business.value.id) return
 	saving.value = true
@@ -165,7 +179,9 @@ const handleSubmit = async () => {
 		})
 		const authCache = useState<{ user: any; checkedAt: number }>('_auth_cache')
 		if (authCache.value) authCache.value.checkedAt = 0
-		router.push('/dashboard')
+		// Écran de succès avant le dashboard
+		step.value = 4
+		window.scrollTo({ top: 0 })
 	} catch (e) {
 		console.error('Error saving business:', e)
 	} finally {
@@ -345,20 +361,21 @@ onMounted(() => fetchBusiness())
 
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-2">
-								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
+								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email de contact</label>
 								<div class="relative">
 									<Icon name="ph:envelope-duotone" class="absolute left-3 top-3.5 text-slate-400" size="16" />
 									<input
 										v-model="business.email"
 										type="email"
-										readonly
-										class="w-full bg-slate-100 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-500 text-sm font-medium outline-none cursor-default select-none"
+										placeholder="contact@monetablissement.com"
+										class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-slate-900 text-sm font-medium outline-none transition-all focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 placeholder-slate-400"
 									/>
 								</div>
+								<p class="text-[11px] text-slate-400">Affiché sur votre fiche Google</p>
 							</div>
 							<div class="space-y-2">
 								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
-								<PhoneInput v-model="business.phone" variant="light" placeholder="6 00 00 00 00" :country="business.addressCountry" />
+								<PhoneInput v-model="business.phone" variant="light" placeholder="6 00 00 00 00" :country="business.addressCountry" :country-code="business.addressCountryCode || ipCountryCode" />
 							</div>
 						</div>
 
@@ -513,8 +530,37 @@ onMounted(() => fetchBusiness())
 					</div>
 				</div>
 
+				<!-- Étape 4 : écran de succès -->
+				<div v-else-if="step === 4" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-center px-6">
+					<div class="success-check mb-8">
+						<div class="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center">
+							<div class="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+								<Icon name="ph:check-bold" class="text-white" size="32" />
+							</div>
+						</div>
+					</div>
+					<h1 class="text-2xl font-bold text-slate-900 mb-3">Votre espace ScanUpGo est prêt !</h1>
+					<p class="text-slate-500 leading-relaxed max-w-md mb-10">
+						Créez votre premier jeu et téléchargez votre flyer en 5 minutes. Vos clients pourront scanner dès ce soir.
+					</p>
+					<button @click="goToDashboard"
+						class="flex items-center gap-2 px-7 py-3.5 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#007AFF]/20">
+						Accéder à mon espace
+						<Icon name="ph:arrow-right-bold" size="16" />
+					</button>
+				</div>
+
 			</div>
 		</main>
 
 	</div>
 </template>
+
+<style scoped>
+@keyframes success-pop {
+	0% { transform: scale(0); opacity: 0; }
+	60% { transform: scale(1.15); opacity: 1; }
+	100% { transform: scale(1); }
+}
+.success-check { animation: success-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+</style>

@@ -9,6 +9,9 @@ const { $api } = useNuxtApp()
 const toast = useToast()
 const { fetchSubscription: refreshSharedSubscription, subscription: sharedSubscription } = useSubscription()
 
+// Plan Réseau & Franchise : contact WhatsApp (pas de Stripe)
+const franchiseWhatsApp = 'https://wa.me/33780145258?text=Bonjour%2C+je+g%C3%A8re+plusieurs+%C3%A9tablissements+et+je+souhaite+d%C3%A9ployer+ScanUpGo.'
+
 definePageMeta({
 	layout: 'dashboard',
 	pageTransition: false,
@@ -292,9 +295,33 @@ const resetSubscriptionForTesting = async () => {
 						:is-current-plan="isCurrentPlan(plan.id, 'annual')"
 						:trial-days="trialInfo.eligible ? trialInfo.days : 0"
 						@subscribe="(p) => handlePlanSelect(plan.id, p)" />
-					<PlanCard :plan="plan" period="lifetime" :loading="loading"
-						:is-current-plan="isCurrentPlan(plan.id, 'lifetime')"
-						@subscribe="(p) => handlePlanSelect(plan.id, p)" />
+					<!-- Plan Réseau & Franchise (contact WhatsApp, pas de Stripe) -->
+					<div class="relative flex flex-col rounded-lg p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+						<div class="absolute top-0 right-4 -translate-y-1/2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-0.5 rounded-md text-[10px] font-medium border border-slate-200 dark:border-slate-600">
+							{{ $t('subscription.franchise.badge') }}
+						</div>
+
+						<div class="mb-5 mt-2">
+							<p class="text-xs font-medium text-slate-400 dark:text-slate-500 mb-3">{{ $t('subscription.franchise.name') }}</p>
+							<div class="flex items-baseline gap-1">
+								<span class="text-2xl font-semibold text-slate-900 dark:text-white">{{ $t('subscription.franchise.price') }}</span>
+							</div>
+							<p class="text-xs mt-2 text-slate-400">{{ $t('subscription.franchise.subtitle') }}</p>
+						</div>
+
+						<div class="space-y-2.5 mb-5 flex-1">
+							<div v-for="i in 3" :key="i" class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+								<Icon name="ph:check-bold" class="text-[#007AFF] shrink-0 mt-0.5" size="14" />
+								<span>{{ $t(`subscription.franchise.feature${i}`) }}</span>
+							</div>
+						</div>
+
+						<a :href="franchiseWhatsApp" target="_blank" rel="noopener noreferrer"
+							class="w-full py-2.5 font-medium rounded-md transition-all text-sm flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe57] active:scale-[0.98] text-white">
+							<Icon name="ph:whatsapp-logo-fill" size="16" />
+							{{ $t('subscription.franchise.cta') }}
+						</a>
+					</div>
 				</template>
 			</div>
 		</div>
@@ -375,7 +402,10 @@ const resetSubscriptionForTesting = async () => {
 								<Icon name="ph:info" class="text-slate-400 mt-0.5 shrink-0" size="14" />
 								<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
 									<template v-if="pendingUpgrade.period === 'lifetime' || (pendingUpgrade.period === 'annual' && currentSubscription?.billingPeriod === 'monthly')">
-										{{ $t('subscription.prorated_message') }}
+										{{ $t('subscription.prorated_message', {
+											price: getPriceForPeriod(pendingUpgrade.plan, pendingUpgrade.period),
+											duration: $t(`subscription.duration_${pendingUpgrade.period}`)
+										}) }}
 									</template>
 									<template v-else>
 										{{ $t('subscription.billing_period_message') }}

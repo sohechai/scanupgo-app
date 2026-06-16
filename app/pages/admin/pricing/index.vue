@@ -104,9 +104,18 @@ const fetchPlans = async () => {
 	finally { loadingPlans.value = false }
 }
 
+// Snapshot des Price IDs avant édition (pour détecter un changement → avertir l'admin)
+const priceIdsBeforeEdit = ref({ monthly: '', annual: '', lifetime: '' })
+const showPriceChangeInfo = ref(false)
+
 const openEditPlanModal = (plan: SubscriptionPlan) => {
 	editingPlan.value = plan
 	featuresTab.value = 'monthly'
+	priceIdsBeforeEdit.value = {
+		monthly: plan.stripePriceIdMonthly || '',
+		annual: plan.stripePriceIdAnnual || '',
+		lifetime: plan.stripePriceIdLifetime || '',
+	}
 	planForm.value = {
 		name: plan.name,
 		description: plan.description || '',
@@ -141,12 +150,21 @@ const savePlan = async () => {
 			isDefault: planForm.value.isDefault,
 			active: planForm.value.active,
 		}
+		// Un Price ID a-t-il changé ? (→ avertir : les abonnés existants ne migrent pas auto)
+		const priceIdChanged = !!editingPlan.value && (
+			(planForm.value.stripePriceIdMonthly || '') !== priceIdsBeforeEdit.value.monthly ||
+			(planForm.value.stripePriceIdAnnual || '') !== priceIdsBeforeEdit.value.annual ||
+			(planForm.value.stripePriceIdLifetime || '') !== priceIdsBeforeEdit.value.lifetime
+		)
+
 		if (editingPlan.value) {
 			await $api(`/admin/plans/${editingPlan.value.id}`, { method: 'PUT', body: payload })
 			toast.show(t('admin.pricing.modal_save'), 'success')
 		}
 		showPlanModal.value = false
 		await fetchPlans()
+
+		if (priceIdChanged) showPriceChangeInfo.value = true
 	} catch (e: any) {
 		const msg = e?.data?.message || e?.message
 		planError.value = Array.isArray(msg) ? msg.join(' — ') : (msg || t('admin.pricing.modal_save'))
@@ -162,67 +180,85 @@ const deletePlan = async (plan: SubscriptionPlan) => {
 const stripeProductUrl = (productId: string) => `https://dashboard.stripe.com/test/products/${productId}`
 const stripePriceUrl = (priceId: string) => `https://dashboard.stripe.com/test/prices/${priceId}`
 
-// Flyers
-const pricings = ref<FlyerPricing[]>([])
+// Flyer Packs
+interface FlyerPack {
+	id: string
+	name: string
+	quantity: number
+	price: number
+	currency: string
+	image: string | null
+	category: string
+	active: boolean
+	sortOrder: number
+}
+const packs = ref<FlyerPack[]>([])
 const loadingFlyers = ref(true)
 const showFlyerModal = ref(false)
-const editingPricing = ref<FlyerPricing | null>(null)
-const flyerForm = ref({ productType: 'flyers', dimensions: 'A6', paperType: '135g_couche', minQuantity: 100, maxQuantity: null as number | null, unitPrice: 0, currency: 'MAD', active: true })
+const editingPack = ref<FlyerPack | null>(null)
+const packForm = ref({ name: '', quantity: 1500, price: 0, currency: 'MAD', image: '' as string | null, active: true })
 const flyerError = ref<string | null>(null)
+const uploadingImage = ref(false)
 
-const fetchPricings = async () => {
+const fetchPacks = async () => {
 	loadingFlyers.value = true
-	try { pricings.value = await $api('/flyer-pricing/admin?includeInactive=true') }
+	try { packs.value = await $api('/flyer-packs/admin?includeInactive=true') }
 	catch { toast.show(t('admin.pricing.loading'), 'error') }
 	finally { loadingFlyers.value = false }
 }
 
-const groupedPricings = computed(() => {
-	const groups: Record<string, Record<string, FlyerPricing[]>> = {}
-	for (const pricing of pricings.value) {
-		if (!groups[pricing.productType]) groups[pricing.productType] = {}
-		const key = `${pricing.dimensions} - ${pricing.paperType}`
-		if (!groups[pricing.productType]![key]) groups[pricing.productType]![key] = []
-		groups[pricing.productType]![key]!.push(pricing)
-	}
-	for (const pt in groups) for (const k in groups[pt]) groups[pt]![k]?.sort((a, b) => a.minQuantity - b.minQuantity)
-	return groups
-})
-
-const openNewFlyerModal = () => {
-	editingPricing.value = null
-	flyerForm.value = { productType: 'flyers', dimensions: 'A6', paperType: '135g_couche', minQuantity: 100, maxQuantity: null, unitPrice: 0, currency: 'MAD', active: true }
+const openNewPackModal = () => {
+	editingPack.value = null
+	packForm.value = { name: '', quantity: 1500, price: 0, currency: 'MAD', image: '', active: true }
 	flyerError.value = null
 	showFlyerModal.value = true
 }
 
-const openEditFlyerModal = (p: FlyerPricing) => {
-	editingPricing.value = p
-	flyerForm.value = { productType: p.productType, dimensions: p.dimensions, paperType: p.paperType, minQuantity: p.minQuantity, maxQuantity: p.maxQuantity, unitPrice: p.unitPrice, currency: p.currency, active: p.active }
+const openEditPackModal = (p: FlyerPack) => {
+	editingPack.value = p
+	packForm.value = { name: p.name, quantity: p.quantity, price: Number(p.price), currency: p.currency, image: p.image, active: p.active }
 	flyerError.value = null
 	showFlyerModal.value = true
 }
 
-const saveFlyer = async () => {
+const onPackImageSelected = async (e: Event) => {
+	const file = (e.target as HTMLInputElement).files?.[0]
+	if (!file) return
+	uploadingImage.value = true
 	try {
-		if (editingPricing.value) { await $api(`/flyer-pricing/${editingPricing.value.id}`, { method: 'PATCH', body: flyerForm.value }); toast.show(t('admin.pricing.modal_save'), 'success') }
-		else { await $api('/flyer-pricing', { method: 'POST', body: flyerForm.value }); toast.show(t('admin.pricing.modal_create'), 'success') }
+		const fd = new FormData()
+		fd.append('file', file)
+		const res = await $api<{ url: string }>('/uploads', { method: 'POST', body: fd })
+		packForm.value.image = res.url
+	} catch {
+		toast.show(t('admin.pricing.image_upload_error'), 'error')
+	} finally {
+		uploadingImage.value = false
+	}
+}
+
+const savePack = async () => {
+	if (!packForm.value.name.trim()) { flyerError.value = t('admin.pricing.pack_name_required'); return }
+	try {
+		const body = { ...packForm.value, image: packForm.value.image || undefined }
+		if (editingPack.value) { await $api(`/flyer-packs/${editingPack.value.id}`, { method: 'PATCH', body }); toast.show(t('admin.pricing.modal_save'), 'success') }
+		else { await $api('/flyer-packs', { method: 'POST', body }); toast.show(t('admin.pricing.modal_create'), 'success') }
 		showFlyerModal.value = false
-		await fetchPricings()
+		await fetchPacks()
 	} catch (e: any) {
 		const msg = e?.data?.message || e?.message
 		flyerError.value = Array.isArray(msg) ? msg.join(' — ') : (msg || t('admin.pricing.modal_save'))
 	}
 }
 
-const deleteFlyer = async (p: FlyerPricing) => {
-	if (!confirm(`${t('admin.pricing.delete')} ${p.dimensions} (${p.minQuantity}-${p.maxQuantity || '∞'}) ?`)) return
-	try { await $api(`/flyer-pricing/${p.id}`, { method: 'DELETE' }); toast.show(t('admin.pricing.delete'), 'success'); await fetchPricings() }
+const deletePack = async (p: FlyerPack) => {
+	if (!confirm(`${t('admin.pricing.delete')} « ${p.name} » ?`)) return
+	try { await $api(`/flyer-packs/${p.id}`, { method: 'DELETE' }); toast.show(t('admin.pricing.delete'), 'success'); await fetchPacks() }
 	catch { toast.show(t('admin.pricing.delete'), 'error') }
 }
 
-const toggleFlyerActive = async (p: FlyerPricing) => {
-	try { await $api(`/flyer-pricing/${p.id}`, { method: 'PATCH', body: { active: !p.active } }); await fetchPricings() }
+const togglePackActive = async (p: FlyerPack) => {
+	try { await $api(`/flyer-packs/${p.id}`, { method: 'PATCH', body: { active: !p.active } }); await fetchPacks() }
 	catch { toast.show('Error', 'error') }
 }
 
@@ -277,7 +313,7 @@ const toggleCreditActive = async (pack: CreditPack) => {
 }
 
 const handleNew = () => {
-	if (activeTab.value === 'flyers') openNewFlyerModal()
+	if (activeTab.value === 'flyers') openNewPackModal()
 	else if (activeTab.value === 'credits') openNewCreditModal()
 }
 const newButtonLabel = computed(() => {
@@ -286,7 +322,7 @@ const newButtonLabel = computed(() => {
 	return null
 })
 
-onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
+onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks() })
 </script>
 
 <template>
@@ -313,7 +349,7 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 				<Icon :name="tab.icon" size="15" />
 				{{ tab.label }}
 				<span v-if="tab.id === 'plans' && plans.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ plans.length }}</span>
-				<span v-if="tab.id === 'flyers' && pricings.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ pricings.length }}</span>
+				<span v-if="tab.id === 'flyers' && packs.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ packs.length }}</span>
 				<span v-if="tab.id === 'credits' && creditPacks.length > 0" class="text-xs tabular-nums" :class="activeTab === tab.id ? 'text-slate-400' : 'text-slate-600'">{{ creditPacks.length }}</span>
 			</button>
 		</div>
@@ -420,7 +456,7 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 			<!-- Info banner -->
 			<div class="flex items-center gap-3 bg-[#161920] border border-white/[0.07] rounded-lg px-4 py-3">
 				<Icon name="ph:info-bold" size="16" class="text-slate-500 shrink-0" />
-				<p class="text-xs text-slate-500">{{ $t('admin.pricing.flyers_info_description') }}</p>
+				<p class="text-xs text-slate-500">{{ $t('admin.pricing.packs_info_description') }}</p>
 			</div>
 
 			<!-- Loading -->
@@ -429,70 +465,47 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 			</div>
 
 			<!-- Empty -->
-			<div v-else-if="pricings.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
-				<Icon name="ph:tag-duotone" size="32" class="mb-2" />
-				<p class="text-sm font-medium text-slate-400 mb-1">{{ $t('admin.pricing.no_pricing') }}</p>
-				<p class="text-xs text-slate-600 mb-4">{{ $t('admin.pricing.no_pricing_description') }}</p>
-				<button @click="openNewFlyerModal"
+			<div v-else-if="packs.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
+				<Icon name="ph:package-duotone" size="32" class="mb-2" />
+				<p class="text-sm font-medium text-slate-400 mb-1">{{ $t('admin.pricing.no_packs') }}</p>
+				<p class="text-xs text-slate-600 mb-4">{{ $t('admin.pricing.no_packs_description') }}</p>
+				<button @click="openNewPackModal"
 					class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 text-sm font-medium rounded-md transition-colors">
 					<Icon name="ph:plus-bold" size="14" />
-					{{ $t('admin.pricing.create_first') }}
+					{{ $t('admin.pricing.create_first_pack') }}
 				</button>
 			</div>
 
-			<!-- Pricing groups -->
-			<div v-else class="space-y-4">
-				<div v-for="(dimensionGroups, productType) in groupedPricings" :key="productType"
-					class="bg-[#161920] border border-white/[0.07] rounded-lg overflow-hidden">
-					<div class="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
-						<Icon name="ph:package-duotone" size="16" class="text-slate-500" />
-						<h2 class="text-sm font-semibold text-white">{{ $t('admin.pricing.flyers_product') }}</h2>
+			<!-- Packs grid -->
+			<div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div v-for="pack in packs" :key="pack.id"
+					class="group bg-[#161920] border border-white/[0.07] rounded-lg overflow-hidden flex flex-col"
+					:class="!pack.active && 'opacity-50'">
+					<div class="aspect-[4/3] bg-[#0d0e12] flex items-center justify-center overflow-hidden">
+						<img :src="pack.image || '/images/flyer-pack-default.svg'" :alt="pack.name" class="w-full h-full object-cover" />
 					</div>
-					<div class="divide-y divide-white/[0.04]">
-						<div v-for="(pricingList, dimensionKey) in dimensionGroups" :key="dimensionKey" class="px-4 py-4">
-							<p class="text-xs font-medium text-slate-500 mb-3">{{ dimensionKey }}</p>
-							<table class="w-full">
-								<thead>
-									<tr class="border-b border-white/[0.06]">
-										<th class="pb-2 text-left text-xs font-medium text-slate-500">{{ $t('admin.pricing.quantity_range') }}</th>
-										<th class="pb-2 text-left text-xs font-medium text-slate-500">{{ $t('admin.pricing.unit_price') }}</th>
-										<th class="pb-2 text-center text-xs font-medium text-slate-500">{{ $t('admin.pricing.status') }}</th>
-										<th class="pb-2 text-right rtl:text-left text-xs font-medium text-slate-500">{{ $t('admin.pricing.actions') }}</th>
-									</tr>
-								</thead>
-								<tbody class="divide-y divide-white/[0.04]">
-									<tr v-for="pricing in pricingList" :key="pricing.id" class="group hover:bg-white/[0.02] transition-colors">
-										<td class="py-3 text-sm font-medium text-white">
-											{{ pricing.minQuantity }} <span class="text-slate-600 mx-1">–</span> {{ pricing.maxQuantity || '∞' }}
-											<span class="text-xs text-slate-600 ml-1">{{ $t('admin.pricing.units') }}</span>
-										</td>
-										<td class="py-3">
-											<span class="text-sm font-semibold text-brand-400">{{ Number(pricing.unitPrice).toFixed(2) }}</span>
-											<span class="text-xs text-slate-500 ml-1">{{ pricing.currency }}</span>
-										</td>
-										<td class="py-3 text-center">
-											<span class="inline-flex items-center gap-1 text-xs font-medium"
-												:class="pricing.active ? 'text-emerald-400' : 'text-slate-500'">
-												<span class="w-1.5 h-1.5 rounded-full" :class="pricing.active ? 'bg-emerald-400' : 'bg-slate-600'"></span>
-												{{ pricing.active ? $t('admin.pricing.active') : $t('admin.pricing.inactive') }}
-											</span>
-										</td>
-										<td class="py-3 text-right rtl:text-left">
-											<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-												<button @click="toggleFlyerActive(pricing)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors" :title="pricing.active ? $t('admin.pricing.disable') : $t('admin.pricing.enable')">
-													<Icon :name="pricing.active ? 'ph:eye-slash-bold' : 'ph:eye-bold'" size="14" />
-												</button>
-												<button @click="openEditFlyerModal(pricing)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors" :title="$t('admin.pricing.edit')">
-													<Icon name="ph:pencil-line-bold" size="14" />
-												</button>
-												<button @click="deleteFlyer(pricing)" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" :title="$t('admin.pricing.delete')">
-													<Icon name="ph:trash-bold" size="14" />
-												</button>
-											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
+					<div class="p-4 flex-1 flex flex-col">
+						<h3 class="text-sm font-semibold text-white leading-snug mb-2">{{ pack.name }}</h3>
+						<div class="flex items-baseline gap-2 mb-3">
+							<span class="text-lg font-bold text-brand-400">{{ Number(pack.price).toFixed(0) }} {{ pack.currency }}</span>
+							<span class="text-xs text-slate-500">· {{ pack.quantity }} {{ $t('admin.pricing.units') }}</span>
+						</div>
+						<div class="mt-auto flex items-center justify-between">
+							<span class="inline-flex items-center gap-1 text-xs font-medium" :class="pack.active ? 'text-emerald-400' : 'text-slate-500'">
+								<span class="w-1.5 h-1.5 rounded-full" :class="pack.active ? 'bg-emerald-400' : 'bg-slate-600'"></span>
+								{{ pack.active ? $t('admin.pricing.active') : $t('admin.pricing.inactive') }}
+							</span>
+							<div class="flex items-center gap-1">
+								<button @click="togglePackActive(pack)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors" :title="pack.active ? $t('admin.pricing.disable') : $t('admin.pricing.enable')">
+									<Icon :name="pack.active ? 'ph:eye-slash-bold' : 'ph:eye-bold'" size="14" />
+								</button>
+								<button @click="openEditPackModal(pack)" class="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded transition-colors" :title="$t('admin.pricing.edit')">
+									<Icon name="ph:pencil-line-bold" size="14" />
+								</button>
+								<button @click="deletePack(pack)" class="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" :title="$t('admin.pricing.delete')">
+									<Icon name="ph:trash-bold" size="14" />
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -734,51 +747,57 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 				<div class="fixed inset-0 bg-black/70" @click="showFlyerModal = false"></div>
 				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
 					<div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-						<h2 class="text-base font-semibold text-white">{{ editingPricing ? $t('admin.pricing.modal_edit_title') : $t('admin.pricing.modal_add_title') }}</h2>
+						<h2 class="text-base font-semibold text-white">{{ editingPack ? $t('admin.pricing.pack_modal_edit_title') : $t('admin.pricing.pack_modal_add_title') }}</h2>
 						<button @click="showFlyerModal = false" class="p-1.5 hover:bg-white/[0.06] rounded text-slate-400 hover:text-white transition-colors">
 							<Icon name="ph:x-bold" size="16" />
 						</button>
 					</div>
 					<div class="flex-1 overflow-y-auto p-5 space-y-4">
-						<!-- Product info -->
-						<div class="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-md px-3 py-2.5">
-							<Icon name="ph:files-bold" size="16" class="text-brand-400 shrink-0" />
-							<div>
-								<p class="text-xs font-medium text-white">{{ $t('admin.pricing.modal_product_info') }}</p>
-								<p class="text-xs text-slate-500 mt-0.5">{{ $t('admin.pricing.modal_product_description') }}</p>
+						<!-- Image -->
+						<div>
+							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.pack_image') }}</label>
+							<div class="flex items-center gap-3">
+								<div class="w-20 h-20 rounded-md bg-[#0d0e12] border border-white/[0.08] flex items-center justify-center overflow-hidden shrink-0">
+									<img :src="packForm.image || '/images/flyer-pack-default.svg'" class="w-full h-full object-cover" />
+								</div>
+								<label class="flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 cursor-pointer transition-colors">
+									<Icon :name="uploadingImage ? 'svg-spinners:ring-resize' : 'ph:upload-simple-bold'" size="14" />
+									{{ uploadingImage ? $t('admin.pricing.pack_image_uploading') : $t('admin.pricing.pack_image_choose') }}
+									<input type="file" accept="image/*" class="hidden" @change="onPackImageSelected" :disabled="uploadingImage" />
+								</label>
 							</div>
 						</div>
-						<!-- Quantity Range -->
+						<!-- Name -->
+						<div>
+							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.pack_name') }}</label>
+							<input v-model="packForm.name" type="text" required :placeholder="$t('admin.pricing.pack_name_placeholder')"
+								class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
+						</div>
+						<!-- Quantity + Price -->
 						<div class="grid grid-cols-2 gap-3">
 							<div>
-								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.modal_min_quantity') }}</label>
-								<input v-model.number="flyerForm.minQuantity" type="number" min="1" required
+								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.pack_quantity') }}</label>
+								<input v-model.number="packForm.quantity" type="number" min="1" required
 									class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
 							</div>
 							<div>
-								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.modal_max_quantity') }}</label>
-								<input v-model.number="flyerForm.maxQuantity" type="number" min="1" :placeholder="$t('admin.pricing.modal_max_quantity_placeholder')"
-									class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
-							</div>
-						</div>
-						<!-- Price -->
-						<div>
-							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.modal_unit_price') }}</label>
-							<div class="relative">
-								<input v-model.number="flyerForm.unitPrice" type="number" min="0" step="0.01" required
-									class="w-full pl-3 pr-14 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
-								<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium">MAD</span>
+								<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.pack_price') }}</label>
+								<div class="relative">
+									<input v-model.number="packForm.price" type="number" min="0" step="0.01" required
+										class="w-full pl-3 pr-14 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors" />
+									<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium">MAD</span>
+								</div>
 							</div>
 						</div>
 						<!-- Active toggle -->
 						<label class="flex items-center gap-3 cursor-pointer p-3 border border-white/[0.06] rounded-md hover:bg-white/[0.02] transition-colors">
-							<div class="relative w-10 h-6 bg-white/[0.08] rounded-full transition-colors group-has-[:checked]:bg-emerald-500">
-								<input v-model="flyerForm.active" type="checkbox" class="sr-only peer" />
+							<div class="relative w-10 h-6 bg-white/[0.08] rounded-full transition-colors">
+								<input v-model="packForm.active" type="checkbox" class="sr-only peer" />
 								<div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm"></div>
 							</div>
 							<div>
 								<p class="text-xs font-medium text-white">{{ $t('admin.pricing.modal_active_label') }}</p>
-								<p class="text-xs text-slate-500 mt-0.5">{{ flyerForm.active ? $t('admin.pricing.modal_active_visible') : $t('admin.pricing.modal_active_hidden') }}</p>
+								<p class="text-xs text-slate-500 mt-0.5">{{ packForm.active ? $t('admin.pricing.modal_active_visible') : $t('admin.pricing.modal_active_hidden') }}</p>
 							</div>
 						</label>
 					</div>
@@ -789,8 +808,8 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 						<button @click="showFlyerModal = false" class="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-md text-sm text-slate-300 transition-colors">
 							{{ $t('admin.pricing.modal_cancel') }}
 						</button>
-						<button @click="saveFlyer" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
-							{{ editingPricing ? $t('admin.pricing.modal_save') : $t('admin.pricing.modal_create') }}
+						<button @click="savePack" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
+							{{ editingPack ? $t('admin.pricing.modal_save') : $t('admin.pricing.modal_create') }}
 						</button>
 					</div>
 				</div>
@@ -870,6 +889,47 @@ onMounted(() => { fetchPlans(); fetchPricings(); fetchCreditPacks() })
 						</button>
 						<button @click="saveCreditPack" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
 							{{ editingCreditPack ? $t('admin.pricing.credits_modal_save') : $t('admin.pricing.credits_modal_create') }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
+
+		<!-- Modal info : changement de Price ID Stripe -->
+		<Teleport to="body">
+			<div v-if="showPriceChangeInfo" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+				<div class="fixed inset-0 bg-black/70" @click="showPriceChangeInfo = false"></div>
+				<div class="relative bg-[#111318] border border-white/[0.09] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+					<div class="px-5 py-4 border-b border-white/[0.06] flex items-center gap-2.5">
+						<Icon name="ph:warning-circle-bold" size="18" class="text-amber-400 shrink-0" />
+						<h2 class="text-base font-semibold text-white">{{ $t('admin.pricing.price_change_title') }}</h2>
+					</div>
+					<div class="p-5 space-y-4 text-sm text-slate-300 max-h-[70vh] overflow-y-auto">
+						<p>{{ $t('admin.pricing.price_change_intro') }}</p>
+
+						<div class="bg-emerald-500/[0.08] border border-emerald-500/20 rounded-md px-3 py-2.5">
+							<p class="text-xs font-semibold text-emerald-400 mb-0.5">{{ $t('admin.pricing.price_change_new_label') }}</p>
+							<p class="text-xs text-slate-400">{{ $t('admin.pricing.price_change_new_desc') }}</p>
+						</div>
+
+						<div class="bg-amber-500/[0.08] border border-amber-500/20 rounded-md px-3 py-2.5">
+							<p class="text-xs font-semibold text-amber-400 mb-0.5">{{ $t('admin.pricing.price_change_existing_label') }}</p>
+							<p class="text-xs text-slate-400">{{ $t('admin.pricing.price_change_existing_desc') }}</p>
+						</div>
+
+						<div>
+							<p class="text-xs font-semibold text-white mb-2">{{ $t('admin.pricing.price_change_steps_title') }}</p>
+							<ol class="space-y-1.5 text-xs text-slate-400 list-decimal list-inside">
+								<li>{{ $t('admin.pricing.price_change_step1') }}</li>
+								<li>{{ $t('admin.pricing.price_change_step2') }}</li>
+								<li>{{ $t('admin.pricing.price_change_step3') }}</li>
+								<li>{{ $t('admin.pricing.price_change_step4') }}</li>
+							</ol>
+						</div>
+					</div>
+					<div class="px-5 py-4 border-t border-white/[0.06] flex justify-end">
+						<button @click="showPriceChangeInfo = false" class="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-900 text-sm font-medium rounded-md transition-colors">
+							{{ $t('admin.pricing.price_change_understood') }}
 						</button>
 					</div>
 				</div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import GamePrizes from './components/GamePrizes.vue'
 import GameFlyersTab from './components/GameFlyersTab.vue'
+import GameActions from './components/GameActions.vue'
 
 definePageMeta({
 	middleware: 'auth',
@@ -17,7 +18,7 @@ const { $api } = useNuxtApp()
 const { user } = useAuth()
 const config = useRuntimeConfig()
 const { show: showToast } = useToast()
-const { hasActiveSubscription, fetchSubscription, loading: subscriptionLoading } = useSubscription()
+const { fetchSubscription } = useSubscription()
 
 const getAssetUrl = (url: string | null | undefined) => {
 	if (!url) return undefined
@@ -29,6 +30,11 @@ const isNew = route.params.id === 'new'
 const wizardMode = ref(route.params.id === 'new')
 const createdGameId = ref<string | null>(null)
 const loading = ref(true)
+
+// gameId réel (UUID) : existant, ou créé pendant le wizard. Jamais "new".
+const effectiveGameId = computed<string | null>(() =>
+	isNew ? createdGameId.value : (route.params.id as string)
+)
 const saving = ref(false)
 const initialTab = (route.query.tab as string) || 'content'
 const activeTab = ref(initialTab) // content, appearance, prizes, flyers
@@ -51,7 +57,9 @@ const canGoNext = computed(() => {
 const goToNextStep = async () => {
 	if (currentWizardStep.value < wizardSteps.value.length - 1) {
 		const nextStep = currentWizardStep.value + 1
-		if (wizardMode.value && nextStep === 2) {
+		// Crée le jeu dès la sortie de l'étape 0 (contenu) pour obtenir un UUID,
+		// indispensable pour configurer les actions (réseaux). Resync aux étapes suivantes.
+		if (wizardMode.value && nextStep >= 1) {
 			try {
 				await syncGameToServer()
 			} catch {
@@ -72,17 +80,29 @@ const goToPreviousStep = () => {
 	}
 }
 
+// Les inputs number renvoient "" quand on vide le champ : le backend rejette alors
+// ("must be a number conforming to the specified constraints"). On force un number
+// valide avant l'envoi.
+const sanitizeHours = (payload: any) => {
+	const toHours = (v: any, fallback: number) => {
+		const n = Number(v)
+		return Number.isFinite(n) && n >= 0 ? n : fallback
+	}
+	payload.prizeRedemptionDelayHours = toHours(payload.prizeRedemptionDelayHours, 24)
+	payload.participationFrequencyHours = toHours(payload.participationFrequencyHours, 24)
+	return payload
+}
+
 const syncGameToServer = async () => {
 	saving.value = true
 	try {
 		game.value.description = game.value.tagline
+		// Lien Google Avis optionnel : le jeu peut utiliser d'autres réseaux (actions)
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
-		} else {
-			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de créer ce jeu.', 'error')
-			throw new Error('googleReviewUrl missing')
 		}
-		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
+		const payload = sanitizeHours(rest)
 		if (createdGameId.value) {
 			await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: payload })
 		} else {
@@ -98,12 +118,56 @@ const syncGameToServer = async () => {
 	}
 }
 
-const finishWizard = () => {
+const finishWizard = async () => {
+	// Le commerçant a terminé le wizard : le jeu n'est plus un brouillon.
+	if (createdGameId.value) {
+		try { await $api(`/games/${createdGameId.value}`, { method: 'PATCH', body: { isDraft: false } }) }
+		catch (e) { console.error('finalize draft failed', e) }
+	}
 	wizardMode.value = false
 	router.push(`/dashboard/games/${createdGameId.value}`)
 }
 
 const isLastStep = computed(() => currentWizardStep.value === wizardSteps.value.length - 1)
+
+// ── Paramètres avancés : selects mappés sur les champs enabled/hours ──────────
+// "Participation unique" = cooldown très long (≈100 ans) -> rejouable une seule fois.
+const ONCE_FOREVER_HOURS = 876000
+
+const participationFrequency = computed<'unlimited' | 'daily' | 'weekly' | 'once'>({
+	get() {
+		if (!game.value.participationFrequencyEnabled) return 'unlimited'
+		const h = game.value.participationFrequencyHours
+		if (h >= ONCE_FOREVER_HOURS) return 'once'
+		if (h >= 168) return 'weekly'
+		return 'daily'
+	},
+	set(val) {
+		if (val === 'unlimited') {
+			game.value.participationFrequencyEnabled = false
+		} else {
+			game.value.participationFrequencyEnabled = true
+			game.value.participationFrequencyHours =
+				val === 'daily' ? 24 : val === 'weekly' ? 168 : ONCE_FOREVER_HOURS
+		}
+	},
+})
+
+const redemptionDelay = computed<'instant' | '24h' | '48h'>({
+	get() {
+		if (!game.value.prizeRedemptionDelayEnabled || !game.value.prizeRedemptionDelayHours) return 'instant'
+		return game.value.prizeRedemptionDelayHours >= 48 ? '48h' : '24h'
+	},
+	set(val) {
+		if (val === 'instant') {
+			game.value.prizeRedemptionDelayEnabled = false
+			game.value.prizeRedemptionDelayHours = 0
+		} else {
+			game.value.prizeRedemptionDelayEnabled = true
+			game.value.prizeRedemptionDelayHours = val === '48h' ? 48 : 24
+		}
+	},
+})
 
 // Google Review Help Modal
 const showGoogleHelpModal = ref(false)
@@ -141,9 +205,10 @@ const game = ref({
 	wheelPointerColor: '#fde047',
 	buttonColor: '#ffffff',
 	popupColor: '#333333',
+	showLogo: true,
 	backgroundImage: null as string | null,
 	gameLanguage: 'fr',
-	active: true,
+	active: false, // Création libre : le jeu démarre inactif, activé ensuite via le toggle (abonnement requis)
 	winProbability: 50, // Global win probability (50-100%)
 	participationFrequencyEnabled: true,
 	participationFrequencyHours: 24,
@@ -176,6 +241,8 @@ const fetchBusiness = async () => {
 
 			// For new games, use the business primary color and Google review URL as defaults
 			if (isNew) {
+				// Pré-remplir le titre avec le nom de l'établissement (modifiable)
+				if (!game.value.title && business.name) game.value.title = business.name
 				if (business.primaryColor) {
 					game.value.primaryColor = business.primaryColor
 					game.value.wheelPrizeColor = business.primaryColor
@@ -202,8 +269,7 @@ const applyBusinessColors = () => {
 onMounted(async () => {
 	fetchBackgroundThemes()
 	try {
-		await fetchSubscription()
-		if (!hasActiveSubscription.value) return
+		fetchSubscription()
 
 		if (user.value) {
 			await fetchBusiness()
@@ -216,11 +282,31 @@ onMounted(async () => {
 			} catch (e) {
 				console.error(e)
 			}
+		} else {
+			// Crée un brouillon dès l'ouverture pour obtenir un UUID
+			// (nécessaire à la configuration des actions/réseaux dès l'étape 1).
+			await ensureDraftGame()
 		}
 	} finally {
 		loading.value = false
 	}
 })
+
+// Crée le jeu brouillon une seule fois (mode création) pour récupérer son id.
+// Le titre par défaut = nom de l'établissement (jamais vide).
+const ensureDraftGame = async () => {
+	if (createdGameId.value) return
+	const defaultTitle = game.value.title || businessObject.value?.name || 'Nouveau jeu'
+	try {
+		const created = await $api<any>('/games', {
+			method: 'POST',
+			body: { title: defaultTitle },
+		})
+		createdGameId.value = created.id
+	} catch (e) {
+		console.error('draft game creation failed', e)
+	}
+}
 
 // Scroll to top when tab changes
 watch(activeTab, () => {
@@ -292,19 +378,17 @@ const saveGame = async () => {
 			showToast(t('games.detail.slug_format'), 'error')
 			return
 		}
-		// Sync googleReviewUrl from business
+		// Lien Google Avis optionnel : sync si présent (le jeu peut utiliser d'autres réseaux)
 		if (businessObject.value?.googleReviewUrl) {
 			game.value.googleReviewUrl = businessObject.value.googleReviewUrl
-		} else {
-			showToast('Configurez votre lien Google Avis dans Paramètres → Google Avis avant de publier ce jeu.', 'error')
-			return
 		}
 
 		// Sync tagline to description if needed
 		game.value.description = game.value.tagline
 
 		// Prepare payload (exclude fields managed by server)
-		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...payload } = game.value as any
+		const { id, businessId, business, prizes, createdAt, updatedAt, _count, ...rest } = game.value as any
+		const payload = sanitizeHours(rest)
 
 		let gameId = route.params.id as string
 
@@ -335,15 +419,7 @@ const saveGame = async () => {
 
 <template>
 	<div>
-	<!-- Subscription Required -->
-	<SubscriptionRequired
-		v-if="!subscriptionLoading && !hasActiveSubscription"
-		:title="$t('games.access_required')"
-		:description="$t('games.access_description')"
-		icon="ph:game-controller-fill"
-	/>
-
-	<div v-else class="space-y-6 relative pb-20">
+	<div class="space-y-6 relative pb-20">
 		<!-- Loading Skeleton -->
 		<div v-if="loading" class="animate-pulse space-y-8 max-w-7xl mx-auto w-full">
 			<!-- Header Skeleton -->
@@ -513,6 +589,7 @@ const saveGame = async () => {
 									<input v-model="game.title" type="text" required
 										class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-700 focus:border-[#007AFF]/40 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500 text-sm"
 										:placeholder="$t('games.detail.game_title_placeholder')">
+									<p class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ $t('games.detail.game_title_hint') }}</p>
 								</div>
 
 								<div>
@@ -587,37 +664,10 @@ const saveGame = async () => {
 										:placeholder="$t('games.detail.tagline_placeholder')"></textarea>
 								</div>
 
-								<div class="col-span-2">
-									<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
-										<span class="flex items-center gap-2">
-											<Icon name="ph:google-logo-bold" size="14" />
-											{{ $t('games.detail.google_review_link') }}
-										</span>
-									</label>
-									<div v-if="businessObject?.googleReviewUrl"
-										class="flex items-center gap-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-md px-3 py-2.5">
-										<Icon name="ph:check-circle-fill" size="16" class="text-emerald-500 shrink-0" />
-										<span class="text-xs text-slate-700 dark:text-slate-300 truncate flex-1 font-mono">{{ businessObject.googleReviewUrl }}</span>
-										<a :href="businessObject.googleReviewUrl" target="_blank" rel="noopener noreferrer"
-											class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shrink-0 flex items-center gap-1 transition-colors"
-											title="Prévisualiser la page d'avis">
-											<Icon name="ph:arrow-square-out-bold" size="14" />
-										</a>
-										<NuxtLink to="/dashboard/account" class="text-xs text-[#007AFF] hover:opacity-70 shrink-0 font-medium">
-											{{ $t('common.edit') }}
-										</NuxtLink>
-									</div>
-									<div v-else
-										class="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2.5">
-										<Icon name="ph:warning-bold" size="16" class="text-amber-500 shrink-0" />
-										<span class="text-xs text-amber-700 dark:text-amber-300 flex-1">Lien Google Avis non configuré</span>
-										<NuxtLink to="/dashboard/account" class="text-xs text-amber-700 dark:text-amber-300 hover:opacity-70 shrink-0 font-bold underline">
-											Configurer
-										</NuxtLink>
-									</div>
-									<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-										{{ $t('games.detail.google_review_description') }}
-									</p>
+								<!-- Actions réseaux : nécessite un jeu déjà créé (UUID) -->
+								<GameActions v-if="effectiveGameId" :game-id="effectiveGameId" :google-review-url="businessObject?.googleReviewUrl" />
+								<div v-else class="col-span-2 rounded-md border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/40 px-4 py-5 text-center">
+									<p class="text-sm text-slate-500 dark:text-slate-400">{{ $t('games.detail.actions_after_save') }}</p>
 								</div>
 							</div>
 
@@ -632,42 +682,33 @@ const saveGame = async () => {
 									<!-- Frequency -->
 									<div
 										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
-										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.frequency_label') }}</span>
-											<label class="relative inline-flex items-center cursor-pointer">
-												<input v-model="game.participationFrequencyEnabled" type="checkbox"
-													class="sr-only peer">
-												<div
-													class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900">
-												</div>
-											</label>
-										</div>
-										<div v-if="game.participationFrequencyEnabled" class="flex items-center gap-2">
-											<input v-model.number="game.participationFrequencyHours" type="number"
-												min="1"
-												class="w-20 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-900 focus:border-slate-400 outline-none">
-											<span class="text-xs text-slate-500 font-medium">{{ $t('games.detail.frequency_hours') }}</span>
+										<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">{{ $t('games.detail.frequency_label') }}</label>
+										<div class="relative">
+											<select v-model="participationFrequency"
+												class="w-full appearance-none bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg pl-3 pr-9 py-2 text-sm font-medium text-slate-900 dark:text-white focus:border-slate-400 outline-none cursor-pointer">
+												<option value="unlimited">{{ $t('games.detail.frequency_unlimited') }}</option>
+												<option value="daily">{{ $t('games.detail.frequency_daily') }}</option>
+												<option value="weekly">{{ $t('games.detail.frequency_weekly') }}</option>
+												<option value="once">{{ $t('games.detail.frequency_once') }}</option>
+											</select>
+											<Icon name="ph:caret-down-bold" size="14"
+												class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 										</div>
 									</div>
 
 									<!-- Redemption Delay -->
 									<div
 										class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-4 border border-slate-200 dark:border-slate-600">
-										<div class="flex items-center justify-between mb-3">
-											<span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('games.detail.redemption_delay') }}</span>
-											<label class="relative inline-flex items-center cursor-pointer">
-												<input v-model="game.prizeRedemptionDelayEnabled" type="checkbox"
-													class="sr-only peer">
-												<div
-													class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 dark:peer-checked:bg-[#007AFF]">
-												</div>
-											</label>
-										</div>
-										<div v-if="game.prizeRedemptionDelayEnabled" class="flex items-center gap-2">
-											<input v-model.number="game.prizeRedemptionDelayHours" type="number" min="0"
-												class="w-20 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-900 dark:text-white focus:border-slate-400 outline-none">
-											<span
-												class="text-xs text-slate-500 dark:text-slate-400 font-medium">{{ $t('games.detail.frequency_hours') }}</span>
+										<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">{{ $t('games.detail.redemption_delay') }}</label>
+										<div class="relative">
+											<select v-model="redemptionDelay"
+												class="w-full appearance-none bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-lg pl-3 pr-9 py-2 text-sm font-medium text-slate-900 dark:text-white focus:border-slate-400 outline-none cursor-pointer">
+												<option value="instant">{{ $t('games.detail.redemption_instant') }}</option>
+												<option value="24h">{{ $t('games.detail.redemption_24h') }}</option>
+												<option value="48h">{{ $t('games.detail.redemption_48h') }}</option>
+											</select>
+											<Icon name="ph:caret-down-bold" size="14"
+												class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
 										</div>
 									</div>
 
@@ -716,6 +757,18 @@ const saveGame = async () => {
 								</button>
 							</div>
 
+							<!-- Logo de l'établissement (section dédiée, en tête de l'apparence) -->
+							<div class="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-700 p-3 rounded-md border border-slate-200 dark:border-slate-600">
+								<div>
+									<p class="text-sm font-medium text-slate-900 dark:text-white">{{ $t('games.detail.show_logo') }}</p>
+									<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $t('games.detail.show_logo_hint') }}</p>
+								</div>
+								<label class="relative inline-flex items-center cursor-pointer shrink-0">
+									<input v-model="game.showLogo" type="checkbox" class="sr-only peer">
+									<div class="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+								</label>
+							</div>
+
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<!-- Couleur de fond -->
 								<div>
@@ -742,7 +795,6 @@ const saveGame = async () => {
 										<p class="text-slate-900 dark:text-white font-mono font-bold text-sm flex-1">{{ game.popupColor }}</p>
 									</div>
 								</div>
-
 
 								<!-- Couleur cases perdu -->
 								<div>
@@ -935,7 +987,7 @@ const saveGame = async () => {
 								:wheel-lost-color="game.wheelLostColor" :wheel-prize-color="game.wheelPrizeColor"
 								:wheel-border-color="game.wheelBorderColor" :wheel-pointer-color="game.wheelPointerColor" :button-color="game.buttonColor"
  :popup-color="game.popupColor"
-								:background-image="game.backgroundImage" :logo="businessLogo"
+								:background-image="game.backgroundImage" :logo="game.showLogo === false ? null : businessLogo"
 								:prizes="(game as any).prizes"
 								:google-review-url="game.googleReviewUrl" />
 						</div>

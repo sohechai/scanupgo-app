@@ -20,6 +20,33 @@ const { $api } = useNuxtApp()
 const { user } = useAuth()
 const { t } = useI18n()
 const { show: showToast } = useToast()
+const { hasActiveSubscription } = useSubscription()
+
+// ── Modal d'avertissement avant téléchargement (commerçant non-abonné) ──────
+const showDownloadWarning = ref(false)
+let pendingDownload: (() => void) | null = null
+
+// Si non-abonné : ouvre la modal de friction. Sinon : télécharge directement.
+const guardDownload = (doDownload: () => void) => {
+	if (hasActiveSubscription.value) {
+		doDownload()
+	} else {
+		pendingDownload = doDownload
+		showDownloadWarning.value = true
+	}
+}
+
+const proceedDownloadAnyway = () => {
+	showDownloadWarning.value = false
+	pendingDownload?.()
+	pendingDownload = null
+}
+
+const goToSubscription = () => {
+	showDownloadWarning.value = false
+	pendingDownload = null
+	navigateTo('/dashboard/subscription')
+}
 
 // ── QR Code ───────────────────────────────────────────────────────────────
 
@@ -201,6 +228,17 @@ const previewFlyer = () => {
 	newWindow.document.close()
 }
 
+// Déclenche le téléchargement PNG du flyer (remplace l'ancien <a download>)
+const downloadFlyerPNG = () => {
+	if (!props.game.flyerDesignUrl) return
+	const link = document.createElement('a')
+	link.href = props.game.flyerDesignUrl
+	link.download = 'flyer.png'
+	document.body.appendChild(link)
+	link.click()
+	link.remove()
+}
+
 const downloadFlyerPDF = async () => {
 	downloadingPdf.value = true
 	try {
@@ -344,8 +382,8 @@ const downloadFlyerPDF = async () => {
 
 							<div class="divide-y divide-slate-100 dark:divide-slate-700/60 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
 								<!-- PNG -->
-								<a :href="game.flyerDesignUrl" download="flyer.png"
-									class="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
+								<button type="button" @click="guardDownload(downloadFlyerPNG)"
+									class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group text-left">
 									<div class="flex items-center gap-3">
 										<Icon name="ph:file-png" class="text-slate-400" size="16" />
 										<div>
@@ -354,10 +392,10 @@ const downloadFlyerPDF = async () => {
 										</div>
 									</div>
 									<Icon name="ph:download-simple" class="text-slate-300 group-hover:text-slate-500 dark:group-hover:text-slate-300 transition-colors" size="16" />
-								</a>
+								</button>
 
 								<!-- PDF -->
-								<button @click="downloadFlyerPDF" :disabled="downloadingPdf"
+								<button @click="guardDownload(downloadFlyerPDF)" :disabled="downloadingPdf"
 									class="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group disabled:opacity-40 text-left">
 									<div class="flex items-center gap-3">
 										<Icon name="ph:file-pdf" class="text-slate-400" size="16" />
@@ -427,5 +465,31 @@ const downloadFlyerPDF = async () => {
 			:game-id="gameId"
 			@created="showToast(t('games.order_created'), 'success')"
 		/>
+
+		<!-- Modal d'avertissement avant téléchargement (non-abonné) -->
+		<Teleport to="body">
+			<div v-if="showDownloadWarning" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDownloadWarning = false"></div>
+				<div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 text-center">
+					<div class="mx-auto w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-4">
+						<Icon name="ph:warning-bold" size="28" class="text-amber-500" />
+					</div>
+					<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">{{ $t('games.download_warning.title') }}</h3>
+					<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4">{{ $t('games.download_warning.text') }}</p>
+					<div class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg px-3 py-2.5 mb-5 leading-snug">
+						{{ $t('games.download_warning.red') }}
+					</div>
+					<button @click="goToSubscription"
+						class="w-full px-4 py-2.5 bg-[#007AFF] hover:bg-[#0066DD] text-white font-semibold rounded-lg transition-colors mb-2">
+						{{ $t('games.download_warning.activate') }}
+					</button>
+					<button @click="proceedDownloadAnyway"
+						class="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-center gap-1.5">
+						{{ $t('games.download_warning.anyway') }}
+						<Icon name="ph:download-simple" size="15" />
+					</button>
+				</div>
+			</div>
+		</Teleport>
 	</div>
 </template>

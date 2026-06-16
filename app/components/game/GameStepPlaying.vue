@@ -19,17 +19,24 @@ const emit = defineEmits<{
 
 const buttonColor = computed(() => props.game?.buttonColor || '#ffffff')
 
+// Masque le logo si son URL est cassée (évite l'icône "image brisée")
+const logoError = ref(false)
+
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
+
 const backgroundStyle = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return { backgroundColor: props.primaryColor }
   if (bg.startsWith('linear-gradient') || bg.startsWith('radial-gradient')) return { background: bg }
+  // Couleur unie (ex. thème "Blanc pur" = #ffffff) : couleur de fond, pas une image
+  if (isHexColor(bg)) return { backgroundColor: bg }
   return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
 })
 
 const isImageBackground = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return false
-  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const buttonTextColor = computed(() => {
@@ -43,15 +50,14 @@ const buttonTextColor = computed(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 flex flex-col overflow-hidden" :style="backgroundStyle">
-    <div v-if="game?.backgroundImage" class="absolute inset-0 bg-black/30 z-0" />
+  <div class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="backgroundStyle">
     <div class="relative z-10 w-full h-full flex flex-col pt-6">
       <!-- Logo -->
       <div class="flex justify-center px-8 shrink-0">
-        <img v-if="business?.logo" :src="business.logo"
-          class="h-20 max-w-[280px] object-contain drop-shadow-2xl"
-          :style="isImageBackground ? { visibility: 'hidden' } : {}" />
-        <h1 v-else-if="!isImageBackground" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
+        <img v-if="business?.logo && !logoError && game?.showLogo !== false" :src="business.logo"
+          class="h-20 max-w-[280px] object-contain"
+          @error="logoError = true" />
+        <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-3xl font-black text-center text-white">{{ game.title }}</h1>
         <div v-else class="h-20"></div>
       </div>
 

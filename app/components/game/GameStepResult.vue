@@ -10,10 +10,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{ restart: [] }>()
 
+const isHexColor = (v: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 const isImageBackground = computed(() => {
   const bg = props.game?.backgroundImage
   if (!bg) return false
-  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient')
+  return !bg.startsWith('linear-gradient') && !bg.startsWith('radial-gradient') && !isHexColor(bg)
 })
 
 const contrastColor = (hexColor: string) => {
@@ -26,22 +27,44 @@ const contrastColor = (hexColor: string) => {
 }
 const popupColor = computed(() => props.game?.popupColor || '#2a2a2a')
 const cardTextColor = computed(() => contrastColor(popupColor.value))
+
+// Confettis générés au montage (écran gagné uniquement)
+const CONFETTI_COLORS = ['#fde047', '#f97316', '#ec4899', '#22d3ee', '#a78bfa', '#34d399', '#ffffff']
+const confetti = computed(() => {
+  if (!props.isWin) return []
+  return Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    delay: `${Math.random() * 0.6}s`,
+    duration: `${2.4 + Math.random() * 1.6}s`,
+    size: `${6 + Math.random() * 7}px`,
+  }))
+})
 </script>
 
 <template>
   <!-- GAGNÉ -->
-  <div v-if="isWin" class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+  <div v-if="isWin" class="win-screen fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+
+    <!-- Flash lumineux d'ouverture -->
+    <div class="win-flash absolute inset-0 z-40 bg-white pointer-events-none"></div>
+
+    <!-- Confettis -->
+    <div class="absolute inset-0 z-20 pointer-events-none overflow-hidden">
+      <span v-for="c in confetti" :key="c.id" class="confetti-piece"
+        :style="{ left: c.left, backgroundColor: c.color, animationDelay: c.delay, animationDuration: c.duration, width: c.size, height: c.size }"></span>
+    </div>
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
-        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
-      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo && game?.showLogo !== false" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
+      <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
       <div v-else class="h-16"></div>
     </div>
 
     <!-- Tagline "FÉLICITATIONS !" -->
-    <div class="relative z-10 px-5 mt-3 shrink-0 w-full max-w-sm mx-auto">
+    <div class="win-tagline relative z-10 px-5 mt-3 shrink-0 w-full max-w-sm mx-auto">
       <div class="rounded-2xl px-4 py-3 text-center shadow-2xl border border-white/20"
         style="background: linear-gradient(180deg, #e5e5e5 0%, #a3a3a3 100%);">
         <p class="text-[20px] uppercase leading-[1.1]"
@@ -52,8 +75,8 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
     </div>
 
     <!-- Card résultat — remplit tout l'espace entre tagline et footer -->
-    <div class="relative z-10 flex-1 flex flex-col px-4 mt-3 pb-[68px] overflow-hidden min-h-0">
-      <div class="rounded-3xl p-4 shadow-2xl flex flex-col items-center text-center gap-3 flex-1 overflow-y-auto min-h-0"
+    <div class="win-card relative z-10 flex-1 flex flex-col px-4 mt-3 pb-[68px] overflow-hidden min-h-0">
+      <div class="rounded-3xl p-4 shadow-2xl flex flex-col items-center justify-center text-center gap-3 flex-1 overflow-y-auto min-h-0"
         :style="{ backgroundColor: popupColor, color: cardTextColor }">
 
         <!-- Prix gagné -->
@@ -61,6 +84,9 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
           <p class="opacity-60 text-xs font-bold uppercase tracking-widest mb-1">{{ $t('play.result.win.subtitle') }}</p>
           <h2 class="text-xl font-black leading-tight">{{ wonPrize?.name }}</h2>
           <p v-if="wonPrize?.winningMessage" class="opacity-70 text-sm mt-1">{{ wonPrize.winningMessage }}</p>
+          <p v-if="wonPrize?.minOrderAmount" class="opacity-60 text-xs mt-1">
+            {{ $t('play.result.win.min_order', { amount: Number(wonPrize.minOrderAmount) }) }}
+          </p>
         </div>
 
         <!-- QR Code -->
@@ -102,13 +128,12 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
   </div>
 
   <!-- PERDU -->
-  <div v-else class="fixed inset-0 flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
+  <div v-else class="fixed inset-0 h-[100dvh] flex flex-col overflow-hidden" :style="{ backgroundColor: primaryColor }">
 
     <!-- Logo -->
     <div class="relative z-10 flex justify-center pt-6 px-8 shrink-0">
-      <img v-if="business?.logo" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl"
-        :style="isImageBackground ? { visibility: 'hidden' } : {}" />
-      <h1 v-else-if="!isImageBackground" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
+      <img v-if="business?.logo && game?.showLogo !== false" :src="business.logo" class="h-16 max-w-[240px] object-contain drop-shadow-2xl" />
+      <h1 v-else-if="!isImageBackground && game?.showLogo !== false" class="text-2xl font-black text-center text-white">{{ game?.title }}</h1>
       <div v-else class="h-16"></div>
     </div>
 
@@ -152,3 +177,64 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Écran gagné : entrée qui éclate */
+.win-screen {
+  animation: win-zoom-in 0.55s cubic-bezier(0.2, 1.2, 0.35, 1) both;
+}
+@keyframes win-zoom-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Flash blanc d'ouverture */
+.win-flash {
+  animation: win-flash 0.55s ease-out both;
+}
+@keyframes win-flash {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* Tagline FÉLICITATIONS : pop rebondi */
+.win-tagline {
+  animation: win-pop 0.6s cubic-bezier(0.18, 1.5, 0.4, 1) 0.25s both;
+}
+@keyframes win-pop {
+  0% { transform: scale(0) rotate(-8deg); opacity: 0; }
+  70% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Carte résultat : montée + fondu */
+.win-card {
+  animation: win-rise 0.55s cubic-bezier(0.2, 1, 0.3, 1) 0.4s both;
+}
+@keyframes win-rise {
+  0% { transform: translateY(40px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Confettis qui tombent */
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .win-screen, .win-flash, .win-tagline, .win-card, .confetti-piece { animation: none; opacity: 1; }
+  .confetti-piece { display: none; }
+}
+</style>

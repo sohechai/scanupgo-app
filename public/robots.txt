@@ -1,2 +1,4 @@
+# app.scanupgo.com — application (dashboard). NE PAS indexer.
+# Seule la landing scanupgo.com doit apparaître sur Google.
 User-Agent: *
-Disallow:
+Disallow: /

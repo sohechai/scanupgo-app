@@ -43,7 +43,7 @@ const buttonTextColor = computed(() => contrastColor(buttonColor.value))
 
 <template>
   <div class="w-full max-w-md mx-auto relative z-10 animate-fade-in-up">
-    <div class="rounded-[32px] p-8 shadow-2xl relative w-full text-center flex flex-col items-center"
+    <div class="rounded-[32px] p-8 shadow-2xl relative w-full text-center flex flex-col items-center border-2 border-black"
       :style="{ backgroundColor: popupColor, color: cardTextColor }">
 
       <div class="mb-6">
@@ -66,13 +66,15 @@ const buttonTextColor = computed(() => contrastColor(buttonColor.value))
           :placeholder="$t('play.form.phone_placeholder')">
 
         <div class="pt-2">
-          <label class="flex items-start gap-3 cursor-pointer group">
-            <div class="relative flex items-center mt-0.5 shrink-0">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <div class="relative flex items-center justify-center shrink-0 w-5 h-5">
               <input v-model="form.email_opt_in" type="checkbox" class="peer sr-only">
-              <div class="w-5 h-5 border border-[#666] rounded bg-transparent peer-checked:border-white peer-checked:bg-white/10 transition group-hover:border-[#888]"></div>
-              <Icon name="ph:check-bold" size="14" class="absolute left-0.5 top-0.5 opacity-0 peer-checked:opacity-100 transition text-white" />
+              <div class="w-5 h-5 rounded border-2 bg-transparent transition"
+                :style="{ borderColor: cardTextColor }"></div>
+              <Icon name="ph:check-bold" size="13" class="absolute opacity-0 peer-checked:opacity-100 transition"
+                :style="{ color: cardTextColor }" />
             </div>
-            <span class="text-[13px] font-bold leading-tight">
+            <span class="text-[13px] font-bold leading-tight" :style="{ color: cardTextColor }">
               {{ $t('play.form.email_optin') }}
             </span>
           </label>

@@ -8,7 +8,7 @@ export const useAuth = () => {
 	return {
 		user: computed(() => authStore.user),
 		signIn: (email: string, password: string, rememberMe?: boolean) => authStore.signIn(email, password, rememberMe),
-		signUp: (email: string, password: string, firstName?: string, lastName?: string, cgvAccepted?: boolean) => authStore.signUp(email, password, firstName, lastName, cgvAccepted),
+		signUp: (email: string, password: string, firstName?: string, lastName?: string, cgvAccepted?: boolean, phone?: string) => authStore.signUp(email, password, firstName, lastName, cgvAccepted, phone),
 		signOut: () => authStore.signOut(),
 		fetchUser: () => authStore.fetchUser()
 	}

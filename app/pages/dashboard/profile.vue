@@ -20,6 +20,7 @@ const business = ref({
 	addressCity: '',
 	addressZip: '',
 	addressCountry: '',
+	addressCountryCode: '',
 	primaryColor: '#00E5FF',
 	logo: null as string | null,
 	googlePlaceId: null as string | null,
@@ -44,7 +45,11 @@ const cancelEdit = () => {
 }
 
 const isProfileComplete = computed(() => {
-	return !!(business.value.name && business.value.name.trim() !== '')
+	// Aligné avec la redirection post-connexion : nom + adresse requis.
+	return !!(
+		business.value.name && business.value.name.trim() !== '' &&
+		business.value.addressStreet && String(business.value.addressStreet).trim() !== ''
+	)
 })
 
 const canEdit = computed(() => {
@@ -209,8 +214,9 @@ const handlePlaceSelect = (details: any) => {
 	business.value.addressCity = details.addressCity || ''
 	business.value.addressZip = details.addressZip || ''
 	business.value.addressCountry = details.addressCountry || ''
+	business.value.addressCountryCode = details.addressCountryCode || ''
 	if (details.phone) {
-		business.value.phone = normalizePhone(details.phone, details.addressCountry || '')
+		business.value.phone = normalizePhone(details.phone, details.addressCountry || '', details.addressCountryCode || '')
 	}
 	business.value.googlePlaceId = details.placeId
 	business.value.googleReviewUrl = details.googleReviewUrl
@@ -322,6 +328,7 @@ onMounted(() => {
 							:variant="colorMode.value === 'dark' ? 'dark' : 'light'"
 							:placeholder="$t('profile.phone_placeholder')"
 							:country="business.addressCountry"
+							:country-code="business.addressCountryCode"
 						/>
 					</div>
 

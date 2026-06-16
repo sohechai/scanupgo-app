@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'dashboard', pageTransition: false, middleware: 'auth' })
-useHead({ title: 'Mes Lots' })
+const { t } = useI18n()
+useHead({ title: t('redeem.page.page_title') })
 
 const { $api } = useNuxtApp()
 const { formatDate } = useLocaleDate()
@@ -64,7 +65,7 @@ const confirm = async () => {
 		}
 		modal.value = null
 	} catch (e: any) {
-		actionError.value = e?.data?.message || 'Erreur'
+		actionError.value = e?.data?.message || t('redeem.page.action_validate')
 	} finally {
 		actionLoading.value = false
 	}
@@ -76,22 +77,22 @@ const confirm = async () => {
 
 		<!-- Header -->
 		<div>
-			<h1 class="text-xl font-semibold text-slate-900 dark:text-white">Mes Lots</h1>
-			<p class="text-sm text-slate-400 mt-0.5">Suivez et gérez les lots gagnés par vos joueurs</p>
+			<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('redeem.page.page_title') }}</h1>
+			<p class="text-sm text-slate-400 mt-0.5">{{ $t('redeem.page.page_subtitle') }}</p>
 		</div>
 
 		<!-- Stats -->
 		<div class="grid grid-cols-3 gap-3">
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3">
-				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">Total gagnés</p>
+				<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">{{ $t('redeem.page.stat_total') }}</p>
 				<p class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{{ stats.total }}</p>
 			</div>
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-amber-200 dark:border-amber-900/40 px-4 py-3">
-				<p class="text-[10px] font-medium text-amber-500 uppercase tracking-wide mb-1">En attente</p>
+				<p class="text-[10px] font-medium text-amber-500 uppercase tracking-wide mb-1">{{ $t('redeem.page.stat_pending') }}</p>
 				<p class="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{{ stats.pending }}</p>
 			</div>
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-green-200 dark:border-green-900/40 px-4 py-3">
-				<p class="text-[10px] font-medium text-green-500 uppercase tracking-wide mb-1">Récupérés</p>
+				<p class="text-[10px] font-medium text-green-500 uppercase tracking-wide mb-1">{{ $t('redeem.page.stat_retrieved') }}</p>
 				<p class="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">{{ stats.redeemed }}</p>
 			</div>
 		</div>
@@ -102,7 +103,7 @@ const confirm = async () => {
 			<!-- Filters -->
 			<div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800">
 				<div class="flex gap-1 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-md w-fit">
-					<button v-for="f in [{ key: 'all', label: 'Tous' }, { key: 'pending', label: 'En attente' }, { key: 'redeemed', label: 'Récupérés' }]"
+					<button v-for="f in [{ key: 'all', label: $t('redeem.page.tab_all') }, { key: 'pending', label: $t('redeem.page.tab_pending') }, { key: 'redeemed', label: $t('redeem.page.tab_retrieved') }]"
 						:key="f.key"
 						@click="filter = f.key as any"
 						:class="filter === f.key ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'"
@@ -124,7 +125,7 @@ const confirm = async () => {
 			<!-- Empty -->
 			<div v-else-if="prizes.length === 0" class="p-12 text-center text-slate-400">
 				<Icon name="ph:gift-duotone" size="40" class="mx-auto mb-3 opacity-40" />
-				<p class="text-sm font-medium">Aucun lot {{ filter === 'pending' ? 'en attente' : filter === 'redeemed' ? 'récupéré' : 'gagné' }}</p>
+				<p class="text-sm font-medium">{{ $t('redeem.page.empty') }}</p>
 			</div>
 
 			<!-- Table -->
@@ -132,12 +133,12 @@ const confirm = async () => {
 				<table class="w-full text-left text-sm">
 					<thead class="border-b border-slate-100 dark:border-slate-800">
 						<tr>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400">Joueur</th>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400">Lot</th>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400">Gagné le</th>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400">Statut</th>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400">Récupéré le</th>
-							<th class="px-5 py-3 text-xs font-medium text-slate-400 text-right">Action</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">{{ $t('redeem.page.col_player') }}</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">{{ $t('redeem.page.col_lot') }}</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">{{ $t('redeem.page.col_won_at') }}</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">{{ $t('redeem.page.col_status') }}</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400">{{ $t('redeem.page.col_retrieved_at') }}</th>
+							<th class="px-5 py-3 text-xs font-medium text-slate-400 text-right">{{ $t('redeem.page.col_action') }}</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -156,18 +157,23 @@ const confirm = async () => {
 									</div>
 								</div>
 							</td>
-							<td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">{{ session.prizeName }}</td>
+							<td class="px-5 py-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+								{{ session.prizeName }}
+								<span v-if="session.prize?.minOrderAmount" class="block text-[11px] font-normal text-amber-600 dark:text-amber-400">
+									{{ $t('redeem.min_order', { amount: Number(session.prize.minOrderAmount) }) }}
+								</span>
+							</td>
 							<td class="px-5 py-3 text-xs text-slate-400">
 								{{ formatDate(session.createdAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}
 							</td>
 							<td class="px-5 py-3">
 								<span v-if="session.redeemed"
 									class="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-2 py-0.5 rounded-full">
-									<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Récupéré
+									<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>{{ $t('redeem.page.status_retrieved') }}
 								</span>
 								<span v-else
 									class="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 px-2 py-0.5 rounded-full">
-									<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>En attente
+									<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>{{ $t('redeem.page.status_pending') }}
 								</span>
 							</td>
 							<td class="px-5 py-3 text-xs text-slate-400">
@@ -177,7 +183,7 @@ const confirm = async () => {
 								<button v-if="!session.redeemed"
 									@click="openModal('validate', session)"
 									class="text-xs font-medium text-[#007AFF] hover:underline">
-									Valider
+									{{ $t('redeem.page.action_validate') }}
 								</button>
 								<button v-else
 									@click="openModal('unredeem', session)"
@@ -217,15 +223,15 @@ const confirm = async () => {
 						<!-- Texte -->
 						<div class="text-center space-y-1">
 							<p class="font-semibold text-slate-900 dark:text-white">
-								{{ modal.type === 'validate' ? 'Valider le lot' : 'Annuler la validation' }}
+								{{ modal.type === 'validate' ? $t('redeem.page.modal_validate_title') : $t('redeem.page.modal_unvalidate_title') }}
 							</p>
 							<p class="text-sm text-slate-500 dark:text-slate-400">
 								<template v-if="modal.type === 'validate'">
-									Confirmez la remise de <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.prizeName }}</strong> à <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.player?.firstName }}</strong>.<br/>
-									<span class="text-xs text-slate-400">Cette action est irréversible.</span>
+									{{ $t('redeem.page.modal_confirm_validate') }}<br/>
+									<span class="text-xs text-slate-400">{{ $t('redeem.page.modal_irreversible') }}</span>
 								</template>
 								<template v-else>
-									Remettre le lot <strong class="text-slate-700 dark:text-slate-200">{{ modal.session.prizeName }}</strong> en statut "En attente" ?
+									{{ $t('redeem.page.modal_confirm_unvalidate') }}
 								</template>
 							</p>
 						</div>
