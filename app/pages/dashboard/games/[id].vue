@@ -293,12 +293,14 @@ onMounted(async () => {
 })
 
 // Crée le jeu brouillon une seule fois (mode création) pour récupérer son id.
+// Le titre par défaut = nom de l'établissement (jamais vide).
 const ensureDraftGame = async () => {
 	if (createdGameId.value) return
+	const defaultTitle = game.value.title || businessObject.value?.name || 'Nouveau jeu'
 	try {
 		const created = await $api<any>('/games', {
 			method: 'POST',
-			body: { title: game.value.title || '' },
+			body: { title: defaultTitle },
 		})
 		createdGameId.value = created.id
 	} catch (e) {
