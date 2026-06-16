@@ -69,10 +69,13 @@ const goNext = () => {
 const openCurrent = () => {
   const a = current.value
   if (!a) return
-  if (a.link) {
-    let url = a.link
+  if (a.link && a.link.trim()) {
+    let url = a.link.trim()
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url
-    window.open(url, '_blank')
+    // Évite l'onglet about:blank si l'URL est invalide / vide après nettoyage.
+    if (/^https?:\/\/.+\..+/i.test(url)) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
   }
   phase.value = 'pending'
   remaining.value = ACTION_TIMER_SECONDS
