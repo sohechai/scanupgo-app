@@ -58,7 +58,7 @@ onMounted(() => {
 			@click="isOpen = !isOpen"
 			class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border"
 			:class="{
-				'text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300': variant !== 'dark',
+				'text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 dark:text-slate-300 dark:hover:text-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700 dark:hover:border-slate-600': variant !== 'dark',
 				'text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20': variant === 'dark',
 			}"
 		>
@@ -79,7 +79,7 @@ onMounted(() => {
 				v-if="isOpen"
 				class="absolute top-full mt-1.5 w-36 rounded-xl shadow-xl border overflow-hidden z-50"
 				:class="{
-					'bg-white border-slate-200 right-0 rtl:right-auto rtl:left-0': variant !== 'dark',
+					'bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-700 right-0 rtl:right-auto rtl:left-0': variant !== 'dark',
 					'bg-slate-900 border-white/10 right-0 rtl:right-auto rtl:left-0': variant === 'dark',
 				}"
 			>
@@ -89,8 +89,8 @@ onMounted(() => {
 					@click="switchLanguage(loc.code)"
 					class="flex items-center gap-2.5 w-full px-4 py-2.5 text-xs font-medium transition-colors"
 					:class="{
-						'text-slate-700 hover:bg-slate-50': variant !== 'dark' && loc.code !== locale,
-						'text-brand-600 bg-brand-50 font-bold': variant !== 'dark' && loc.code === locale,
+						'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800': variant !== 'dark' && loc.code !== locale,
+						'text-brand-600 bg-brand-50 font-bold dark:text-brand-400 dark:bg-brand-500/10': variant !== 'dark' && loc.code === locale,
 						'text-slate-300 hover:bg-white/5': variant === 'dark' && loc.code !== locale,
 						'text-brand-400 bg-white/10 font-bold': variant === 'dark' && loc.code === locale,
 					}"

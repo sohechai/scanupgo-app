@@ -31,6 +31,8 @@ export default defineNuxtConfig({
 		workbox: {
 			// Précache des assets du build (JS, CSS, polices, images, html)
 			globPatterns: ['**/*.{js,css,html,woff,woff2,png,jpg,jpeg,svg,webp,ico}'],
+			// Certaines images de templates dépassent 2 MiB (limite par défaut) -> 4 MiB.
+			maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 			navigateFallback: null,
 			runtimeCaching: [
 				{
@@ -79,6 +81,9 @@ export default defineNuxtConfig({
 	// because user/subscription data is only available client-side.
 	routeRules: {
 		'/dashboard/**': { ssr: false },
+		// app.scanupgo.com ne doit jamais être indexé (seule la landing scanupgo.com l'est).
+		// X-Robots-Tag empêche l'indexation même si une URL est découverte via un lien externe.
+		'/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
 	},
 	vite: {
 		optimizeDeps: {

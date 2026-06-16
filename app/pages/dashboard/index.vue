@@ -510,7 +510,7 @@ onMounted(() => {
 		<!-- 1. HEADER -->
 		<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 			<div>
-				<h1 class="text-xl font-semibold text-slate-900 tracking-tight">
+				<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
 					{{ greetingName ? $t('dashboard.greeting', { name: greetingName }) : $t('dashboard.greeting_anon') }}
 				</h1>
 				<p class="text-slate-400 text-sm mt-0.5">{{ formatDate(new Date(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
@@ -519,7 +519,7 @@ onMounted(() => {
 				<div class="relative flex items-center">
 					<Icon name="ph:calendar-blank" size="16" class="absolute left-3 rtl:left-auto rtl:right-3 text-slate-400 pointer-events-none z-10" />
 					<select v-model="selectedPeriod"
-						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white border border-slate-200 rounded-md text-slate-600 text-sm font-semibold shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 transition-all">
+						class="appearance-none pl-9 rtl:pl-8 pr-8 rtl:pr-9 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 text-sm font-semibold shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 transition-all">
 						<option value="7d">{{ $t('dashboard.period_label.7d') }}</option>
 						<option value="30d">{{ $t('dashboard.period_label.30d') }}</option>
 						<option value="this_month">{{ $t('dashboard.period_label.this_month') }}</option>
@@ -562,53 +562,53 @@ onMounted(() => {
 
 		<!-- 3. KPI CARDS -->
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
-			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_google_rating') }}</p>
-					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+					<p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_google_rating') }}</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
 						<Icon name="ph:star-fill" size="12" class="text-amber-400" />
 					</div>
 				</div>
 				<div class="flex items-baseline gap-1.5">
-					<p class="text-xl font-semibold text-slate-900 tabular-nums">
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
 						{{ googleStats?.rating != null ? googleStats.rating.toFixed(1) : '—' }}
 					</p>
 					<Icon v-if="googleStats?.rating != null" name="ph:star-fill" class="text-yellow-400 mb-0.5" size="11" />
 				</div>
 				<p class="text-[10px] text-slate-400 mt-1">{{ $t('dashboard.home.kpi_out_of') }}</p>
 			</div>
-			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_scans') }}</p>
-					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+					<p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_scans') }}</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
 						<Icon name="ph:qr-code-bold" size="12" class="text-[#007AFF]" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
 					{{ statsLoading ? '—' : (analyticsEvents.page_visit || 0) }}
 				</p>
 				<p class="text-[10px] text-slate-400 mt-1">{{ periodLabel }}</p>
 			</div>
-			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_emails') }}</p>
-					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+					<p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_emails') }}</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
 						<Icon name="ph:envelope-bold" size="12" class="text-emerald-500" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
 					{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}
 				</p>
 				<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.home.see_all') }} →</NuxtLink>
 			</div>
-			<div class="bg-white px-3 py-3 rounded-lg border border-slate-200">
+			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
 				<div class="flex items-center justify-between mb-1">
-					<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_loyalty') }}</p>
-					<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+					<p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide">{{ $t('dashboard.home.kpi_loyalty') }}</p>
+					<div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
 						<Icon name="ph:chart-line-up-bold" size="12" class="text-purple-500" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 tabular-nums">
+				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
 					{{ playersLoading ? '—' : `${playerStats.loyaltyRate}%` }}
 				</p>
 				<p class="text-[10px] text-slate-400 mt-1">{{ $t('dashboard.home.loyal_players') }}</p>
@@ -618,21 +618,21 @@ onMounted(() => {
 		<!-- 4. CHART + ACTIVITÉ RÉCENTE -->
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 			<!-- Chart -->
-			<div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-5 relative overflow-hidden">
+			<div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5 relative overflow-hidden">
 				<div class="flex items-center justify-between mb-6">
 					<div>
-						<h3 class="font-bold text-slate-900 text-sm">{{ $t('dashboard.activity.title') }}</h3>
+						<h3 class="font-bold text-slate-900 dark:text-white text-sm">{{ $t('dashboard.activity.title') }}</h3>
 						<p class="text-[11px] text-slate-400 font-medium mt-0.5">{{ periodLabel }}</p>
 					</div>
-					<div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-md">
+					<div class="flex gap-0.5 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-md">
 						<button @click="selectedPeriod = '7d'"
-							:class="selectedPeriod === '7d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							:class="selectedPeriod === '7d' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'"
 							class="px-2.5 py-1 rounded text-xs font-medium transition-all">7j</button>
 						<button @click="selectedPeriod = '30d'"
-							:class="selectedPeriod === '30d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							:class="selectedPeriod === '30d' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'"
 							class="px-2.5 py-1 rounded text-xs font-medium transition-all">30j</button>
 						<button @click="selectedPeriod = '90d'"
-							:class="selectedPeriod === '90d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'"
+							:class="selectedPeriod === '90d' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'"
 							class="px-2.5 py-1 rounded text-xs font-medium transition-all">3 mois</button>
 					</div>
 				</div>
@@ -651,7 +651,7 @@ onMounted(() => {
 								:x1="20" :x2="780"
 								:y1="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
 								:y2="lineChartData.padY + (i - 1) * (lineChartData.usableH / 3)"
-								stroke="currentColor" stroke-width="0.5" class="text-slate-100" />
+								stroke="currentColor" stroke-width="0.5" class="text-slate-100 dark:text-slate-700" />
 							<defs>
 								<linearGradient id="sessionGradient" x1="0" y1="0" x2="0" y2="1">
 									<stop offset="0%" stop-color="#007AFF" stop-opacity="0.12" />
@@ -709,9 +709,9 @@ onMounted(() => {
 			</div>
 
 			<!-- Activité récente -->
-			<div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-				<div class="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
-					<h3 class="font-medium text-slate-900 text-sm">{{ $t('dashboard.home.recent_activity') }}</h3>
+			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+				<div class="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+					<h3 class="font-medium text-slate-900 dark:text-white text-sm">{{ $t('dashboard.home.recent_activity') }}</h3>
 					<NuxtLink to="/dashboard/players" class="text-xs text-[#007AFF] font-medium hover:opacity-70">{{ $t('dashboard.home.see_all') }} →</NuxtLink>
 				</div>
 				<div v-if="sessionsLoading" class="p-8 flex justify-center">
@@ -720,9 +720,9 @@ onMounted(() => {
 				<div v-else-if="recentActivity.length === 0" class="p-8 text-center text-slate-400 text-sm">
 					Aucune activité récente
 				</div>
-				<div v-else class="divide-y divide-slate-100">
+				<div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
 					<div v-for="item in recentActivity" :key="item.id"
-						class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+						class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
 						<div class="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-semibold text-white shrink-0"
 							:class="{
 								'bg-purple-400': item.type === 'won',
@@ -732,7 +732,7 @@ onMounted(() => {
 							{{ item.initials }}
 						</div>
 						<div class="flex-1 min-w-0">
-							<p class="text-sm text-slate-700 font-medium truncate">{{ item.name }}</p>
+							<p class="text-sm text-slate-700 dark:text-slate-200 font-medium truncate">{{ item.name }}</p>
 							<p class="text-[11px] text-slate-400 truncate">{{ item.detail }}</p>
 						</div>
 						<span class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded"
