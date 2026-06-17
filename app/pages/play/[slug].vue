@@ -177,18 +177,38 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
   error.value = null
 
   try {
-    const response = await $api<any>('/gameplay/play', {
-      method: 'POST',
-      body: {
-        gameId: game.value.id,
-        playerName: formData.first_name,
-        playerEmail: formData.email || undefined,
-        playerPhone: formData.phone || undefined,
-        playerEmailOptIn: formData.email_opt_in,
-        playerSmsOptIn: formData.sms_opt_in,
-        deviceFingerprint: getDeviceFingerprint()
+    const playBody = {
+      gameId: game.value.id,
+      playerName: formData.first_name,
+      playerEmail: formData.email || undefined,
+      playerPhone: formData.phone || undefined,
+      playerEmailOptIn: formData.email_opt_in,
+      playerSmsOptIn: formData.sms_opt_in,
+      deviceFingerprint: getDeviceFingerprint()
+    }
+
+    // Appel avec timeout + retry SÛR : on ne réessaie que si la requête n'a reçu
+    // AUCUNE réponse du serveur (réseau/timeout). Jamais sur une erreur serveur,
+    // pour éviter de jouer deux fois (la session pourrait déjà être créée).
+    const MAX_ATTEMPTS = 3
+    let response: any
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        response = await $api<any>('/gameplay/play', {
+          method: 'POST',
+          body: playBody,
+          timeout: 15000,
+        })
+        break
+      } catch (err: any) {
+        const reachedServer = err?.statusCode != null || err?.data != null
+        const lastTry = attempt === MAX_ATTEMPTS
+        // Erreur serveur (a une réponse) OU dernière tentative -> on propage.
+        if (reachedServer || lastTry) throw err
+        // Sinon (réseau/timeout sans réponse) : petite attente puis nouvel essai.
+        await new Promise(r => setTimeout(r, 800 * attempt))
       }
-    })
+    }
 
     if (response.success) {
       sessionId.value = response.session?.id || null
@@ -210,7 +230,11 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
       throw new Error(t('play.error.unknown'))
     }
   } catch (e: any) {
-    const offline = (import.meta.client && !navigator.onLine) || e?.message?.includes('fetch') || e?.name === 'FetchError' && !e?.data
+    // "Offline" UNIQUEMENT si le navigateur se déclare hors-ligne, ou si la requête
+    // n'a reçu aucune réponse HTTP du serveur (pas de statusCode ni de data).
+    // Une vraie erreur serveur (500, 400…) porte un statusCode/data -> pas "offline".
+    const noHttpResponse = e?.name === 'FetchError' && e?.statusCode == null && e?.data == null
+    const offline = (import.meta.client && !navigator.onLine) || noHttpResponse
     if (e?.data?.message?.includes('already played')) {
       rateLimitError.value = true
       error.value = e.data.message

@@ -81,6 +81,10 @@ export default defineNuxtConfig({
 	// because user/subscription data is only available client-side.
 	routeRules: {
 		'/dashboard/**': { ssr: false },
+		// Le jeu joueur n'a pas besoin de SSR (aucun SEO, app en noindex). On le sert
+		// en SPA depuis le CDN -> pas de cold start serverless, chargement instantané
+		// au moment critique (clic "Lancer la roue").
+		'/play/**': { ssr: false },
 		// app.scanupgo.com ne doit jamais être indexé (seule la landing scanupgo.com l'est).
 		// X-Robots-Tag empêche l'indexation même si une URL est découverte via un lien externe.
 		'/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
