@@ -303,11 +303,11 @@ onMounted(() => {
 						<Icon name="ph:star-fill" class="text-yellow-400 shrink-0" size="16" />
 						<div class="flex items-baseline gap-1.5">
 							<span class="text-sm font-bold text-slate-900 dark:text-white">{{ business.googleRating?.toFixed(1) }}</span>
-							<span class="text-xs text-slate-400">/ 5 · {{ business.googleReviewCount }} avis Google</span>
+							<span class="text-xs text-slate-400">/ 5 · {{ business.googleReviewCount }} {{ $t('profile.google_reviews_count') }}</span>
 						</div>
 						<a v-if="business.googleReviewUrl" :href="business.googleReviewUrl" target="_blank" class="ml-auto text-xs text-blue-500 hover:underline flex items-center gap-1">
 							<Icon name="ph:arrow-square-out" size="13" />
-							Voir
+							{{ $t('profile.view_btn') }}
 						</a>
 					</div>
 
