@@ -393,6 +393,8 @@
 		"brand_color": "Brand color",
 		"color_auto_detected": "Color automatically detected from your logo",
 		"color_hint": "Auto-detected from your logo — you can edit it manually.",
+		"google_reviews_count": "Google reviews",
+		"view_btn": "View",
 		"success_message": "Profile updated successfully",
 		"error_message": "Error saving profile",
 		"upload_error": "Upload error",

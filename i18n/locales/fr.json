@@ -393,6 +393,8 @@
 		"brand_color": "Couleur de votre marque",
 		"color_auto_detected": "Couleur détectée automatiquement depuis votre logo",
 		"color_hint": "Détectée automatiquement depuis votre logo — modifiable manuellement.",
+		"google_reviews_count": "avis Google",
+		"view_btn": "Voir",
 		"success_message": "Profil mis à jour avec succès",
 		"error_message": "Erreur lors de la sauvegarde",
 		"upload_error": "Erreur lors de l'upload",

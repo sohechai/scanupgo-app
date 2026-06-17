@@ -392,7 +392,9 @@
 		"delete_logo": "حذف",
 		"brand_color": "لون علامتك التجارية",
 		"color_auto_detected": "تم اكتشاف اللون تلقائيًا من شعارك",
-		"color_hint": "يتم اكتشافه تلقائيًا من شعارك — يمكنك تعديله يدويًا.",
+		"color_hint": "يتحدد تلقائيًا من شعارك — يمكنك تعديله يدويًا.",
+		"google_reviews_count": "تقييم على Google",
+		"view_btn": "عرض",
 		"success_message": "تم تحديث الملف التعريفي بنجاح",
 		"error_message": "خطأ أثناء الحفظ",
 		"upload_error": "خطأ أثناء الرفع",
@@ -403,7 +405,7 @@
 	},
 	"games": {
 		"title": "ألعابي",
-		"subtitle": "أدر حملات الألعاب والمسابقات.",
+		"subtitle": "أدر ألعابك وفلاياراتك.",
 		"all_businesses": "كل المنشآت",
 		"create_button": "إنشاء لعبة",
 		"no_games": "لم يتم العثور على أي لعبة",
@@ -498,7 +500,7 @@
 			"redemption_instant": "فوري (استرجاع فوري)",
 			"redemption_24h": "24 ساعة",
 			"redemption_48h": "48 ساعة",
-			"redemption_delay": "مهلة الاسترجاع",
+			"redemption_delay": "مدة الانتظار قبل استلام الجائزة",
 			"prize_expiry": "انتهاء صلاحية الجائزة",
 			"prize_expiry_hint": "تُسحب الجائزة تلقائيًا بعد هذه المهلة",
 			"save_button": "حفظ",
@@ -746,7 +748,7 @@
 		"table": {
 			"player": "اللاعب",
 			"contact": "جهة الاتصال",
-			"optin": "الموافقة",
+			"optin": "قبول التسويق",
 			"participations": "المشاركات",
 			"sessions": "المشاركات",
 			"date": "التاريخ"
@@ -768,7 +770,7 @@
 	"marketing": {
 		"index": {
 			"title": "التسويق عبر البريد الإلكتروني",
-			"subtitle": "أرسل نشرات إخبارية وقم بإعداد رسائل بريد إلكتروني تلقائية",
+			"subtitle": "أرسل رسائل تسويقية وإيميلات تلقائية لزبائنك",
 			"premium_feature": "ميزة بريميوم",
 			"premium_description": "اشترك للوصول إلى التسويق عبر البريد الإلكتروني وإرسال نشرات إخبارية إلى لاعبيك.",
 			"see_offers": "عرض العروض",
@@ -779,7 +781,7 @@
 				"sent": "رسائل مُرسلة",
 				"open_rate": "معدل الفتح",
 				"automations": "الأتمتة",
-				"optin_players": "لاعبون موافقون",
+				"optin_players": "مشتركون",
 				"configure": "إعداد",
 				"see_players": "عرض اللاعبين"
 			},
@@ -1162,7 +1164,7 @@
 		"notif_weekly_summary": "الملخص الأسبوعي",
 		"notif_weekly_summary_desc": "استلام ملخص أسبوعي لإحصائياتك",
 		"notif_order_updates": "تحديثات الطلبات",
-		"notif_order_updates_desc": "الإشعار عند شحن أو تسليم منشوراتك",
+		"notif_order_updates_desc": "الإشعار عند شحن أو تسليم فلاياراتك",
 		"delete_account": "حذف حسابي",
 		"delete_account_description": "هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع بياناتك.",
 		"delete_button": "حذف",
@@ -2597,7 +2599,7 @@
 			"play_button": "العب الآن",
 			"powered_by": "مدعوم من ScanUpGo",
 			"default_tagline": "جرب حظك واربح هدية!",
-			"rules": "القانون الأساسي",
+			"rules": "قواعد اللعبة",
 			"contact": "اتصل بنا"
 		},
 		"steps": {
