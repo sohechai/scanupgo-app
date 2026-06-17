@@ -180,6 +180,13 @@ const cardTextColor = computed(() => contrastColor(popupColor.value))
 const buttonTextColor = computed(() => contrastColor(buttonColor.value))
 const accent = computed(() => props.game?.buttonColor || '#facc15')
 
+// Pastilles & fond des lignes adaptés au fond de la carte (popupColor) :
+// fond sombre -> éléments clairs ; fond clair (jaune…) -> éléments sombres.
+const isDarkCard = computed(() => cardTextColor.value === '#ffffff')
+const pillBg = computed(() => (isDarkCard.value ? '#ffffff' : '#0f172a'))
+const pillText = computed(() => (isDarkCard.value ? '#0f172a' : '#ffffff'))
+const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.12)'))
+
 // Logo du réseau courant : Google et X ont un SVG dédié, sinon icône Phosphor colorée
 const isGoogle = computed(() => current.value?.type === 'google')
 const isX = computed(() => current.value?.type === 'twitter')
@@ -256,49 +263,70 @@ const netColor = (t: string) => (NET as any)[t]?.color || NET.other.color
             <!-- Titre -->
             <h2 class="text-[26px] font-black text-center mb-5">{{ $t('play.steps.follow_steps') }}</h2>
 
-            <!-- Compteur d'étapes (si plusieurs actions) -->
-            <p v-if="actions.length > 1" class="text-[12px] font-bold opacity-60 mb-3">
-              {{ $t('play.steps.action_counter', { current: currentIndex + 1, total: actions.length }) }}
-            </p>
+            <!-- ====== PHASE IDLE : liste des étapes + bouton action ====== -->
+            <template v-if="phase === 'idle'">
+              <!-- Compteur d'étapes (si plusieurs actions) -->
+              <p v-if="actions.length > 1" class="text-[12px] font-bold opacity-60 mb-3">
+                {{ $t('play.steps.action_counter', { current: currentIndex + 1, total: actions.length }) }}
+              </p>
 
-            <!-- 3 lignes : action / revenir / tourner -->
-            <div class="w-full space-y-3 mb-6">
-              <div v-for="(line, idx) in stepLines" :key="idx"
-                class="flex items-center gap-3 rounded-full pr-4 py-2.5 pl-2.5"
-                :style="idx === 1 && phase === 'pending' ? { background: `linear-gradient(90deg, ${accent}33, transparent)` } : { backgroundColor: 'rgba(255,255,255,0.07)' }">
-                <span class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0 text-black"
-                  :style="{ backgroundColor: accent }">{{ idx + 1 }}</span>
-                <span class="font-bold text-[15px] leading-tight">
-                  <template v-if="line === '__comeback__'">{{ $t('play.steps.step_comeback') }}</template>
-                  <template v-else-if="line === '__spin__'">{{ $t('play.steps.step_spin') }}</template>
-                  <template v-else>{{ line }}</template>
-                </span>
+              <!-- 3 lignes : action / revenir / tourner -->
+              <div class="w-full space-y-3 mb-6">
+                <div v-for="(line, idx) in stepLines" :key="idx"
+                  class="flex items-center gap-3 rounded-full pr-4 py-2.5 pl-2.5"
+                  :style="{ backgroundColor: stepRowBg }">
+                  <!-- Pastille adaptée au fond de la carte (claire sur sombre, sombre sur clair) -->
+                  <span class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0"
+                    :style="{ backgroundColor: pillBg, color: pillText }">{{ idx + 1 }}</span>
+                  <span class="font-bold text-[15px] leading-tight">
+                    <template v-if="line === '__comeback__'">{{ $t('play.steps.step_comeback') }}</template>
+                    <template v-else-if="line === '__spin__'">{{ $t('play.steps.step_spin') }}</template>
+                    <template v-else>{{ line }}</template>
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <!-- Timer en cours -->
-            <p v-if="phase === 'pending'" class="text-[13px] font-bold opacity-80 mb-3">
-              {{ $t('play.steps.validating', { sec: remaining }) }}
-            </p>
+              <button @click="openCurrent"
+                class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+                :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
+                {{ current.buttonText }}
+                <Icon name="ph:arrow-up-right-bold" size="16" />
+              </button>
 
-            <!-- Bouton de l'action -->
-            <button v-if="phase === 'idle'" @click="openCurrent"
-              class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
-              :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
-              {{ current.buttonText }}
-              <Icon name="ph:arrow-up-right-bold" size="16" />
-            </button>
+              <p class="w-full mt-4 text-center font-extrabold text-[13px] leading-snug opacity-90">
+                ⚠️ {{ $t('play.steps.comeback_notice') }}
+              </p>
+            </template>
 
-            <!-- Valider manuellement après 30s -->
-            <button v-else-if="remaining <= 30" @click="validateNow"
-              class="mt-1 text-[12px] opacity-60 hover:opacity-100 underline transition">
-              {{ $t('play.review_timer.already_reviewed') }}
-            </button>
+            <!-- ====== PHASE PENDING : écran de vérification (logo qui tourne) ====== -->
+            <template v-else>
+              <h2 class="text-2xl font-black text-center mb-5">{{ $t('play.review_timer.not_done') }}</h2>
 
-            <!-- Rappel revenir récupérer le lot -->
-            <p class="w-full mt-4 text-center font-extrabold text-[13px] leading-snug opacity-90">
-              ⚠️ {{ $t('play.steps.comeback_notice') }}
-            </p>
+              <button @click="openCurrent"
+                class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+                :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
+                {{ current.buttonText }}
+                <Icon name="ph:arrow-up-right-bold" size="16" />
+              </button>
+
+              <!-- Logo de la marque qui tourne -->
+              <div v-if="business?.logo" class="relative w-28 h-28 flex items-center justify-center my-5">
+                <img :src="business.logo" alt="Logo" class="max-w-full max-h-full object-contain drop-shadow-2xl animate-[spin_4s_linear_infinite]" />
+              </div>
+              <div v-else class="w-24 h-24 rounded-full flex items-center justify-center animate-[spin_4s_linear_infinite] my-5" :style="{ backgroundColor: accent + '33' }">
+                <Icon name="ph:storefront-duotone" size="32" class="text-white/60" />
+              </div>
+
+              <p class="text-[15px] font-bold text-center leading-tight mb-3">
+                {{ $t('play.review_timer.verifying_action') }}
+              </p>
+
+              <!-- Valider manuellement après 30s -->
+              <button v-if="remaining <= 30" @click="validateNow"
+                class="text-[12px] opacity-60 hover:opacity-100 underline transition">
+                {{ $t('play.review_timer.already_reviewed') }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
