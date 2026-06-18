@@ -127,12 +127,6 @@ watch(() => route.path, () => {
 				<div class="flex items-center gap-2">
 					<LanguageSelector variant="dark" />
 
-					<button
-						class="w-8 h-8 rounded-md hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
-						<Icon name="ph:bell-duotone" size="17" class="text-slate-400" />
-						<span class="absolute top-1.5 right-1.5 rtl:right-auto rtl:left-1.5 w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
-					</button>
-
 					<NuxtLink to="/admin/settings"
 						class="w-8 h-8 rounded-md hover:bg-white/[0.06] flex items-center justify-center transition-colors">
 						<Icon name="ph:gear-duotone" size="17" class="text-slate-400" />

@@ -153,10 +153,10 @@ const statCards = computed(() => [
 		<!-- Recent Activity -->
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-			<!-- Recent Subscriptions -->
+			<!-- Recent Transactions -->
 			<div class="bg-[#161920] border border-white/[0.07] rounded-lg">
 				<div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-					<h3 class="text-sm font-semibold text-white">{{ $t('admin.dashboard.recent_subscriptions') }}</h3>
+					<h3 class="text-sm font-semibold text-white">{{ $t('admin.dashboard.recent_transactions') }}</h3>
 					<NuxtLink to="/admin/subscriptions" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1">
 						{{ $t('admin.dashboard.view_all') || 'Voir tout' }}
 						<Icon name="ph:arrow-right-bold" size="12" class="rtl:rotate-180" />
@@ -165,25 +165,35 @@ const statCards = computed(() => [
 
 				<div v-if="recentSubscriptions.length === 0" class="flex flex-col items-center justify-center py-10 text-slate-600">
 					<Icon name="ph:receipt-x-duotone" size="28" class="mb-2" />
-					<p class="text-sm">{{ $t('admin.dashboard.no_recent_subscriptions') }}</p>
+					<p class="text-sm">{{ $t('admin.dashboard.no_recent_transactions') }}</p>
 				</div>
 
 				<div v-else class="divide-y divide-white/[0.04]">
-					<div v-for="sub in recentSubscriptions" :key="sub.id"
+					<div v-for="tx in recentSubscriptions" :key="tx.id"
 						class="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.03] transition-colors">
-						<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-200 shrink-0">
-							{{ sub.businessName.charAt(0).toUpperCase() }}
+						<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
+							:class="tx.type === 'refund' ? 'bg-red-500/15 text-red-400' : tx.type === 'order' ? 'bg-blue-500/15 text-blue-400' : 'bg-slate-700 text-slate-200'">
+							{{ tx.businessName.charAt(0).toUpperCase() }}
 						</div>
 						<div class="flex-1 min-w-0">
-							<p class="text-sm font-medium text-white truncate">{{ sub.businessName }}</p>
-							<p class="text-xs text-slate-500">
-								{{ sub.planName }} ·
-								{{ sub.period === 'monthly' ? $t('admin.dashboard.monthly') : sub.period === 'annual' ? $t('admin.dashboard.annual') : $t('admin.dashboard.lifetime') }}
+							<div class="flex items-center gap-2">
+								<p class="text-sm font-medium text-white truncate">{{ tx.businessName }}</p>
+								<span v-if="tx.type === 'refund'" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-400 shrink-0">{{ $t('admin.dashboard.refund_tag') }}</span>
+								<span v-else-if="tx.type === 'order'" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 shrink-0">{{ $t('admin.dashboard.order_tag') }}</span>
+							</div>
+							<p class="text-xs text-slate-500 truncate">
+								<template v-if="tx.type === 'subscription'">
+									{{ tx.label }} ·
+									{{ tx.period === 'monthly' ? $t('admin.dashboard.monthly') : tx.period === 'annual' ? $t('admin.dashboard.annual') : $t('admin.dashboard.lifetime') }}
+								</template>
+								<template v-else>{{ tx.label }}</template>
 							</p>
 						</div>
 						<div class="text-right rtl:text-left shrink-0">
-							<p class="text-sm font-semibold text-emerald-400">+{{ formatNumber(sub.price) }} Dhs</p>
-							<p class="text-xs text-slate-600">{{ formatDate(sub.createdAt, { day: 'numeric', month: 'short' }) }}</p>
+							<p class="text-sm font-semibold" :class="tx.type === 'refund' ? 'text-red-400' : 'text-emerald-400'">
+								{{ tx.amount < 0 ? '−' : '+' }}{{ formatNumber(Math.abs(tx.amount)) }} Dhs
+							</p>
+							<p class="text-xs text-slate-600">{{ formatDate(tx.date, { day: 'numeric', month: 'short' }) }}</p>
 						</div>
 					</div>
 				</div>

@@ -18,10 +18,6 @@ const tabs = computed(() => [
 // Subscriptions
 const subscriptions = ref<any[]>([])
 const loadingSubs = ref(true)
-const refundModalOpen = ref(false)
-const showStripeInfoModal = ref(false)
-const selectedSubscription = ref<any>(null)
-const refundLoading = ref(false)
 
 const fetchSubscriptions = async () => {
 	loadingSubs.value = true
@@ -56,31 +52,6 @@ const getPeriodLabel = (period: string) => {
 	}
 }
 
-const openRefundModal = (sub: any) => {
-	if (sub.stripeSubscriptionId || sub.stripeCustomerId) {
-		selectedSubscription.value = sub
-		showStripeInfoModal.value = true
-		return
-	}
-	selectedSubscription.value = sub
-	refundModalOpen.value = true
-}
-const closeRefundModal = () => { refundModalOpen.value = false; selectedSubscription.value = null }
-
-const confirmRefund = async () => {
-	if (!selectedSubscription.value) return
-	refundLoading.value = true
-	try {
-		const response = await $api(`/admin/subscriptions/${selectedSubscription.value.id}/cancel-refund`, { method: 'POST' })
-		if (response.refund) toast.show(`${response.message} - ${t('admin.subscriptions.refund_modal.amount')} ${response.refund.amount / 100} ${response.refund.currency.toUpperCase()}`, 'success')
-		else toast.show(`${response.message}`, 'info')
-		const idx = subscriptions.value.findIndex(s => s.id === selectedSubscription.value.id)
-		if (idx !== -1) { subscriptions.value[idx].status = 'canceled'; subscriptions.value[idx].cancelledAt = new Date() }
-		closeRefundModal()
-	} catch (error: any) {
-		toast.show(error.message || t('admin.subscriptions.refund_modal.confirm'), 'error')
-	} finally { refundLoading.value = false }
-}
 
 // Plans (for grant modal selector only)
 const plans = ref<{ id: string; name: string }[]>([])
@@ -242,13 +213,13 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 						<thead>
 							<tr class="border-b border-white/[0.06]">
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_business') }}</th>
+								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_email') }}</th>
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_plan') }}</th>
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_period') }}</th>
 								<th class="px-4 py-3 text-right rtl:text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_price') }}</th>
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_status') }}</th>
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_start') }}</th>
 								<th class="px-4 py-3 text-left text-xs font-medium text-slate-500">{{ $t('admin.subscriptions.table_header_next_billing') }}</th>
-								<th class="px-4 py-3"></th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-white/[0.04]">
@@ -259,11 +230,18 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 										<span class="text-sm font-medium text-white">{{ sub.businessName }}</span>
 									</div>
 								</td>
+								<td class="px-4 py-3 text-sm text-slate-400">{{ sub.businessEmail || '—' }}</td>
 								<td class="px-4 py-3">
 									<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white/[0.05] text-slate-400 border border-white/[0.06]">{{ sub.planName }}</span>
 								</td>
 								<td class="px-4 py-3 text-sm text-slate-400">{{ getPeriodLabel(sub.billingPeriod) }}</td>
-								<td class="px-4 py-3 text-right rtl:text-left text-sm font-semibold text-white tabular-nums">{{ formatNumber(sub.price) }} Dhs</td>
+								<td class="px-4 py-3 text-right rtl:text-left">
+								<p class="text-sm font-semibold text-white tabular-nums">{{ formatNumber(sub.price) }} Dhs</p>
+								<span v-if="!sub.stripeSubscriptionId" class="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+									<Icon name="ph:hand-coins-bold" size="11" />
+									{{ $t('admin.subscriptions.manual_tag') }}
+								</span>
+							</td>
 								<td class="px-4 py-3">
 									<span class="inline-flex items-center gap-1.5 text-xs font-medium"
 										:class="sub.status === 'active' ? 'text-emerald-400' : sub.status === 'past_due' ? 'text-amber-400' : 'text-slate-500'">
@@ -276,15 +254,6 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 								<td class="px-4 py-3 text-sm text-slate-500">
 									<span v-if="sub.nextBillingDate">{{ formatDate(sub.nextBillingDate) }}</span>
 									<span v-else class="text-slate-700">—</span>
-								</td>
-								<td class="px-4 py-3 text-right rtl:text-left">
-									<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-										<button v-if="sub.status === 'active'" @click="openRefundModal(sub)"
-											class="p-1.5 text-red-500 hover:bg-red-500/10 rounded transition-colors"
-											:title="$t('admin.subscriptions.cancel_refund_title')">
-											<Icon name="ph:currency-circle-dollar-bold" size="15" />
-										</button>
-									</div>
 								</td>
 							</tr>
 						</tbody>
@@ -370,96 +339,6 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 			</template>
 		</div>
 
-		<!-- MODAL: STRIPE INFO (abonnement géré par Stripe) -->
-		<Teleport to="body">
-			<Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-				<div v-if="showStripeInfoModal" class="fixed inset-0 z-[100] flex items-center justify-center px-4" @click.self="showStripeInfoModal = false">
-					<div class="absolute inset-0 bg-black/70"></div>
-					<div class="relative w-full max-w-md bg-[#111318] border border-white/[0.09] rounded-xl shadow-2xl overflow-hidden">
-						<div class="h-0.5 w-full bg-gradient-to-r from-violet-500 to-blue-500"></div>
-						<div class="p-6">
-							<div class="flex flex-col items-center text-center mb-5">
-								<div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-3">
-									<Icon name="ph:stripe-logo-bold" class="text-violet-400" size="24" />
-								</div>
-								<h3 class="text-base font-semibold text-white mb-1">Abonnement Stripe</h3>
-								<p class="text-sm text-slate-400 leading-relaxed">
-									Pour annuler ou rembourser cet abonnement, rendez-vous sur le <strong class="text-white">Dashboard Stripe</strong>.
-								</p>
-							</div>
-							<div class="flex gap-2">
-								<button @click="showStripeInfoModal = false" class="flex-1 py-2 bg-white/[0.04] border border-white/[0.08] text-slate-300 font-medium rounded-md hover:bg-white/[0.08] transition-colors text-sm">
-									Fermer
-								</button>
-								<a href="https://dashboard.stripe.com/subscriptions" target="_blank" rel="noopener"
-									class="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-md transition-colors text-sm flex items-center justify-center gap-2">
-									<Icon name="ph:arrow-square-out-bold" size="15" />
-									Dashboard Stripe
-								</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
-
-		<!-- MODAL: REFUND -->
-		<Teleport to="body">
-			<Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-				<div v-if="refundModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center px-4" @click.self="closeRefundModal">
-					<div class="absolute inset-0 bg-black/70"></div>
-					<div class="relative w-full max-w-md bg-[#111318] border border-white/[0.09] rounded-xl shadow-2xl overflow-hidden">
-						<div class="h-0.5 w-full bg-gradient-to-r from-red-600 to-orange-500"></div>
-						<div class="p-6">
-							<div class="flex flex-col items-center text-center mb-5">
-								<div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-3">
-									<Icon name="ph:arrows-counter-clockwise-bold" class="text-red-400" size="22" />
-								</div>
-								<h3 class="text-base font-semibold text-white mb-1">{{ $t('admin.subscriptions.refund_modal.title') }}</h3>
-								<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
-									<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-									<p class="text-red-400 text-[10px] font-medium uppercase tracking-wider">{{ $t('admin.subscriptions.refund_modal.irreversible') }}</p>
-								</span>
-							</div>
-							<div v-if="selectedSubscription" class="bg-white/[0.03] border border-white/[0.06] rounded-lg divide-y divide-white/[0.06] mb-4">
-								<div class="flex justify-between items-center px-3 py-2.5 text-sm">
-									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.business') }}</span>
-									<span class="text-white font-medium max-w-[160px] truncate text-right">{{ selectedSubscription.businessName }}</span>
-								</div>
-								<div class="flex justify-between items-center px-3 py-2.5 text-sm">
-									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.plan') }}</span>
-									<span class="text-white font-medium">{{ selectedSubscription.planName }}</span>
-								</div>
-								<div class="flex justify-between items-center px-3 py-2.5 text-sm">
-									<span class="text-slate-500">{{ $t('admin.subscriptions.refund_modal.amount') }}</span>
-									<span class="text-red-400 font-semibold">{{ formatNumber(selectedSubscription.price) }} Dhs</span>
-								</div>
-							</div>
-							<div class="bg-red-500/[0.05] border border-red-500/10 rounded-lg p-3 mb-5">
-								<p class="text-[10px] font-medium text-red-400/60 uppercase tracking-wider mb-2">{{ $t('admin.subscriptions.refund_modal.actions') }}</p>
-								<ul class="space-y-1.5">
-									<li v-for="key in ['immediate', 'full_refund', 'access_lost']" :key="key" class="flex items-center gap-2 text-xs text-slate-400">
-										<Icon name="ph:x-circle-fill" class="text-red-500/60 shrink-0" size="13" />
-										{{ $t(`admin.subscriptions.refund_modal.${key}`) }}
-									</li>
-								</ul>
-							</div>
-							<div class="flex gap-2">
-								<button @click="closeRefundModal" class="flex-1 py-2 bg-white/[0.04] border border-white/[0.08] text-slate-300 font-medium rounded-md hover:bg-white/[0.08] transition-colors text-sm">
-									{{ $t('admin.subscriptions.refund_modal.cancel') }}
-								</button>
-								<button type="button" @click.stop="confirmRefund" :disabled="refundLoading"
-									class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md shadow-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-									<Icon v-if="refundLoading" name="ph:spinner-gap-bold" class="animate-spin" size="15" />
-									<Icon v-else name="ph:arrows-counter-clockwise-bold" size="15" />
-									{{ $t('admin.subscriptions.refund_modal.confirm') }}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Transition>
-		</Teleport>
 
 		<!-- MODAL: GRANT ACCESS -->
 		<Teleport to="body">

@@ -94,7 +94,14 @@ watch([filterStatus, searchQuery], () => {
 const openStatusDropdown = (orderId: string, event: MouseEvent) => {
 	const button = event.currentTarget as HTMLElement
 	const rect = button.getBoundingClientRect()
-	dropdownPosition.value = { top: rect.bottom + 4, left: rect.left }
+	// Hauteur estimée du menu (5 options) — on l'ouvre vers le haut si pas
+	// assez de place en bas de la fenêtre, sinon il est coupé.
+	const menuHeight = 200
+	const openUp = window.innerHeight - rect.bottom < menuHeight && rect.top > menuHeight
+	dropdownPosition.value = {
+		top: openUp ? rect.top - menuHeight - 4 : rect.bottom + 4,
+		left: rect.left,
+	}
 	editingStatusId.value = editingStatusId.value === orderId ? null : orderId
 }
 

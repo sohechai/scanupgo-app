@@ -103,7 +103,8 @@ const handleSave = async () => {
 		if (business.value.addressZip) payload.addressZip = business.value.addressZip
 		if (business.value.addressCountry) payload.addressCountry = business.value.addressCountry
 		if (business.value.googlePlaceId) payload.googlePlaceId = business.value.googlePlaceId
-		if (business.value.googleReviewUrl) payload.googleReviewUrl = business.value.googleReviewUrl
+		// Toujours envoyé (même vide) pour permettre d'effacer le lien.
+		payload.googleReviewUrl = business.value.googleReviewUrl || null
 		if (business.value.googleRating != null) payload.googleRating = business.value.googleRating
 		if (business.value.googleReviewCount != null) payload.googleReviewCount = business.value.googleReviewCount
 
@@ -296,6 +297,15 @@ onMounted(() => {
 						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.google_search_label') }}</label>
 						<GooglePlacesSearch @select="handlePlaceSelect" :placeholder="$t('profile.google_search_placeholder')" />
 						<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ $t('profile.google_search_hint') }}</p>
+					</div>
+
+					<!-- Lien de dépôt d'avis Google (éditable) -->
+					<div>
+						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.google_review_url_label') }}</label>
+						<input v-model="business.googleReviewUrl" type="url" :disabled="!canEdit"
+							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
+							placeholder="https://search.google.com/local/writereview?placeid=…">
+						<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ $t('profile.google_review_url_hint') }}</p>
 					</div>
 
 					<!-- Google rating badge (read-only) -->
