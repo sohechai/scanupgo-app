@@ -62,6 +62,25 @@ const fetchPlans = async () => {
 
 // Manual access
 const manualSubs = computed(() => subscriptions.value.filter(s => !s.stripeSubscriptionId))
+
+// Filtres de la liste des abonnements
+const subSearch = ref('')
+const subStatusFilter = ref('')
+const subPeriodFilter = ref('')
+const subSourceFilter = ref('')
+const hasSubFilters = computed(() => !!(subSearch.value || subStatusFilter.value || subPeriodFilter.value || subSourceFilter.value))
+const clearSubFilters = () => { subSearch.value = ''; subStatusFilter.value = ''; subPeriodFilter.value = ''; subSourceFilter.value = '' }
+const filteredSubscriptions = computed(() => {
+	const q = subSearch.value.trim().toLowerCase()
+	return subscriptions.value.filter(s => {
+		if (subStatusFilter.value && s.status !== subStatusFilter.value) return false
+		if (subPeriodFilter.value && s.billingPeriod !== subPeriodFilter.value) return false
+		if (subSourceFilter.value === 'stripe' && !s.stripeSubscriptionId) return false
+		if (subSourceFilter.value === 'manual' && s.stripeSubscriptionId) return false
+		if (q && !(`${s.businessName} ${s.businessEmail || ''}`.toLowerCase().includes(q))) return false
+		return true
+	})
+})
 const showGrantModal = ref(false)
 const grantLoading = ref(false)
 const businessesLoading = ref(false)
@@ -200,12 +219,52 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 				</div>
 			</div>
 
+			<!-- Filtres -->
+			<div v-if="!loadingSubs && subscriptions.length > 0" class="flex flex-col lg:flex-row gap-3">
+				<div class="relative flex-1">
+					<Icon name="ph:magnifying-glass-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-500" />
+					<input v-model="subSearch" type="text" :placeholder="$t('admin.subscriptions.filter_search')"
+						class="w-full pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 bg-[#161920] border border-white/[0.07] rounded-md text-sm text-white placeholder-slate-600 focus:border-white/20 focus:outline-none transition-colors" />
+				</div>
+				<div class="relative">
+					<select v-model="subStatusFilter" class="w-full pl-3 pr-9 rtl:pl-9 rtl:pr-3 py-2 bg-[#161920] border border-white/[0.07] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors appearance-none cursor-pointer">
+						<option value="" class="bg-[#161920]">{{ $t('admin.subscriptions.filter_all_status') }}</option>
+						<option value="active" class="bg-[#161920]">{{ $t('admin.subscriptions.status_active') }}</option>
+						<option value="past_due" class="bg-[#161920]">{{ $t('admin.subscriptions.status_past_due') }}</option>
+						<option value="canceled" class="bg-[#161920]">{{ $t('admin.subscriptions.status_canceled') }}</option>
+						<option value="expired" class="bg-[#161920]">{{ $t('admin.subscriptions.status_expired') }}</option>
+					</select>
+					<Icon name="ph:caret-down-bold" size="13" class="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+				</div>
+				<div class="relative">
+					<select v-model="subPeriodFilter" class="w-full pl-3 pr-9 rtl:pl-9 rtl:pr-3 py-2 bg-[#161920] border border-white/[0.07] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors appearance-none cursor-pointer">
+						<option value="" class="bg-[#161920]">{{ $t('admin.subscriptions.filter_all_periods') }}</option>
+						<option value="monthly" class="bg-[#161920]">{{ $t('admin.subscriptions.period_monthly') }}</option>
+						<option value="annual" class="bg-[#161920]">{{ $t('admin.subscriptions.period_annual') }}</option>
+						<option value="lifetime" class="bg-[#161920]">{{ $t('admin.subscriptions.period_lifetime') }}</option>
+					</select>
+					<Icon name="ph:caret-down-bold" size="13" class="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+				</div>
+				<div class="relative">
+					<select v-model="subSourceFilter" class="w-full pl-3 pr-9 rtl:pl-9 rtl:pr-3 py-2 bg-[#161920] border border-white/[0.07] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors appearance-none cursor-pointer">
+						<option value="" class="bg-[#161920]">{{ $t('admin.subscriptions.filter_all_sources') }}</option>
+						<option value="stripe" class="bg-[#161920]">{{ $t('admin.subscriptions.filter_source_stripe') }}</option>
+						<option value="manual" class="bg-[#161920]">{{ $t('admin.subscriptions.filter_source_manual') }}</option>
+					</select>
+					<Icon name="ph:caret-down-bold" size="13" class="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+				</div>
+				<button v-if="hasSubFilters" @click="clearSubFilters" class="px-2 py-2 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors">
+					<Icon name="ph:x-bold" size="14" />
+				</button>
+			</div>
+
 			<div v-if="loadingSubs" class="flex items-center justify-center py-12 text-slate-600">
 				<Icon name="svg-spinners:ring-resize" size="28" />
 			</div>
-			<div v-else-if="subscriptions.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
+			<div v-else-if="filteredSubscriptions.length === 0" class="flex flex-col items-center justify-center py-12 text-slate-600">
 				<Icon name="ph:crown-duotone" size="32" class="mb-2" />
-				<p class="text-sm">{{ $t('admin.subscriptions.no_subscriptions') }}</p>
+				<p class="text-sm">{{ subscriptions.length === 0 ? $t('admin.subscriptions.no_subscriptions') : $t('admin.subscriptions.no_results') }}</p>
+				<button v-if="hasSubFilters" @click="clearSubFilters" class="mt-3 text-xs text-slate-500 hover:text-slate-300 underline transition-colors">{{ $t('admin.subscriptions.filter_clear') }}</button>
 			</div>
 			<div v-else class="bg-[#161920] border border-white/[0.07] rounded-lg overflow-hidden">
 				<div class="overflow-x-auto">
@@ -223,7 +282,7 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-white/[0.04]">
-							<tr v-for="sub in subscriptions" :key="sub.id" class="hover:bg-white/[0.03] transition-colors group">
+							<tr v-for="sub in filteredSubscriptions" :key="sub.id" class="hover:bg-white/[0.03] transition-colors group">
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-2">
 										<div class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-200 shrink-0">{{ sub.businessName.charAt(0).toUpperCase() }}</div>

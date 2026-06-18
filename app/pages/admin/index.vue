@@ -46,6 +46,17 @@ onMounted(async () => {
 	}
 })
 
+// Libellé lisible de la cause de remboursement Stripe
+const refundReasonLabel = (reason?: string | null) => {
+	if (!reason) return ''
+	const map: Record<string, string> = {
+		requested_by_customer: t('admin.dashboard.refund_reason_customer'),
+		fraudulent: t('admin.dashboard.refund_reason_fraud'),
+		duplicate: t('admin.dashboard.refund_reason_duplicate'),
+	}
+	return map[reason] || reason
+}
+
 const statCards = computed(() => [
 	{
 		label: t('admin.dashboard.businesses_label'),
@@ -185,6 +196,9 @@ const statCards = computed(() => [
 								<template v-if="tx.type === 'subscription'">
 									{{ tx.label }} ·
 									{{ tx.period === 'monthly' ? $t('admin.dashboard.monthly') : tx.period === 'annual' ? $t('admin.dashboard.annual') : $t('admin.dashboard.lifetime') }}
+								</template>
+								<template v-else-if="tx.type === 'refund' && (tx.refundReason || tx.refundNote)">
+									{{ tx.label }} · {{ tx.refundNote || refundReasonLabel(tx.refundReason) }}
 								</template>
 								<template v-else>{{ tx.label }}</template>
 							</p>
