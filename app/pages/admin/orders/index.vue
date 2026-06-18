@@ -105,7 +105,11 @@ const openStatusDropdown = (orderId: string, event: MouseEvent) => {
 	editingStatusId.value = editingStatusId.value === orderId ? null : orderId
 }
 
+// Une commande annulée et non payée est figée : aucun changement de statut.
+const isStatusLocked = (order: Order) => order.status === 'cancelled' && order.paymentStatus !== 'paid'
+
 const handleInlineStatusChange = async (order: Order, newStatus: string) => {
+	if (isStatusLocked(order)) { editingStatusId.value = null; return }
 	if (newStatus === order.status) { editingStatusId.value = null; return }
 	updatingStatusId.value = order.id
 	try {
@@ -375,6 +379,12 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 									<div v-if="updatingStatusId === order.id" class="flex items-center gap-1.5 text-xs text-slate-500">
 										<Icon name="svg-spinners:ring-resize" size="13" />
 									</div>
+									<!-- Commande annulée non payée : statut figé, pas de dropdown -->
+									<span v-else-if="isStatusLocked(order)"
+										class="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium border opacity-70"
+										:class="getStatusClasses(order.status)">
+										{{ getStatusLabel(order.status) }}
+									</span>
 									<button v-else @click="openStatusDropdown(order.id, $event)"
 										class="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium border transition-colors hover:opacity-80"
 										:class="getStatusClasses(order.status)">
@@ -400,7 +410,7 @@ const getNextStatusLabel = (currentStatus: string): string | null => {
 
 							<td class="px-4 py-3 text-right rtl:text-left">
 								<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-									<button v-if="getNextStatus(order.status)"
+									<button v-if="getNextStatus(order.status) && !isStatusLocked(order)"
 										@click="handleInlineStatusChange(order, getNextStatus(order.status)!)"
 										:disabled="updatingStatusId === order.id"
 										class="px-2 py-1 text-xs font-medium bg-white/[0.08] hover:bg-white/[0.14] text-white rounded transition-colors disabled:opacity-50 flex items-center gap-1"

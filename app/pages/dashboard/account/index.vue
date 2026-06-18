@@ -273,7 +273,9 @@ const deleteAccount = async () => {
 	}
 	deleteLoading.value = true
 	try {
-		await $api(`/admin/businesses/${businessId.value}`, { method: 'DELETE' })
+		// Route RGPD de suppression de son propre compte (accessible à tout
+		// utilisateur authentifié), pas la route admin réservée aux SUPER_ADMIN.
+		await $api('/auth/delete-account', { method: 'DELETE' })
 		resetNotifications()
 		showToast(t('common.success'), 'success')
 		await signOut()

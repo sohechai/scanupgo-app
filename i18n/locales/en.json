@@ -632,6 +632,11 @@
 	"orders": {
 		"title": "My Orders",
 		"subtitle": "Manage your orders and track their status",
+		"cancel_button": "Cancel",
+		"cancel_success": "Order cancelled",
+		"cancel_confirm_title": "Cancel this order?",
+		"cancel_confirm_text": "This unpaid order will be cancelled. This action is permanent.",
+		"cancel_confirm_button": "Cancel order",
 		"access_required": "Access your Orders",
 		"access_description": "Manage your printed flyer orders and track their delivery status.",
 		"new_order": "New Order",
