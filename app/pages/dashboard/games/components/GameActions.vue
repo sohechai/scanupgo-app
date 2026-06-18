@@ -79,7 +79,7 @@ const openEdit = (a: GameAction) => {
 	showModal.value = true
 }
 const selectNetwork = (type: string) => {
-	// On n'écrase le message/bouton (et le lien Google) que si le réseau change
+	// On n'écrase le message/bouton (et le lien) que si le réseau change
 	// réellement — sinon en édition on perdrait les textes personnalisés.
 	const changed = form.value.type !== type
 	form.value.type = type
@@ -87,9 +87,17 @@ const selectNetwork = (type: string) => {
 		const d = DEFAULTS[type] || DEFAULTS.other
 		form.value.clientMessage = d.msg
 		form.value.buttonText = d.btn
-		if (type === 'google' && props.googleReviewUrl) form.value.link = props.googleReviewUrl
+		// Le lien Google n'a de sens que pour Google : on pré-remplit pour Google
+		// (si configuré), sinon on laisse vide pour tous les autres réseaux.
+		form.value.link = type === 'google' ? (props.googleReviewUrl || '') : ''
 	}
 	modalStep.value = 2
+}
+
+// Sélection d'un établissement via la recherche Google Places : on remplit le
+// lien d'avis Google.
+const onPlaceSelect = (details: { googleReviewUrl: string }) => {
+	if (details?.googleReviewUrl) form.value.link = details.googleReviewUrl
 }
 
 const saveAction = async () => {
@@ -151,7 +159,11 @@ const confirmRemove = async () => {
 					<GameNetworkIcon :type="a.type" :size="20" />
 					<span class="font-bold text-sm text-slate-800 dark:text-white">{{ networkLabel(a.type) }}</span>
 				</div>
-				<p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mb-1.5 font-mono">{{ a.link || '— lien non défini —' }}</p>
+				<p v-if="a.link" class="text-[11px] text-slate-500 dark:text-slate-400 truncate mb-1.5 font-mono">{{ a.link }}</p>
+				<p v-else class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded px-1.5 py-0.5 mb-1.5">
+					<Icon name="ph:warning-circle-fill" size="12" />
+					Lien non défini — à compléter
+				</p>
 				<p class="text-xs text-slate-600 dark:text-slate-300"><span class="text-slate-400">Message :</span> {{ a.clientMessage }} · <span class="text-slate-400">Bouton :</span> {{ a.buttonText }}</p>
 				<div class="flex items-center gap-2 mt-3">
 					<button type="button" @click="openEdit(a)"
@@ -190,6 +202,12 @@ const confirmRemove = async () => {
 						<div class="flex items-center gap-2 pb-2">
 							<GameNetworkIcon :type="form.type" :size="22" />
 							<span class="font-bold text-slate-800 dark:text-white">{{ networkLabel(form.type) }}</span>
+						</div>
+						<!-- Recherche d'établissement Google (uniquement pour Google) -->
+						<div v-if="form.type === 'google'">
+							<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Rechercher votre établissement</label>
+							<GooglePlacesSearch @select="onPlaceSelect" placeholder="Nom de votre établissement…" />
+							<p class="text-[11px] text-slate-400 mt-1">Sélectionnez votre établissement pour générer automatiquement le lien d'avis Google.</p>
 						</div>
 						<div>
 							<label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Lien</label>

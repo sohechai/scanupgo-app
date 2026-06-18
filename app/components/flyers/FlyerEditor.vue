@@ -490,10 +490,16 @@ const addLogo = async () => {
 			logoCanvasObject.value = null
 		}
 
-		img.scale(0.3)
+		// Taille initiale plus petite, normalisée par rapport à la largeur du canvas
+		// (≈18% de la largeur) pour être cohérent quelle que soit la résolution du logo.
+		const targetWidth = CANVAS_WIDTH * 0.18
+		img.scale(targetWidth / (img.width || targetWidth))
+		// Placé en haut au centre par défaut (le commerçant peut ensuite le déplacer).
 		img.set({
-			left: 50,
-			top: 150,
+			originX: 'center',
+			originY: 'top',
+			left: CANVAS_WIDTH / 2,
+			top: 30,
 		})
 
 		configureObjectControls(img)
@@ -522,11 +528,13 @@ const placeQROnCanvas = async (url: string) => {
 	if (!canvas.value || !url) return
 	const { FabricImage } = await import('fabric')
 
-	// Remove existing QR object
-	if (qrCanvasObject.value) {
-		canvas.value.remove(qrCanvasObject.value)
-		qrCanvasObject.value = null
-	}
+	// Supprime TOUT QR déjà présent (pas seulement le dernier référencé) : les
+	// appels async de FabricImage.fromURL peuvent laisser des QR orphelins non
+	// suivis par qrCanvasObject → on les retire via le flag isQrCode pour éviter
+	// la duplication.
+	const existingQrs = canvas.value.getObjects().filter((o: any) => o.isQrCode)
+	for (const obj of existingQrs) canvas.value.remove(obj)
+	qrCanvasObject.value = null
 
 	// Position du QR : utiliser la qrZone définie par le template si elle existe,
 	// sinon position fixe par défaut (zone blanche à 66%/68% du canvas).
@@ -535,6 +543,14 @@ const placeQROnCanvas = async (url: string) => {
 
 	FabricImage.fromURL(url, { crossOrigin: 'anonymous' }).then((img) => {
 		if (!canvas.value) return
+
+		// Filet de sécurité : si un autre appel async a ajouté un QR entre-temps,
+		// on le retire avant d'ajouter le nouveau (évite la duplication).
+		const stale = canvas.value.getObjects().filter((o: any) => o.isQrCode)
+		for (const obj of stale) canvas.value.remove(obj)
+
+		// Marqueur pour identifier les QR (utilisé pour la déduplication ci-dessus)
+		;(img as any).isQrCode = true
 
 		if (zone) {
 			img.scaleToWidth(zone.size ?? zone.width ?? 120)
@@ -981,7 +997,9 @@ const exportFlyer = async () => {
 
 		if (response?.url) {
 			showToast('Flyer exporté avec succès', 'success')
-			const canvasJson = { ...(canvas.value?.toJSON() || {}), _template: selectedBaseTemplate.value }
+			// On inclut le flag isQrCode dans le JSON pour que la déduplication du
+			// QR fonctionne aussi au rechargement d'un flyer sauvegardé.
+			const canvasJson = { ...(canvas.value?.toJSON(['isQrCode']) || {}), _template: selectedBaseTemplate.value }
 			emit('save', response.url, canvasJson)
 		}
 	} catch (e) {

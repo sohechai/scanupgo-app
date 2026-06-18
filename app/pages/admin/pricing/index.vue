@@ -530,7 +530,7 @@ onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks(); fetchTrialSett
 
 			<!-- Type filter -->
 			<div class="flex gap-1.5">
-				<button v-for="f in [{ id: 'all', label: $t('admin.pricing.credits_filter_all') }, { id: 'email', label: $t('admin.pricing.credits_filter_email') }, { id: 'sms', label: $t('admin.pricing.credits_filter_sms') }]"
+				<button v-for="f in [{ id: 'all', label: $t('admin.pricing.credits_filter_all') }, { id: 'email', label: $t('admin.pricing.credits_filter_email') }]"
 					:key="f.id" @click="creditTypeFilter = f.id"
 					class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors border"
 					:class="creditTypeFilter === f.id
@@ -853,19 +853,9 @@ onMounted(() => { fetchPlans(); fetchPacks(); fetchCreditPacks(); fetchTrialSett
 						</div>
 						<div>
 							<label class="block text-xs font-medium text-slate-400 mb-1.5">{{ $t('admin.pricing.credits_modal_type') }}</label>
-							<div class="grid grid-cols-2 gap-2">
-								<button type="button" @click="creditForm.type = 'email'"
-									class="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border transition-colors"
-									:class="creditForm.type === 'email' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:bg-white/[0.08]'">
-									<Icon name="ph:envelope-bold" size="15" />
-									{{ $t('admin.pricing.credits_email') }}
-								</button>
-								<button type="button" @click="creditForm.type = 'sms'"
-									class="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border transition-colors"
-									:class="creditForm.type === 'sms' ? 'bg-violet-500/10 text-violet-400 border-violet-500/30' : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:bg-white/[0.08]'">
-									<Icon name="ph:chat-circle-text-bold" size="15" />
-									{{ $t('admin.pricing.credits_sms') }}
-								</button>
+							<div class="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border bg-blue-500/10 text-blue-400 border-blue-500/30">
+								<Icon name="ph:envelope-bold" size="15" />
+								{{ $t('admin.pricing.credits_email') }}
 							</div>
 						</div>
 						<div class="grid grid-cols-2 gap-3">

@@ -127,8 +127,12 @@ function toggleMenu(e: Event, user: any) {
 		return
 	}
 	const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+	// Ouvre vers le haut si pas assez de place en bas (sinon le menu est coupé
+	// pour les dernières lignes du tableau).
+	const menuHeight = 280
+	const openUp = window.innerHeight - rect.bottom < menuHeight && rect.top > menuHeight
 	dropdownPos.value = {
-		top: rect.bottom + 4,
+		top: openUp ? rect.top - menuHeight - 4 : rect.bottom + 4,
 		right: window.innerWidth - rect.right,
 	}
 	menuUser.value = user
