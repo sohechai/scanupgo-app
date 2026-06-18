@@ -32,8 +32,7 @@ const needsFlyerSelection = computed(() => !props.flyerDesignUrl)
 const totalSteps = computed(() => needsFlyerSelection.value ? 3 : 2)
 const currentStep = ref(1)
 
-// Pricing state
-const pricingLoading = ref(false)
+// Pricing state (rempli depuis le pack sélectionné)
 const calculatedPrice = ref<{ unitPrice: number; totalPrice: number; currency: string } | null>(null)
 
 // Payment state
@@ -101,37 +100,6 @@ const fetchGames = async () => {
 const selectFlyer = (game: any) => {
 	selectedGameId.value = game.id
 	selectedFlyerUrl.value = game.flyerDesignUrl
-}
-
-// Price calculation
-const pricingError = ref<string | null>(null)
-
-const calculatePrice = async () => {
-	pricingLoading.value = true
-	pricingError.value = null
-	try {
-		const result = await $api<{ unitPrice: number; totalPrice: number; currency: string } | null>('/flyer-pricing/calculate', {
-			params: {
-				productType: 'flyers',
-				dimensions: 'A6',
-				quantity: form.value.quantity,
-				paperType: '135g_couche',
-			}
-		})
-
-		if (!result || result.unitPrice === undefined) {
-			pricingError.value = t('components.create_order.error_no_pricing')
-			calculatedPrice.value = null
-		} else {
-			calculatedPrice.value = result
-		}
-	} catch (error) {
-		console.error('Error calculating price:', error)
-		pricingError.value = t('components.create_order.error_pricing_calc')
-		calculatedPrice.value = null
-	} finally {
-		pricingLoading.value = false
-	}
 }
 
 // Charge games + packs à l'ouverture (plus de calcul par quantité)

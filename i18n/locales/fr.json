@@ -632,6 +632,11 @@
 	"orders": {
 		"title": "Mes Commandes",
 		"subtitle": "Gérez vos commandes et suivez leur statut",
+		"cancel_button": "Annuler",
+		"cancel_success": "Commande annulée",
+		"cancel_confirm_title": "Annuler cette commande ?",
+		"cancel_confirm_text": "Cette commande non payée sera annulée. Cette action est définitive.",
+		"cancel_confirm_button": "Annuler la commande",
 		"access_required": "Accédez à vos Commandes",
 		"access_description": "Gérez vos commandes de flyers imprimés et suivez leur statut de livraison.",
 		"new_order": "Nouvelle Commande",

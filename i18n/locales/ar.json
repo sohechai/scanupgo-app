@@ -632,6 +632,11 @@
 	"orders": {
 		"title": "طلباتي",
 		"subtitle": "أدر طلباتك وتابع حالتها",
+		"cancel_button": "إلغاء",
+		"cancel_success": "تم إلغاء الطلب",
+		"cancel_confirm_title": "إلغاء هذا الطلب؟",
+		"cancel_confirm_text": "سيتم إلغاء هذا الطلب غير المدفوع. هذا الإجراء نهائي.",
+		"cancel_confirm_button": "إلغاء الطلب",
 		"access_required": "الوصول إلى طلباتك",
 		"access_description": "أدر طلبات الفلايرات المطبوعة وتابع حالة التسليم.",
 		"new_order": "طلب جديد",

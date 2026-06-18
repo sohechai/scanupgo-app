@@ -10,6 +10,8 @@ useHead({ title: 'Commandes' })
 
 const { t } = useI18n()
 const router = useRouter()
+const { $api } = useNuxtApp()
+const { show: showToast } = useToast()
 const { formatDate } = useLocaleDate()
 const { orders, stats, loading, fetchOrders, fetchStats, getStatusLabel, getStatusColor } = useOrders()
 const { hasActiveSubscription, fetchSubscription } = useSubscription()
@@ -18,6 +20,23 @@ const showCreateModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedOrder = ref<Order | null>(null)
 const filterStatus = ref<string>('all')
+
+// Annulation d'une commande non payée
+const cancelTarget = ref<Order | null>(null)
+const cancelLoading = ref(false)
+const askCancelOrder = (order: Order) => { cancelTarget.value = order }
+const confirmCancelOrder = async () => {
+	if (!cancelTarget.value) return
+	cancelLoading.value = true
+	try {
+		await $api(`/orders/${cancelTarget.value.id}/cancel`, { method: 'POST' })
+		cancelTarget.value = null
+		await Promise.all([fetchOrders(), fetchStats()])
+		showToast(t('orders.cancel_success'), 'success')
+	} catch (e: any) {
+		showToast(e?.data?.message || t('common.error'), 'error')
+	} finally { cancelLoading.value = false }
+}
 
 onMounted(async () => {
 	fetchSubscription()
@@ -72,12 +91,15 @@ const statusTextColor: Record<string, string> = {
 }
 
 const getOrderDisplayKey = (order: Order) => {
+	// Une commande annulée prime sur le statut de paiement en attente.
+	if (order.status === 'cancelled') return 'cancelled'
 	if (order.paymentStatus === 'refunded') return 'refunded'
 	if (order.paymentStatus === 'pending') return 'awaiting_payment'
 	return order.status
 }
 
 const getOrderDisplayLabel = (order: Order) => {
+	if (order.status === 'cancelled') return getStatusLabel('cancelled')
 	if (order.paymentStatus === 'refunded') return t('orders.stats.refunded')
 	if (order.paymentStatus === 'pending') return t('orders.stats.awaiting_payment')
 	return getStatusLabel(order.status)
@@ -186,12 +208,18 @@ const getOrderDisplayLabel = (order: Order) => {
 						<span class="text-xs text-slate-400">{{ formatDate(order.createdAt) }}</span>
 					</div>
 					<!-- Pay now button for pending orders -->
-					<button v-if="order.paymentStatus === 'pending'"
-						@click.stop="router.push(`/dashboard/orders/${order.id}/payment`)"
-						class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-[#635BFF] hover:bg-[#5248e0] text-white text-xs font-semibold rounded-md transition-colors">
-						<Icon name="ph:credit-card-bold" size="12" />
-						{{ $t('components.order_details.pay_now') }}
-					</button>
+					<template v-if="order.paymentStatus === 'pending' && order.status !== 'cancelled'">
+						<button @click.stop="askCancelOrder(order)"
+							class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 border border-red-200 dark:border-red-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs font-semibold rounded-md transition-colors">
+							<Icon name="ph:x-bold" size="12" />
+							{{ $t('orders.cancel_button') }}
+						</button>
+						<button @click.stop="router.push(`/dashboard/orders/${order.id}/payment`)"
+							class="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-[#635BFF] hover:bg-[#5248e0] text-white text-xs font-semibold rounded-md transition-colors">
+							<Icon name="ph:credit-card-bold" size="12" />
+							{{ $t('components.order_details.pay_now') }}
+						</button>
+					</template>
 					<Icon v-else name="ph:caret-right-bold" size="11" class="text-slate-300 dark:text-slate-600 shrink-0 rtl:rotate-180" />
 				</div>
 			</div>
@@ -218,5 +246,25 @@ const getOrderDisplayLabel = (order: Order) => {
 		<!-- Modals -->
 		<OrdersCreateOrderModal v-model="showCreateModal" @created="handleOrderCreated" />
 		<OrdersOrderDetailsModal v-model="showDetailsModal" :order="selectedOrder" />
+
+		<!-- Confirmation annulation commande -->
+		<Teleport to="body">
+			<div v-if="cancelTarget" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+				<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" @click="cancelTarget = null"></div>
+				<div class="relative w-full max-w-[400px] bg-white dark:bg-slate-900 rounded-xl shadow-2xl ring-1 ring-slate-900/5">
+					<div class="p-6">
+						<h3 class="text-[15px] font-semibold text-slate-900 dark:text-white">{{ $t('orders.cancel_confirm_title') }}</h3>
+						<p class="mt-1.5 text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed">{{ $t('orders.cancel_confirm_text') }}</p>
+					</div>
+					<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-b-xl border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+						<button @click="cancelTarget = null" class="px-3.5 py-2 text-[13px] font-medium text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">{{ $t('common.cancel') }}</button>
+						<button @click="confirmCancelOrder" :disabled="cancelLoading" class="px-3.5 py-2 text-[13px] font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2">
+							<Icon v-if="cancelLoading" name="ph:spinner-gap-bold" size="14" class="animate-spin" />
+							{{ $t('orders.cancel_confirm_button') }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
 	</div>
 </template>
