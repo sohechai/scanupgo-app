@@ -168,7 +168,7 @@ const statCards = computed(() => [
 			<div class="bg-[#161920] border border-white/[0.07] rounded-lg">
 				<div class="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
 					<h3 class="text-sm font-semibold text-white">{{ $t('admin.dashboard.recent_transactions') }}</h3>
-					<NuxtLink to="/admin/subscriptions" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1">
+					<NuxtLink to="/admin/payments" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1">
 						{{ $t('admin.dashboard.view_all') || 'Voir tout' }}
 						<Icon name="ph:arrow-right-bold" size="12" class="rtl:rotate-180" />
 					</NuxtLink>
