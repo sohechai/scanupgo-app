@@ -226,6 +226,7 @@ export const useOrders = () => {
 			paid: 'Payé',
 			failed: 'Échoué',
 			refunded: 'Remboursé',
+			partial_refund: 'Remboursement partiel',
 		}
 		return labels[status || 'pending'] || status || 'En attente de paiement'
 	}
@@ -236,6 +237,7 @@ export const useOrders = () => {
 			paid: 'green',
 			failed: 'red',
 			refunded: 'purple',
+			partial_refund: 'orange',
 		}
 		return colors[status || 'pending'] || 'gray'
 	}
