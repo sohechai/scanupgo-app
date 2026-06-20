@@ -85,14 +85,14 @@ onMounted(async () => {
 	<div class="space-y-5">
 
 		<!-- Header -->
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 			<div>
 				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('marketing.index.title') }}</h1>
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('marketing.index.subtitle') }}</p>
 			</div>
 			<NuxtLink to="/dashboard/marketing/campaigns/new"
 				:class="[
-					'flex items-center gap-2 px-4 py-2 font-medium rounded-md transition-all text-sm whitespace-nowrap',
+					'flex items-center justify-center gap-2 px-4 py-2 font-medium rounded-md transition-all text-sm whitespace-nowrap',
 					creditsExhausted
 						? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed pointer-events-none'
 						: 'bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white'

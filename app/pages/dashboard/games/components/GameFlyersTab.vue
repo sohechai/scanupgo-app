@@ -372,7 +372,7 @@ const downloadFlyerPDF = async () => {
 						</button>
 					</div>
 
-					<div class="p-6 flex flex-col lg:flex-row items-start gap-8">
+					<div class="p-4 sm:p-6 flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
 						<div class="mx-auto lg:mx-0">
 							<img :src="game.flyerDesignUrl" class="w-52 h-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-md" />
 						</div>

@@ -150,7 +150,7 @@ onMounted(async () => {
 				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('players.title') }}</h1>
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('players.subtitle') }}</p>
 			</div>
-			<div class="flex items-center gap-2">
+			<div class="flex items-center flex-wrap gap-2">
 				<!-- Filtre établissement (SUPER_ADMIN) -->
 				<select v-if="isSuperAdmin && businessOptions.length >= 1" v-model="selectedBusinessId"
 					class="px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20">

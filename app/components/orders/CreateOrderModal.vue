@@ -471,7 +471,7 @@ const stepLabels = computed(() => {
 										class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/40 outline-none transition-all placeholder-slate-400" />
 								</div>
 
-								<div class="grid grid-cols-3 gap-3">
+								<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 									<div>
 										<label class="block text-xs font-medium text-slate-500 mb-1">
 											{{ $t('components.create_order.label_city') }} <span class="text-red-400">*</span>

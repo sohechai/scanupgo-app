@@ -30,6 +30,44 @@ const flyerRef = ref<HTMLElement>()
 const { $api } = useNuxtApp()
 const { t } = useI18n()
 
+// Mise à l'échelle responsive : le flyer reste 420×595 en interne (export
+// pleine résolution), mais on l'affiche scalé pour tenir dans la largeur dispo.
+const FLYER_W = 420
+const scaleHostRef = ref<HTMLElement>()
+const flyerScale = ref(1)
+let scaleObserver: ResizeObserver | null = null
+
+const updateFlyerScale = () => {
+	const host = scaleHostRef.value
+	if (!host) return
+	// On borne sur la largeur réellement visible : le min entre la largeur du
+	// host et celle de la fenêtre, pour ne jamais déborder même si un ancêtre
+	// est en overflow.
+	const hostW = host.clientWidth
+	const viewportW = typeof window !== 'undefined' ? window.innerWidth : hostW
+	// On vise la largeur du host, mais sans jamais dépasser la fenêtre. Petite
+	// marge de 12px pour les paddings.
+	const avail = Math.min(hostW, viewportW - 12) - 4
+	if (avail <= 40) return // mesure pas encore fiable
+	flyerScale.value = Math.min(1, Math.max(0.2, avail / FLYER_W))
+}
+
+onMounted(async () => {
+	await nextTick()
+	updateFlyerScale()
+	// Re-mesure après stabilisation du layout (transitions, fonts, etc.)
+	setTimeout(updateFlyerScale, 100)
+	if (scaleHostRef.value && 'ResizeObserver' in window) {
+		scaleObserver = new ResizeObserver(() => updateFlyerScale())
+		scaleObserver.observe(scaleHostRef.value)
+	}
+	if (typeof window !== 'undefined') window.addEventListener('resize', updateFlyerScale)
+})
+onBeforeUnmount(() => {
+	scaleObserver?.disconnect()
+	if (typeof window !== 'undefined') window.removeEventListener('resize', updateFlyerScale)
+})
+
 // Use props or fallback (safely handle undefined game)
 const backgroundColor = computed(() => props.primaryColor || props.game?.primaryColor || '#fb923c')
 const accentColor = computed(() => props.accentColor || props.game?.primaryColor || '#fb923c')
@@ -240,11 +278,15 @@ defineExpose({
 </script>
 
 <template>
-	<div class="flex justify-center items-center p-4 bg-slate-100 dark:bg-slate-900 rounded-xl min-h-[600px]">
-		<!-- Flyer Container - A6 Ratio - Simplified CSS for html2canvas compatibility -->
-		<div ref="flyerRef"
-			class="w-[420px] h-[595px] relative overflow-hidden shadow-2xl shrink-0"
-			:style="{ backgroundColor: backgroundColor }">
+	<div ref="scaleHostRef" class="flex justify-center items-center p-1 sm:p-4 bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden w-full">
+		<!-- Conteneur de mise à l'échelle : réserve la place du flyer scalé pour
+		     que le layout ne casse pas sur petit écran. Le flyer interne reste à
+		     420×595 (export pleine résolution inchangé). -->
+		<div :style="{ width: 420 * flyerScale + 'px', height: 595 * flyerScale + 'px' }" class="shrink-0">
+			<!-- Flyer Container - A6 Ratio - Simplified CSS for html2canvas compatibility -->
+			<div ref="flyerRef"
+				class="w-[420px] h-[595px] relative overflow-hidden shadow-2xl"
+				:style="{ backgroundColor: backgroundColor, transform: `scale(${flyerScale})`, transformOrigin: 'top left' }">
 
 			<!-- Background gradient overlay (simplified for html2canvas) -->
 			<div class="absolute inset-0" :style="{ background: `linear-gradient(180deg, ${backgroundColor} 0%, #000000 100%)` }"></div>
@@ -360,6 +402,7 @@ defineExpose({
 				</div>
 			</div>
 
+		</div>
 		</div>
 	</div>
 </template>

@@ -262,7 +262,7 @@ onMounted(async () => {
 	<div class="space-y-5">
 
 		<!-- Header -->
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 			<div>
 				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('games.title') }}</h1>
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.subtitle') }}</p>
@@ -270,12 +270,12 @@ onMounted(async () => {
 			<div class="flex items-center gap-2">
 				<!-- Filtre établissement (SUPER_ADMIN) -->
 				<select v-if="isSuperAdmin && businessOptions.length >= 1" v-model="selectedBusinessId"
-					class="px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30">
+					class="flex-1 sm:flex-none px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30">
 					<option value="all">{{ $t('games.all_businesses') }}</option>
 					<option v-for="b in businessOptions" :key="b.id" :value="b.id">{{ b.name }}</option>
 				</select>
 				<NuxtLink to="/dashboard/games/new"
-					class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
+					class="flex items-center justify-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm whitespace-nowrap">
 					<Icon name="ph:plus-bold" size="15" />
 					{{ $t('games.create_button') }}
 				</NuxtLink>

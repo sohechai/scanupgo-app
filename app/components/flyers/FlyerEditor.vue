@@ -49,7 +49,18 @@ const textColor = ref('#000000')
 const textFontFamily = ref('Luckiest Guy')
 const textAlign = ref<'left' | 'center' | 'right'>('left')
 
-const { canvas, CANVAS_WIDTH, CANVAS_HEIGHT, initCanvas, configureObjectControls, loadFlyerImageAsBackground } = useFabricCanvas(canvasRef, { textColor, textFontFamily, textAlign })
+const { canvas, CANVAS_WIDTH, CANVAS_HEIGHT, initCanvas, configureObjectControls, loadFlyerImageAsBackground, fitCanvasToWidth } = useFabricCanvas(canvasRef, { textColor, textFontFamily, textAlign })
+
+// Conteneur du canvas : sert à mesurer la largeur dispo pour scaler l'affichage.
+const canvasHostRef = ref<HTMLElement>()
+let canvasResizeObserver: ResizeObserver | null = null
+const fitCanvas = () => {
+	const host = canvasHostRef.value
+	if (!host) return
+	const viewportW = typeof window !== 'undefined' ? window.innerWidth : host.clientWidth
+	const avail = Math.min(host.clientWidth, viewportW - 12) - 4
+	if (avail > 40) fitCanvasToWidth(avail)
+}
 
 const uploading = ref(false)
 const exporting = ref(false)
@@ -207,6 +218,20 @@ onMounted(async () => {
 
 		canvas.value.renderAll()
 	}
+
+	// Ajuste l'affichage du canvas à la largeur + écoute les redimensionnements.
+	await nextTick()
+	fitCanvas()
+	if (canvasHostRef.value && 'ResizeObserver' in window) {
+		canvasResizeObserver = new ResizeObserver(() => fitCanvas())
+		canvasResizeObserver.observe(canvasHostRef.value)
+	}
+	if (typeof window !== 'undefined') window.addEventListener('resize', fitCanvas)
+})
+
+onBeforeUnmount(() => {
+	canvasResizeObserver?.disconnect()
+	if (typeof window !== 'undefined') window.removeEventListener('resize', fitCanvas)
 })
 
 // Load template
@@ -326,6 +351,8 @@ const loadTemplate = async (templateId: string) => {
 			})
 		} // End if template.image
 
+		await nextTick()
+		fitCanvas()
 		showToast(`Template chargé`, 'success')
 	} catch (e) {
 		console.error('Template loading failed', e)
@@ -419,6 +446,8 @@ const convertSmartToCanvas = async (): Promise<boolean> => {
 		if (typeof canvas.value.sendToBack === 'function') canvas.value.sendToBack(img)
 		else canvas.value.moveObjectTo(img, 0)
 		canvas.value.renderAll()
+		await nextTick()
+		fitCanvas()
 		converting.value = false
 		showToast('Template converti en canvas éditable', 'success')
 		return true
@@ -1242,10 +1271,11 @@ const previewFlyer = async () => {
 </script>
 
 <template>
-	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-6 relative">
+	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-3 sm:gap-6 relative">
 
-		<!-- LEFT SIDEBAR -->
+		<!-- LEFT SIDEBAR (passe sous le flyer sur mobile via order) -->
 		<FlyerSidebar
+			class="order-2 xl:order-none"
 			:has-logo="!!businessLogo"
 			:has-qr-code="!!qrCodeUrl"
 			:converted-from-smart="convertedFromSmart"
@@ -1266,9 +1296,9 @@ const previewFlyer = async () => {
 			@flyer-file-selected="handleFlyerFile"
 		/>
 
-		<!-- MAIN CANVAS AREA -->
+		<!-- MAIN CANVAS AREA (en premier sur mobile) -->
 		<div
-			class="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+			class="order-1 xl:order-none flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
 
 			<!-- TOP BAR: ACTIONS -->
 			<FlyerToolbar
@@ -1295,11 +1325,11 @@ const previewFlyer = async () => {
 			/>
 
 			<!-- CANVAS CONTAINER -->
-			<div
-				class="flex-1 flex items-center justify-center p-8 bg-[url('https://res.cloudinary.com/dts5p63s6/image/upload/v1727712392/grid-pattern_m4yq7j.svg')] bg-[length:24px_24px] overflow-auto">
+			<div ref="canvasHostRef"
+				class="flex-1 flex items-center justify-center p-2 sm:p-8 bg-[url('https://res.cloudinary.com/dts5p63s6/image/upload/v1727712392/grid-pattern_m4yq7j.svg')] bg-[length:24px_24px] overflow-hidden">
 
 
-				<div v-if="mode === 'smart'" class="flex flex-col items-center gap-6 py-6 w-full">
+				<div v-if="mode === 'smart'" class="flex flex-col items-center gap-6 py-6 w-full min-w-0 max-w-full">
 					<SmartFlyer ref="smartFlyerRef" :game="game" :business-name="businessName"
 						:business-logo="currentBusinessLogo" :qr-code-url="qrCodeUrl"
 						:primary-color="smartOptions.backgroundColor" :accent-color="smartOptions.accentColor"
@@ -1310,7 +1340,7 @@ const previewFlyer = async () => {
 						:qr-logo="smartOptions.qrLogo"
 						:qr-play-url="getGameUrl()" />
 				</div><!-- Canvas Mode -->
-				<div v-else class="relative shadow-2xl shadow-slate-400/20 rounded-sm">
+				<div v-else class="relative shadow-2xl shadow-slate-400/20 rounded-sm shrink-0">
 					<canvas ref="canvasRef"></canvas>
 
 					<!-- Loading Overlay -->

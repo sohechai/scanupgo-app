@@ -857,7 +857,7 @@ const saveGame = async () => {
 								</div>
 
 								<!-- Themes grid -->
-								<div v-if="bgTab === 'themes'" class="grid grid-cols-5 gap-2">
+								<div v-if="bgTab === 'themes'" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
 									<button v-for="theme in backgroundThemes" :key="theme.name" type="button"
 										@click="game.backgroundImage = theme.value"
 										:class="game.backgroundImage === theme.value ? 'ring-2 ring-[#007AFF] ring-offset-2 dark:ring-offset-slate-800' : 'hover:ring-2 hover:ring-slate-300 hover:ring-offset-1'"

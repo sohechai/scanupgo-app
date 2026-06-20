@@ -85,7 +85,8 @@ const getStatus = (s: string) => statusConfig[s] || statusConfig.void
 
 		<!-- Table -->
 		<div v-else class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-			<table class="w-full">
+			<div class="overflow-x-auto">
+			<table class="w-full min-w-[600px]">
 				<thead>
 					<tr class="border-b border-slate-100 dark:border-slate-800">
 						<th class="px-5 py-3 text-left text-xs font-medium text-slate-400 dark:text-slate-500">{{ $t('subscription.invoices.number') }}</th>
@@ -141,6 +142,7 @@ const getStatus = (s: string) => statusConfig[s] || statusConfig.void
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 </template>

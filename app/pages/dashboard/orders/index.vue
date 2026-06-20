@@ -110,13 +110,13 @@ const getOrderDisplayLabel = (order: Order) => {
 	<div class="space-y-5">
 
 		<!-- Header -->
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 			<div>
 				<h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $t('orders.title') }}</h1>
 				<p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('orders.subtitle') }}</p>
 			</div>
 			<button @click="showCreateModal = true"
-				class="flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm">
+				class="flex items-center justify-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0066DD] active:scale-[0.98] text-white font-medium rounded-md transition-all text-sm whitespace-nowrap">
 				<Icon name="ph:plus-bold" size="15" />
 				{{ $t('orders.new_order') }}
 			</button>

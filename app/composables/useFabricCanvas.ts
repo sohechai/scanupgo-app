@@ -118,11 +118,27 @@ export function useFabricCanvas(
 		}
 	}
 
+	// Ajuste l'AFFICHAGE du canvas à la largeur dispo sans changer les
+	// coordonnées internes (cssOnly). Fabric recalcule lui-même le mapping des
+	// clics/drags → les interactions restent correctes même scalé.
+	const fitCanvasToWidth = (availWidth: number) => {
+		if (!canvas.value || !availWidth || availWidth <= 0) return
+		const scale = Math.min(1, availWidth / CANVAS_WIDTH)
+		try {
+			canvas.value.setDimensions(
+				{ width: `${CANVAS_WIDTH * scale}px`, height: `${CANVAS_HEIGHT * scale}px` },
+				{ cssOnly: true },
+			)
+		} catch {
+			/* no-op si Fabric pas prêt */
+		}
+	}
+
 	onBeforeUnmount(() => {
 		const toDispose = canvas.value
 		canvas.value = null
 		if (toDispose) toDispose.dispose().catch(() => {})
 	})
 
-	return { canvas, CANVAS_WIDTH, CANVAS_HEIGHT, initCanvas, configureObjectControls, loadFlyerImageAsBackground }
+	return { canvas, CANVAS_WIDTH, CANVAS_HEIGHT, initCanvas, configureObjectControls, loadFlyerImageAsBackground, fitCanvasToWidth }
 }

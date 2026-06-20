@@ -97,7 +97,7 @@ const emit = defineEmits<{
 		<div v-else class=""></div>
 
 		<!-- Action buttons (always visible) -->
-		<div class="flex items-center gap-2">
+		<div class="flex items-center flex-wrap gap-2">
 			<!-- Preview -->
 			<button @click="emit('preview')" type="button" :disabled="previewing"
 				class="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
@@ -130,10 +130,10 @@ const emit = defineEmits<{
 
 			<!-- Export / Save -->
 			<button @click="emit('save')" type="button" :disabled="exporting || saving"
-				class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20 disabled:opacity-70">
+				class="px-3 sm:px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-brand-500/20 disabled:opacity-70 whitespace-nowrap">
 				<Icon v-if="exporting || saving" name="ph:spinner-gap-bold" size="16" class="animate-spin" />
 				<Icon v-else name="ph:floppy-disk-bold" size="16" />
-				{{ saving ? $t('flyers.editor.btn_saving') : exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}
+				<span class="hidden sm:inline">{{ saving ? $t('flyers.editor.btn_saving') : exporting ? $t('flyers.editor.btn_saving') : $t('flyers.editor.btn_save') }}</span>
 			</button>
 		</div>
 	</div>

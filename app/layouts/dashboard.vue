@@ -170,7 +170,7 @@ const toggleDarkMode = () => {
 
 				<!-- Page Content -->
 				<div class="flex-1 overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
-					<div class="p-6 lg:p-7">
+					<div class="p-3 sm:p-6 lg:p-7">
 						<slot />
 					</div>
 				</div>

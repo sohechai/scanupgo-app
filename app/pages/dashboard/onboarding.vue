@@ -359,7 +359,7 @@ onMounted(() => fetchBusiness())
 							/>
 						</div>
 
-						<div class="grid grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div class="space-y-2">
 								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email de contact</label>
 								<div class="relative">
@@ -389,7 +389,7 @@ onMounted(() => fetchBusiness())
 							/>
 						</div>
 
-						<div class="grid grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div class="space-y-2">
 								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ville</label>
 								<input
