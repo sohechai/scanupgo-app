@@ -76,7 +76,9 @@ const toggleDarkMode = () => {
 </script>
 
 <template>
-	<div class="h-[100dvh] overflow-hidden bg-[#f0f4f8] dark:bg-slate-950 font-sans flex text-slate-900 dark:text-slate-100 selection:bg-brand-500/30 selection:text-brand-700">
+	<!-- Mobile : hauteur auto + scroll natif du body (1 seul scroll).
+	     Desktop (lg+) : app-shell à hauteur fixe avec scroll interne. -->
+	<div class="min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden bg-[#f0f4f8] dark:bg-slate-950 font-sans flex text-slate-900 dark:text-slate-100 selection:bg-brand-500/30 selection:text-brand-700">
 
 		<!-- Mobile Sidebar Backdrop -->
 		<div v-if="isSidebarOpen" @click="isSidebarOpen = false"
@@ -137,13 +139,13 @@ const toggleDarkMode = () => {
 		</aside>
 
 		<!-- Main Content -->
-		<main class="flex-1 h-full overflow-hidden lg:ml-60 rtl:lg:ml-0 rtl:lg:mr-60 p-2.5 transition-all duration-300 flex flex-col">
+		<main class="flex-1 lg:h-full lg:overflow-hidden lg:ml-60 rtl:lg:ml-0 rtl:lg:mr-60 p-2.5 transition-all duration-300 flex flex-col">
 
 			<!-- Interface Card -->
-			<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/70 dark:border-slate-800 shadow-sm flex-1 flex flex-col overflow-hidden">
+			<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/70 dark:border-slate-800 shadow-sm flex-1 flex flex-col lg:overflow-hidden">
 
-				<!-- Header -->
-				<header class="h-14 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-5 shrink-0 bg-white dark:bg-slate-900">
+				<!-- Header (sticky sur mobile pendant le scroll du body) -->
+				<header class="h-14 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-5 shrink-0 bg-white dark:bg-slate-900 sticky top-0 z-20 lg:static">
 					<div class="flex items-center gap-4">
 						<button @click="isSidebarOpen = true" class="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white">
 							<Icon name="ph:list-bold" size="18" />
@@ -168,8 +170,8 @@ const toggleDarkMode = () => {
 					</div>
 				</header>
 
-				<!-- Page Content -->
-				<div class="flex-1 overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
+				<!-- Page Content : scroll interne sur desktop, scroll body sur mobile -->
+				<div class="flex-1 lg:overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
 					<div class="p-3 sm:p-6 lg:p-7">
 						<slot />
 					</div>

@@ -415,7 +415,7 @@ onMounted(() => { fetchSubscriptions(); fetchPlans() })
 							<label class="block text-xs font-medium text-slate-400 mb-1.5">Business</label>
 							<select v-model="grantForm.businessId" :disabled="businessesLoading" class="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-md text-sm text-white focus:border-white/20 focus:outline-none transition-colors disabled:opacity-50">
 								<option value="" disabled class="bg-[#111318]">{{ businessesLoading ? 'Chargement...' : allBusinesses.length === 0 ? 'Aucun business trouvé' : 'Sélectionner un business...' }}</option>
-								<option v-for="b in allBusinesses" :key="b.id" :value="b.id" class="bg-[#111318]">{{ [b.name, [b.addressStreet, b.addressCity].filter(Boolean).join(', ')].filter(Boolean).join(' — ') }}</option>
+								<option v-for="b in allBusinesses" :key="b.id" :value="b.id" class="bg-[#111318]">{{ [b.name, (b.email || b.owner?.email), [b.addressStreet, b.addressCity].filter(Boolean).join(', ')].filter(Boolean).join(' — ') }}</option>
 							</select>
 						</div>
 						<div>
