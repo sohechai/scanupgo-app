@@ -18,7 +18,14 @@ const form = reactive({
   sms_opt_in: false
 })
 
-const canSubmit = computed(() => form.first_name.length > 1 && (form.email.length > 5 || form.phone.length > 8))
+// Prénom + email + téléphone sont tous obligatoires pour jouer.
+const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+const isValidPhone = (v: string) => v.replace(/[^0-9]/g, '').length >= 8
+const canSubmit = computed(() =>
+  form.first_name.trim().length > 1 &&
+  isValidEmail(form.email.trim()) &&
+  isValidPhone(form.phone),
+)
 
 const handleSubmit = () => {
   if (!canSubmit.value) return
@@ -53,15 +60,15 @@ const buttonTextColor = computed(() => contrastColor(buttonColor.value))
 
       <form @submit.prevent="handleSubmit" class="w-full space-y-4 text-left rtl:text-right">
         
-        <input v-model="form.first_name" type="text"
+        <input v-model="form.first_name" type="text" required
           class="w-full bg-[#262626] border border-[#444] rounded-xl px-4 py-3.5 text-white font-bold placeholder-gray-400 focus:outline-none focus:border-white transition"
           :placeholder="$t('play.form.first_name_placeholder')">
 
-        <input v-model="form.email" type="email"
+        <input v-model="form.email" type="email" required inputmode="email"
           class="w-full bg-[#262626] border border-[#444] rounded-xl px-4 py-3.5 text-white font-bold placeholder-gray-400 focus:outline-none focus:border-white transition"
           :placeholder="$t('play.form.email_placeholder')">
 
-        <input v-model="form.phone" type="tel"
+        <input v-model="form.phone" type="tel" required inputmode="tel"
           class="w-full bg-[#262626] border border-[#444] rounded-xl px-4 py-3.5 text-white font-bold placeholder-gray-400 focus:outline-none focus:border-white transition"
           :placeholder="$t('play.form.phone_placeholder')">
 
