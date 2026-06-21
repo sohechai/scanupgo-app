@@ -71,7 +71,7 @@ const getStatusDotClass = (status: string) => {
 			<div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="close"></div>
 
 			<div v-if="order"
-				class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+				class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90dvh] overflow-hidden flex flex-col">
 				<!-- Header -->
 				<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
 					<div class="flex items-center justify-between">

@@ -220,7 +220,7 @@ watch(() => props.gameId, (newId) => {
 		<div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 			<div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModal"></div>
 			<div
-				class="relative bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+				class="relative bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90dvh] overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch;">
 				<div
 					class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-700/30 sticky top-0 z-10">
 					<h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">

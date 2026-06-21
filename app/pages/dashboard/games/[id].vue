@@ -1036,7 +1036,7 @@ const saveGame = async () => {
 				class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
 				@click.self="showGoogleHelpModal = false">
 				<div
-					class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+					class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90dvh] overflow-y-auto">
 					<!-- Header -->
 					<div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
 						<div class="flex items-center gap-3">

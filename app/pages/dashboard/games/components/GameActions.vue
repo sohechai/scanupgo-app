@@ -179,7 +179,7 @@ const confirmRemove = async () => {
 		<Teleport to="body">
 			<div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 				<div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showModal = false"></div>
-				<div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+				<div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-h-[90dvh] overflow-y-auto">
 					<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
 						<h3 class="font-bold text-slate-900 dark:text-white">{{ editingId ? 'Modifier l\'action' : 'Ajouter une action' }}</h3>
 						<button @click="showModal = false" class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400"><Icon name="ph:x-bold" size="16" /></button>

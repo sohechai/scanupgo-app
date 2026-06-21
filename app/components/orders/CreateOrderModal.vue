@@ -233,7 +233,7 @@ const stepLabels = computed(() => {
 		<div v-if="modelValue" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
 			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
 
-			<div class="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
+			<div class="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
 				<!-- Header -->
 				<div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
 					<div class="flex items-center justify-between">

@@ -297,7 +297,7 @@ onMounted(() => { fetchAutomations() })
 		<Teleport to="body">
 			<div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
 				<div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showModal = false"></div>
-				<div class="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+				<div class="relative bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90dvh] overflow-y-auto">
 					<!-- Header -->
 					<div class="sticky top-0 bg-white dark:bg-slate-900 px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 						<h2 class="text-base font-semibold text-slate-900 dark:text-white">
