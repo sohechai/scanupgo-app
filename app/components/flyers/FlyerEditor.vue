@@ -1271,7 +1271,7 @@ const previewFlyer = async () => {
 </script>
 
 <template>
-	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-3 sm:gap-6 relative">
+	<div class="flyer-editor min-h-[600px] flex flex-col xl:flex-row gap-3 sm:gap-6 relative max-w-full overflow-x-hidden">
 
 		<!-- LEFT SIDEBAR (passe sous le flyer sur mobile via order) -->
 		<FlyerSidebar

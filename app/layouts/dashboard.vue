@@ -139,7 +139,7 @@ const toggleDarkMode = () => {
 		</aside>
 
 		<!-- Main Content -->
-		<main class="flex-1 lg:h-full lg:overflow-hidden lg:ml-60 rtl:lg:ml-0 rtl:lg:mr-60 p-2.5 transition-all duration-300 flex flex-col">
+		<main class="flex-1 min-w-0 lg:h-full lg:overflow-hidden lg:ml-60 rtl:lg:ml-0 rtl:lg:mr-60 p-2.5 transition-all duration-300 flex flex-col">
 
 			<!-- Interface Card -->
 			<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/70 dark:border-slate-800 shadow-sm flex-1 flex flex-col lg:overflow-hidden">
@@ -171,8 +171,8 @@ const toggleDarkMode = () => {
 				</header>
 
 				<!-- Page Content : scroll interne sur desktop, scroll body sur mobile -->
-				<div class="flex-1 lg:overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
-					<div class="p-3 sm:p-6 lg:p-7">
+				<div class="flex-1 min-w-0 overflow-x-hidden lg:overflow-y-auto bg-[#f8fafc] dark:bg-slate-900/50">
+					<div class="p-3 sm:p-6 lg:p-7 min-w-0 max-w-full">
 						<slot />
 					</div>
 				</div>
