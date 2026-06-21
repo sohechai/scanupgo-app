@@ -306,14 +306,14 @@ const downloadFlyerPDF = async () => {
 					</div>
 
 					<!-- QR Customization -->
-					<div class="flex-1 space-y-4">
-						<div>
+					<div class="flex-1 min-w-0 w-full space-y-4">
+						<div class="min-w-0">
 							<h3 class="text-sm font-bold text-slate-900 dark:text-white">QR Code</h3>
 							<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-mono truncate">{{ getGameUrl() }}</p>
 						</div>
 
-						<div class="grid grid-cols-2 gap-4">
-							<div>
+						<div class="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
+							<div class="min-w-0">
 								<label class="text-xs font-medium text-slate-500 dark:text-slate-400 block mb-1.5">Couleur QR</label>
 								<div class="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5">
 									<input v-model="game.qrCodeColor" type="color" class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" />

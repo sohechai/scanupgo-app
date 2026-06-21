@@ -1340,7 +1340,7 @@ const previewFlyer = async () => {
 						:qr-logo="smartOptions.qrLogo"
 						:qr-play-url="getGameUrl()" />
 				</div><!-- Canvas Mode -->
-				<div v-else class="relative shadow-2xl shadow-slate-400/20 rounded-sm shrink-0">
+				<div v-else class="fabric-canvas-wrap relative shadow-2xl shadow-slate-400/20 rounded-sm shrink-0">
 					<canvas ref="canvasRef"></canvas>
 
 					<!-- Loading Overlay -->
@@ -1396,6 +1396,16 @@ const previewFlyer = async () => {
 <style scoped>
 .flyer-editor {
 	max-width: 100%;
+}
+
+/* Empêche le menu contextuel iOS (long-press) et la sélection/scroll natifs
+   pendant qu'on manipule les objets du canvas au doigt. */
+.fabric-canvas-wrap,
+.fabric-canvas-wrap :deep(canvas) {
+	touch-action: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 .modal-enter-active,

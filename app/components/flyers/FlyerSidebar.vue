@@ -193,14 +193,14 @@ const onFileChange = (event: Event) => {
 		</div>
 
 		<!-- Templates Panel -->
-		<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex-1">
+		<div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden xl:flex-1">
 			<div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
 				<h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide">
 					<Icon name="ph:stack-fill" class="text-brand-500" />
 					{{ t('flyers.editor.templates_title') }}
 				</h3>
 			</div>
-			<div class="p-4 h-64 xl:h-auto overflow-y-auto custom-scrollbar space-y-3">
+			<div class="p-4 h-auto xl:h-auto max-h-none xl:max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3" style="-webkit-overflow-scrolling: touch;">
 				<button v-for="template in templates" :key="template.id"
 					@click="emit('load-template', template.id)"
 					type="button" :disabled="loadingTemplate"
