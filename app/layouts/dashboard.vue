@@ -76,7 +76,7 @@ const toggleDarkMode = () => {
 </script>
 
 <template>
-	<div class="h-screen overflow-hidden bg-[#f0f4f8] dark:bg-slate-950 font-sans flex text-slate-900 dark:text-slate-100 selection:bg-brand-500/30 selection:text-brand-700">
+	<div class="h-[100dvh] overflow-hidden bg-[#f0f4f8] dark:bg-slate-950 font-sans flex text-slate-900 dark:text-slate-100 selection:bg-brand-500/30 selection:text-brand-700">
 
 		<!-- Mobile Sidebar Backdrop -->
 		<div v-if="isSidebarOpen" @click="isSidebarOpen = false"
