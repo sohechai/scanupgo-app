@@ -98,7 +98,8 @@ const savePrize = async () => {
 			probability: form.value.probability,
 			winningMessage: form.value.winningMessage,
 			minOrderAmount: form.value.minOrderAmount ?? null,
-			validityDays: form.value.validityDays ?? null,
+			// validityDays : vide ou <= 0 = pas d'expiration (null), sinon la valeur.
+			validityDays: (form.value.validityDays && form.value.validityDays > 0) ? form.value.validityDays : null,
 			status: form.value.status,
 			gameId: props.gameId
 		}
