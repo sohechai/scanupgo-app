@@ -10,10 +10,25 @@ const { t } = useI18n()
 const { $api } = useNuxtApp()
 const router = useRouter()
 const { show: showToast } = useToast()
+const { sanitize } = useSanitizeHtml()
 import RichTextEditor from '~/components/RichTextEditor.vue'
 
 const loading = ref(false)
 const previewMode = ref(false)
+
+// Aperçu de l'email : remplace les variables {{...}} par des valeurs d'exemple
+// puis NETTOIE le HTML (anti-XSS) avant injection via v-html.
+const fillSampleVars = (html: string): string =>
+	(html || '')
+		.replace(/\{\{prenom\}\}/g, 'Jean')
+		.replace(/\{\{firstName\}\}/g, 'Jean')
+		.replace(/\{\{nom\}\}/g, 'Dupont')
+		.replace(/\{\{lastName\}\}/g, 'Dupont')
+		.replace(/\{\{email\}\}/g, 'jean@exemple.fr')
+		.replace(/\{\{commerce\}\}/g, 'Mon Commerce')
+		.replace(/\{\{businessName\}\}/g, 'Mon Commerce')
+
+const previewHtml = computed(() => sanitize(fillSampleVars(form.value.htmlContent)))
 
 const form = ref({
 	name: '',
@@ -221,7 +236,7 @@ const saveDraft = async () => {
 								@update:modelValue="fieldErrors.htmlContent = ''" />
 						</div>
 						<div v-else class="bg-slate-50 dark:bg-slate-800 rounded-md p-5 min-h-[300px] border border-slate-200 dark:border-slate-700">
-							<div v-html="form.htmlContent.replace(/\{\{prenom\}\}/g, 'Jean').replace(/\{\{firstName\}\}/g, 'Jean').replace(/\{\{nom\}\}/g, 'Dupont').replace(/\{\{lastName\}\}/g, 'Dupont').replace(/\{\{email\}\}/g, 'jean@exemple.fr').replace(/\{\{commerce\}\}/g, 'Mon Commerce').replace(/\{\{businessName\}\}/g, 'Mon Commerce')"></div>
+							<div v-html="previewHtml"></div>
 						</div>
 					</div>
 				</div>

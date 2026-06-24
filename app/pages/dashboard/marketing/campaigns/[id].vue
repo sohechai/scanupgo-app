@@ -14,12 +14,27 @@ const router = useRouter()
 const { $api } = useNuxtApp()
 const { show: showToast } = useToast()
 const { getPlanLimit, fetchSubscription } = useSubscription()
+const { sanitize } = useSanitizeHtml()
 import ConfirmModal from '~/components/ConfirmModal.vue'
 import RichTextEditor from '~/components/RichTextEditor.vue'
 
 const campaignId = route.params.id as string
 
 const campaign = ref<any>(null)
+
+// Aperçu de l'email : remplace les variables {{...}} par des valeurs d'exemple
+// puis NETTOIE le HTML (anti-XSS) avant injection via v-html.
+const fillSampleVars = (html: string): string =>
+	(html || '')
+		.replace(/\{\{prenom\}\}/g, 'Jean')
+		.replace(/\{\{firstName\}\}/g, 'Jean')
+		.replace(/\{\{nom\}\}/g, 'Dupont')
+		.replace(/\{\{lastName\}\}/g, 'Dupont')
+		.replace(/\{\{email\}\}/g, 'jean@exemple.fr')
+		.replace(/\{\{commerce\}\}/g, 'Mon Commerce')
+		.replace(/\{\{businessName\}\}/g, 'Mon Commerce')
+
+const previewHtml = computed(() => sanitize(fillSampleVars(campaign.value?.htmlContent)))
 const loading = ref(true)
 const sending = ref(false)
 const saving = ref(false)
@@ -287,8 +302,7 @@ onMounted(async () => {
 						<div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
 							<p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $t('marketing.campaign_detail.preview') }}</p>
 						</div>
-						<div class="p-5"
-							v-html="campaign.htmlContent.replace(/\{\{prenom\}\}/g, 'Jean').replace(/\{\{firstName\}\}/g, 'Jean').replace(/\{\{nom\}\}/g, 'Dupont').replace(/\{\{lastName\}\}/g, 'Dupont').replace(/\{\{email\}\}/g, 'jean@exemple.fr').replace(/\{\{commerce\}\}/g, 'Mon Commerce').replace(/\{\{businessName\}\}/g, 'Mon Commerce')">
+						<div class="p-5" v-html="previewHtml">
 						</div>
 					</div>
 				</template>
