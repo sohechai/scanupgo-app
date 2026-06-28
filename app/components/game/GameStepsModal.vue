@@ -12,6 +12,20 @@ const emit = defineEmits<{
 
 const ACTION_TIMER_SECONDS = 45
 
+const { t, te } = useI18n()
+
+// Libellés prédéfinis et traduits par type de réseau (le client veut un nom fixe
+// par action — ex. Instagram → "Nous suivre" — traduit selon la langue du joueur).
+// Le type "other" (lien libre) garde le texte saisi en configuration.
+const actionMessage = (a: { type: string; clientMessage: string }) => {
+  const key = `play.actions.${a.type}.message`
+  return te(key) ? t(key) : (a.clientMessage || '')
+}
+const actionButton = (a: { type: string; buttonText: string }) => {
+  const key = `play.actions.${a.type}.button`
+  return te(key) ? t(key) : (a.buttonText || '')
+}
+
 interface Action { id: string; type: string; link: string; clientMessage: string; buttonText: string; isPrincipal: boolean }
 
 // Actions du jeu (triées principal d'abord) ; fallback ancien champ Google
@@ -147,7 +161,7 @@ onUnmounted(clearTimer)
 
 // Les 3 lignes "Suivez les étapes" : action courante + revenir + tourner la roue
 const stepLines = computed(() => [
-  current.value?.clientMessage || '',
+  current.value ? actionMessage(current.value) : '',
   '__comeback__',
   '__spin__',
 ])
@@ -220,7 +234,7 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
               <button @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
-                {{ current.buttonText }}
+                {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
               </button>
 
@@ -236,7 +250,7 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
               <button @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
-                {{ current.buttonText }}
+                {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
               </button>
 

@@ -2698,6 +2698,44 @@
 		"wheel": {
 			"lost": "LOSE",
 			"gift": "Gift"
+		},
+		"actions": {
+			"google": {
+				"message": "Leave us a Google review",
+				"button": "Review on Google"
+			},
+			"instagram": {
+				"message": "Follow us on Instagram",
+				"button": "Follow us"
+			},
+			"facebook": {
+				"message": "Like our Facebook page",
+				"button": "Like the page"
+			},
+			"tiktok": {
+				"message": "Follow us on TikTok",
+				"button": "Follow us"
+			},
+			"twitter": {
+				"message": "Follow us on X",
+				"button": "Follow us"
+			},
+			"linkedin": {
+				"message": "Follow us on LinkedIn",
+				"button": "Follow us"
+			},
+			"whatsapp": {
+				"message": "Contact us on WhatsApp",
+				"button": "Contact us"
+			},
+			"snapchat": {
+				"message": "Add us on Snapchat",
+				"button": "Add us"
+			},
+			"tripadvisor": {
+				"message": "Leave us a Tripadvisor review",
+				"button": "Review on Tripadvisor"
+			}
 		}
 	}
 }

@@ -2698,6 +2698,44 @@
 		"wheel": {
 			"lost": "خسرت",
 			"gift": "هدية"
+		},
+		"actions": {
+			"google": {
+				"message": "اترك لنا تقييماً على Google",
+				"button": "قيّم على Google"
+			},
+			"instagram": {
+				"message": "تابعنا على Instagram",
+				"button": "تابعنا"
+			},
+			"facebook": {
+				"message": "أعجب بصفحتنا على Facebook",
+				"button": "أعجب بالصفحة"
+			},
+			"tiktok": {
+				"message": "تابعنا على TikTok",
+				"button": "تابعنا"
+			},
+			"twitter": {
+				"message": "تابعنا على X",
+				"button": "تابعنا"
+			},
+			"linkedin": {
+				"message": "تابعنا على LinkedIn",
+				"button": "تابعنا"
+			},
+			"whatsapp": {
+				"message": "تواصل معنا على WhatsApp",
+				"button": "تواصل معنا"
+			},
+			"snapchat": {
+				"message": "أضفنا على Snapchat",
+				"button": "أضفنا"
+			},
+			"tripadvisor": {
+				"message": "اترك لنا تقييماً على Tripadvisor",
+				"button": "قيّم على Tripadvisor"
+			}
 		}
 	}
 }
