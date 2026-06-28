@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import QRCode from 'qrcode'
 import FlyerEditor from '~/components/flyers/FlyerEditor.vue'
-import { submitFlyerJob } from '~/composables/useFlyerJob'
 
 const props = defineProps<{
 	game: any
@@ -239,33 +238,75 @@ const downloadFlyerPNG = () => {
 	link.remove()
 }
 
+// Constantes d'impression (fond perdu + traits de coupe pour imprimeur pro).
+const BLEED_MM = 3
+const CROP_MARK_LENGTH = 5 // mm
+const CROP_MARK_OFFSET = 1 // mm entre le trait et le bord du fond perdu
+
+// Traits de coupe aux 4 coins (hors zone visible — repères pour l'imprimeur).
+const drawCropMarks = (pdf: any, bleed: number, pageW: number, pageH: number) => {
+	pdf.setDrawColor(0, 0, 0)
+	pdf.setLineWidth(0.25)
+	const offset = CROP_MARK_OFFSET
+	// Haut-gauche
+	pdf.line(bleed, 0 + offset, bleed, bleed - offset)
+	pdf.line(0 + offset, bleed, bleed - offset, bleed)
+	// Haut-droite
+	pdf.line(pageW - bleed, 0 + offset, pageW - bleed, bleed - offset)
+	pdf.line(pageW - offset, bleed, pageW - bleed + offset, bleed)
+	// Bas-gauche
+	pdf.line(bleed, pageH - offset, bleed, pageH - bleed + offset)
+	pdf.line(0 + offset, pageH - bleed, bleed - offset, pageH - bleed)
+	// Bas-droite
+	pdf.line(pageW - bleed, pageH - offset, pageW - bleed, pageH - bleed + offset)
+	pdf.line(pageW - offset, pageH - bleed, pageW - bleed + offset, pageH - bleed)
+}
+
+// Convertit l'URL du flyer enregistré (data: ou http R2) en data URL PNG
+// utilisable par jsPDF, même en cas de CORS (passe par le proxy backend).
+const flyerUrlToDataUrl = async (url: string): Promise<string> => {
+	if (url.startsWith('data:')) return url
+	let fetchUrl = url
+	try {
+		const apiBase = config.public.apiUrl || 'http://localhost:4000'
+		fetchUrl = `${apiBase}/uploads/proxy?url=${encodeURIComponent(url)}`
+	} catch { /* garde l'URL directe */ }
+	const response = await fetch(fetchUrl)
+	const blob = await response.blob()
+	return await new Promise<string>((resolve, reject) => {
+		const reader = new FileReader()
+		reader.onloadend = () => resolve(reader.result as string)
+		reader.onerror = reject
+		reader.readAsDataURL(blob)
+	})
+}
+
+// PDF "pour impression" = LE FLYER ENREGISTRÉ (flyerDesignUrl), pas une
+// régénération du flyer intelligent. Format A6 + fond perdu 3mm + traits de
+// coupe (imprimeur pro). Les traits/bleed sont coupés à l'impression finale.
 const downloadFlyerPDF = async () => {
+	if (!props.game.flyerDesignUrl) {
+		showToast(t('games.detail.flyer_save_error'), 'error')
+		return
+	}
 	downloadingPdf.value = true
 	try {
-		const business = user.value?.business
-		const url = await submitFlyerJob($api, '/flyer-generator/generate-pdf', {
-			businessName: business?.name,
-			businessLogo: business?.logo,
-			qrCodeUrl: qrCodeUrl.value || undefined,
-			primaryColor: props.game.primaryColor || '#fb923c',
-			accentColor: props.game.primaryColor || '#fb923c',
-			buttonColor: props.game.primaryColor || '#fb923c',
-			fontFamily: 'Luckiest Guy',
-			prizes: (props.game.prizes || []).map((p: any) => ({
-				name: p.name,
-				rank: p.rank,
-				probability: p.probability
-			})),
-		})
+		const dataUrl = await flyerUrlToDataUrl(props.game.flyerDesignUrl)
 
-		const response = await fetch(url)
-		const blob = await response.blob()
-		const downloadUrl = URL.createObjectURL(blob)
-		const link = document.createElement('a')
-		link.download = `flyer-${props.game.slug || 'design'}.pdf`
-		link.href = downloadUrl
-		link.click()
-		URL.revokeObjectURL(downloadUrl)
+		const { jsPDF } = await import('jspdf')
+
+		// A6 (105 x 148 mm) + fond perdu 3mm de chaque côté.
+		const contentW = 105
+		const contentH = 148
+		const totalW = contentW + BLEED_MM * 2 // 111mm
+		const totalH = contentH + BLEED_MM * 2 // 154mm
+
+		const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [totalW, totalH] })
+		// L'image couvre toute la page (déborde dans le fond perdu).
+		pdf.addImage(dataUrl, 'PNG', 0, 0, totalW, totalH)
+		drawCropMarks(pdf, BLEED_MM, totalW, totalH)
+		pdf.save(`flyer-${props.game.slug || 'design'}.pdf`)
+
 		showToast(t('games.detail.pdf_success'), 'success')
 	} catch (e) {
 		console.error('PDF download failed:', e)
