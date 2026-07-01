@@ -334,13 +334,13 @@ watch(user, (newUser) => {
 			<div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
 				<form @submit.prevent="updateProfile" class="divide-y divide-slate-100 dark:divide-slate-800">
 					<div class="flex items-center gap-4 px-5 py-3.5">
-						<p class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.firstname') }}</p>
-						<input v-model="profileForm.firstName" type="text" :placeholder="$t('account.firstname_placeholder')"
+						<label for="account-firstname" class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.firstname') }}</label>
+						<input id="account-firstname" name="given-name" autocomplete="given-name" v-model="profileForm.firstName" type="text" :placeholder="$t('account.firstname_placeholder')"
 							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
 					</div>
 					<div class="flex items-center gap-4 px-5 py-3.5">
-						<p class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.lastname') }}</p>
-						<input v-model="profileForm.lastName" type="text" :placeholder="$t('account.lastname_placeholder')"
+						<label for="account-lastname" class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.lastname') }}</label>
+						<input id="account-lastname" name="family-name" autocomplete="family-name" v-model="profileForm.lastName" type="text" :placeholder="$t('account.lastname_placeholder')"
 							class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 outline-none text-right" />
 					</div>
 					<div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
@@ -641,18 +641,18 @@ watch(user, (newUser) => {
 							<form @submit.prevent="changePassword" class="space-y-3">
 								<div class="bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
 									<div class="flex items-center px-4 py-3">
-										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_current') }}</label>
-										<input v-model="passwordForm.currentPassword" type="password" required
+										<label for="account-current-password" class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_current') }}</label>
+										<input id="account-current-password" name="current-password" autocomplete="current-password" v-model="passwordForm.currentPassword" type="password" required
 											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
 									</div>
 									<div class="flex items-center px-4 py-3">
-										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_new') }}</label>
-										<input v-model="passwordForm.newPassword" type="password" required minlength="8"
+										<label for="account-new-password" class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_new') }}</label>
+										<input id="account-new-password" name="new-password" autocomplete="new-password" v-model="passwordForm.newPassword" type="password" required minlength="8"
 											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
 									</div>
 									<div class="flex items-center px-4 py-3">
-										<label class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_confirm') }}</label>
-										<input v-model="passwordForm.confirmPassword" type="password" required minlength="8"
+										<label for="account-confirm-password" class="text-sm text-slate-400 dark:text-slate-500 w-32 shrink-0">{{ $t('account.password_confirm') }}</label>
+										<input id="account-confirm-password" name="confirm-password" autocomplete="new-password" v-model="passwordForm.confirmPassword" type="password" required minlength="8"
 											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
 									</div>
 								</div>
@@ -695,13 +695,13 @@ watch(user, (newUser) => {
 										<p class="flex-1 text-sm text-slate-400 dark:text-slate-500 text-right truncate">{{ user?.email }}</p>
 									</div>
 									<div class="flex items-center px-4 py-3">
-										<label class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_new') }}</label>
-										<input v-model="emailForm.newEmail" type="email" required
+										<label for="account-new-email" class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_new') }}</label>
+										<input id="account-new-email" name="email" autocomplete="email" v-model="emailForm.newEmail" type="email" required
 											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
 									</div>
 									<div class="flex items-center px-4 py-3">
-										<label class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_password') }}</label>
-										<input v-model="emailForm.password" type="password" required
+										<label for="account-email-password" class="text-sm text-slate-400 dark:text-slate-500 w-28 shrink-0">{{ $t('account.email_password') }}</label>
+										<input id="account-email-password" name="current-password" autocomplete="current-password" v-model="emailForm.password" type="password" required
 											class="flex-1 bg-transparent text-sm font-medium text-slate-900 dark:text-white outline-none text-right" />
 									</div>
 								</div>
@@ -753,10 +753,13 @@ watch(user, (newUser) => {
 							</div>
 
 							<div class="mb-5">
-								<label class="block text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
+								<label for="account-delete-confirm" class="block text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
 									{{ $t('account.delete_confirm_text') }}
 								</label>
 								<input
+									id="account-delete-confirm"
+									name="delete-confirm"
+									autocomplete="off"
 									v-model="deleteConfirmText"
 									type="text"
 									:placeholder="$t('account.delete_confirm_text_message')"

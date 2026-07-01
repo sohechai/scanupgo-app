@@ -301,8 +301,8 @@ onMounted(() => {
 
 					<!-- Lien de dépôt d'avis Google (éditable) -->
 					<div>
-						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.google_review_url_label') }}</label>
-						<input v-model="business.googleReviewUrl" type="url" :disabled="!canEdit"
+						<label for="business-google-review-url" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.google_review_url_label') }}</label>
+						<input id="business-google-review-url" name="google-review-url" autocomplete="off" v-model="business.googleReviewUrl" type="url" :disabled="!canEdit"
 							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							placeholder="https://search.google.com/local/writereview?placeid=…">
 						<p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{{ $t('profile.google_review_url_hint') }}</p>
@@ -323,8 +323,8 @@ onMounted(() => {
 
 					<!-- Name -->
 					<div>
-						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.business_name') }}</label>
-						<input v-model="business.name" type="text" required :disabled="!canEdit"
+						<label for="business-name" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.business_name') }}</label>
+						<input id="business-name" name="organization" autocomplete="organization" v-model="business.name" type="text" required :disabled="!canEdit"
 							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.business_name_placeholder')">
 					</div>
@@ -344,10 +344,10 @@ onMounted(() => {
 
 					<!-- Address -->
 					<div>
-						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.address') }}</label>
+						<label for="business-address" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.address') }}</label>
 						<div class="relative">
 							<Icon name="ph:map-pin-bold" size="15" class="absolute left-3 rtl:left-auto rtl:right-3 top-2.5 text-slate-400" />
-							<input v-model="business.addressStreet" :disabled="!canEdit"
+							<input id="business-address" name="address-line1" autocomplete="address-line1" v-model="business.addressStreet" :disabled="!canEdit"
 								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 rtl:pl-3 pr-3 rtl:pr-9 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.address_placeholder')">
 						</div>
@@ -356,14 +356,14 @@ onMounted(() => {
 					<!-- City + Zip -->
 					<div class="grid grid-cols-2 gap-3">
 						<div>
-							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.city') }}</label>
-							<input v-model="business.addressCity" :disabled="!canEdit"
+							<label for="business-city" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.city') }}</label>
+							<input id="business-city" name="address-level2" autocomplete="address-level2" v-model="business.addressCity" :disabled="!canEdit"
 								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.city_placeholder')">
 						</div>
 						<div>
-							<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.postal_code') }}</label>
-							<input v-model="business.addressZip" :disabled="!canEdit"
+							<label for="business-zip" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.postal_code') }}</label>
+							<input id="business-zip" name="postal-code" autocomplete="postal-code" v-model="business.addressZip" :disabled="!canEdit"
 								class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 								:placeholder="$t('profile.postal_code_placeholder')">
 						</div>
@@ -371,8 +371,8 @@ onMounted(() => {
 
 					<!-- Country -->
 					<div>
-						<label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.country') }}</label>
-						<input v-model="business.addressCountry" :disabled="!canEdit"
+						<label for="business-country" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{{ $t('profile.country') }}</label>
+						<input id="business-country" name="country-name" autocomplete="country-name" v-model="business.addressCountry" :disabled="!canEdit"
 							class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 text-slate-900 dark:text-white text-sm focus:bg-white dark:focus:bg-slate-900 focus:border-[#007AFF]/50 focus:ring-2 focus:ring-[#007AFF]/10 outline-none transition-all placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
 							:placeholder="$t('profile.country_placeholder')">
 					</div>

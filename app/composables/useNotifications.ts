@@ -22,6 +22,8 @@ const loading = ref(false)
 const isDropdownOpen = ref(false)
 const lastFetchTime = ref(0)
 const pollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
+// Handler Page Visibility : garde une réf pour pouvoir le retirer proprement.
+let visibilityHandler: (() => void) | null = null
 
 export const useNotifications = () => {
 	const { $api } = useNuxtApp()
@@ -71,18 +73,34 @@ export const useNotifications = () => {
 	}
 
 	/**
-	 * Start polling for new notifications
+	 * Start polling for new notifications.
+	 *
+	 * Optimisé pour éviter de charger le serveur pour rien :
+	 *  - intervalle par défaut 60s (au lieu de 10s) ;
+	 *  - on NE poll PAS quand l'onglet est caché (Page Visibility API) — 0 requête
+	 *    en arrière-plan — et on refait un fetch immédiat au retour sur l'onglet.
 	 */
-	const startPolling = (intervalMs = 10000) => {
+	const startPolling = (intervalMs = 60000) => {
 		if (pollingInterval.value) return
 
-		// Initial fetch
-		fetchUnreadCount()
+		// Fetch initial (seulement si l'onglet est visible).
+		if (typeof document === 'undefined' || !document.hidden) {
+			fetchUnreadCount()
+		}
 
-		// Poll every intervalMs
 		pollingInterval.value = setInterval(() => {
+			// Onglet en arrière-plan → on saute ce tick (économie serveur + batterie).
+			if (typeof document !== 'undefined' && document.hidden) return
 			fetchUnreadCount()
 		}, intervalMs)
+
+		// Au retour sur l'onglet : rafraîchit tout de suite (badge à jour sans attendre).
+		if (typeof document !== 'undefined' && !visibilityHandler) {
+			visibilityHandler = () => {
+				if (!document.hidden && pollingInterval.value) fetchUnreadCount()
+			}
+			document.addEventListener('visibilitychange', visibilityHandler)
+		}
 	}
 
 	/**
@@ -92,6 +110,10 @@ export const useNotifications = () => {
 		if (pollingInterval.value) {
 			clearInterval(pollingInterval.value)
 			pollingInterval.value = null
+		}
+		if (visibilityHandler && typeof document !== 'undefined') {
+			document.removeEventListener('visibilitychange', visibilityHandler)
+			visibilityHandler = null
 		}
 	}
 

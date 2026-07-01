@@ -18,7 +18,7 @@ const handleVisibilityChange = () => {
 
 onMounted(() => {
 	fetchSubscription()
-	startPolling(10000)
+	startPolling(60000) // notifs : 1 requête/min (au lieu de /10s), pausée si onglet caché
 	document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
