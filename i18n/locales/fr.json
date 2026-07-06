@@ -1426,7 +1426,7 @@
 			"headline2": "Ambassadeurs",
 			"subheading": "Ne laissez plus vos clients repartir invisibles. Captez-les, faites décoller vos avis Google et fidélisez-les grâce au jeu.",
 			"cta": "Créer mon espace →",
-			"cta_subtext": "14 jours d'essai gratuit, sans carte bancaire",
+			"cta_subtext": "14 jours d'essai gratuit, sans engagement",
 			"floatingCard1_title": "Avis Google",
 			"floatingCard1_subtitle": "Ce mois-ci",
 			"floatingCard1_value": "+128",
@@ -1750,7 +1750,7 @@
 			"subtitle": "Vos futurs clients cherchent le meilleur établissement. Montrez-leur que c'est vous. Commencez maintenant, sans engagement.",
 			"button": "Je lance ma croissance",
 			"benefit1": "14 jours offerts",
-			"benefit2": "Pas de CB requise"
+			"benefit2": "Sans engagement"
 		}
 	},
 	"admin": {
