@@ -42,7 +42,7 @@ const validate = async () => {
 </script>
 
 <template>
-	<div class="min-h-screen bg-[#f0f4f8] flex items-center justify-center p-4">
+	<div class="min-h-[100dvh] bg-[#f0f4f8] flex items-center justify-center p-4">
 		<div class="w-full max-w-sm">
 
 			<div class="text-center mb-6">

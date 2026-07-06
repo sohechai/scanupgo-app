@@ -584,9 +584,12 @@ onMounted(() => {
 						<Icon name="ph:qr-code-bold" size="12" class="text-[#007AFF]" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
-					{{ statsLoading ? '—' : (analyticsEvents.page_visit || 0) }}
-				</p>
+				<div class="flex items-baseline gap-1.5">
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
+						{{ statsLoading ? '—' : (analyticsEvents.page_visit || 0) }}
+					</p>
+					<GrowthBadge :value="dashboardStats?.growth?.scans" />
+				</div>
 				<p class="text-[10px] text-slate-400 mt-1">{{ periodLabel }}</p>
 			</div>
 			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -596,9 +599,12 @@ onMounted(() => {
 						<Icon name="ph:envelope-bold" size="12" class="text-emerald-500" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
-					{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}
-				</p>
+				<div class="flex items-baseline gap-1.5">
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
+						{{ statsLoading ? '—' : (dashboardStats?.totalPlayers || 0) }}
+					</p>
+					<GrowthBadge :value="dashboardStats?.growth?.emails" />
+				</div>
 				<NuxtLink to="/dashboard/players" class="text-[10px] text-[#007AFF] font-medium mt-1 inline-block">{{ $t('dashboard.home.see_all') }} →</NuxtLink>
 			</div>
 			<div class="bg-white dark:bg-slate-900 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -608,9 +614,12 @@ onMounted(() => {
 						<Icon name="ph:chart-line-up-bold" size="12" class="text-purple-500" />
 					</div>
 				</div>
-				<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
-					{{ playersLoading ? '—' : `${playerStats.loyaltyRate}%` }}
-				</p>
+				<div class="flex items-baseline gap-1.5">
+					<p class="text-xl font-semibold text-slate-900 dark:text-white tabular-nums">
+						{{ playersLoading ? '—' : `${playerStats.loyaltyRate}%` }}
+					</p>
+					<GrowthBadge :value="dashboardStats?.growth?.loyalty" />
+				</div>
 				<p class="text-[10px] text-slate-400 mt-1">{{ $t('dashboard.home.loyal_players') }}</p>
 			</div>
 		</div>
