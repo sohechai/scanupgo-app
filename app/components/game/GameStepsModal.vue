@@ -194,7 +194,10 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show && current" class="fixed inset-0 z-[150] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="emit('close')"></div>
+        <!-- Fond NON cliquable pour fermer : c'est la modale du parcours d'actions
+             (aller sur le réseau, revenir, tourner la roue). Un clic à côté fermait
+             la modale et renvoyait à l'écran principal en perdant la progression. -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
         <div class="modal-panel relative rounded-3xl w-full max-w-sm shadow-2xl mt-8 border-2 border-black"
           :style="{ backgroundColor: popupColor, color: cardTextColor }">
