@@ -193,7 +193,11 @@ const nextStep = () => { if (step.value < totalSteps) step.value++ }
 const prevStep = () => { if (step.value > 1) step.value-- }
 
 const canProceedStep1 = computed(() => confirmedPlace.value !== null || manualMode.value)
-const canProceedStep2 = computed(() => business.value.name.trim().length >= 2)
+const canProceedStep2 = computed(() =>
+	business.value.name.trim().length >= 2 &&
+	// Téléphone obligatoire : au moins 8 chiffres.
+	(business.value.phone || '').replace(/\D/g, '').length >= 8,
+)
 
 onMounted(() => fetchBusiness())
 </script>
@@ -374,7 +378,7 @@ onMounted(() => fetchBusiness())
 								<p class="text-[11px] text-slate-400">Affiché sur votre fiche Google</p>
 							</div>
 							<div class="space-y-2">
-								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone</label>
+								<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Téléphone <span class="text-red-500">*</span></label>
 								<PhoneInput v-model="business.phone" variant="light" placeholder="6 00 00 00 00" :country="business.addressCountry" :country-code="business.addressCountryCode || ipCountryCode" />
 							</div>
 						</div>

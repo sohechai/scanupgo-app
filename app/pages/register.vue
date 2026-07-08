@@ -30,6 +30,12 @@ const handleRegister = async () => {
 		return
 	}
 
+	// Téléphone obligatoire : au moins 8 chiffres.
+	if (!phone.value || phone.value.replace(/\D/g, '').length < 8) {
+		error.value = t('auth.register.error_phone_required')
+		return
+	}
+
 	if (!cgvAccepted.value) {
 		cgvError.value = true
 		error.value = t('auth.register.error_cgv_not_accepted')
@@ -40,7 +46,7 @@ const handleRegister = async () => {
 	loading.value = true
 	error.value = ''
 	try {
-		await signUp(email.value, password.value, undefined, undefined, cgvAccepted.value, phone.value || undefined)
+		await signUp(email.value, password.value, undefined, undefined, cgvAccepted.value, phone.value)
 		navigateTo('/verify-email-pending')
 	} catch (e: any) {
 		console.error(e)
@@ -153,9 +159,9 @@ const loginWithGoogle = () => {
 				</div>
 			</div>
 
-			<!-- WhatsApp (optionnel) -->
+			<!-- WhatsApp (obligatoire) -->
 			<div>
-				<label for="whatsapp" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.whatsapp_label') }}</label>
+				<label for="whatsapp" class="block text-sm font-medium text-slate-700">{{ $t('auth.register.whatsapp_label') }} <span class="text-red-500">*</span></label>
 				<div class="mt-1">
 					<PhoneInput v-model="phone" variant="light" :placeholder="$t('auth.register.whatsapp_placeholder')" :country-code="ipCountryCode" />
 				</div>
