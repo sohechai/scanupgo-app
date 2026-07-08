@@ -72,9 +72,10 @@ const hidePredictions = () => {
 	setTimeout(() => { showPredictions.value = false }, 150)
 }
 
-const { normalizePhone, dialForCountryCode, countryCodeFromIp } = usePhone()
-// Code pays détecté par IP (fallback si Google Places ne donne pas un pays connu)
-const ipCountryCode = ref('')
+const { normalizePhone } = usePhone()
+// Indicatif par défaut : Maroc (+212). Le pays de Google Places reste prioritaire
+// s'il est fourni (business.addressCountryCode).
+const ipCountryCode = ref('MA')
 
 const selectPlace = async (prediction: typeof predictions.value[0]) => {
 	showPredictions.value = false
@@ -91,12 +92,6 @@ const selectPlace = async (prediction: typeof predictions.value[0]) => {
 		business.value.phone = details.phone
 			? normalizePhone(details.phone, details.addressCountry || '', details.addressCountryCode || '')
 			: (business.value.phone || '')
-		// Si Places ne donne pas un pays connu, on tente la détection IP (fallback gratuit).
-		if (!dialForCountryCode(details.addressCountryCode || '')) {
-			countryCodeFromIp().then((code) => {
-				if (code && !business.value.phone) ipCountryCode.value = code
-			})
-		}
 		business.value.googlePlaceId = details.placeId
 		business.value.googleReviewUrl = details.googleReviewUrl
 		business.value.googleRating = details.rating ?? null

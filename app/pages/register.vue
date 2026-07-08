@@ -17,12 +17,8 @@ const cgvError = ref(false)
 const error = ref('')
 const loading = ref(false)
 
-// Indicatif par défaut selon l'IP (ex. +212 si IP marocaine)
-const { countryCodeFromIp } = usePhone()
-const ipCountryCode = ref('')
-onMounted(async () => {
-	ipCountryCode.value = await countryCodeFromIp()
-})
+// Indicatif par défaut : Maroc (+212).
+const ipCountryCode = ref('MA')
 
 const handleRegister = async () => {
 	if (password.value !== confirmPassword.value) {
