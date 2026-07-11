@@ -38,6 +38,7 @@ const navItems = computed(() => [
 	{ name: t('admin.nav.subscriptions'), path: '/admin/subscriptions', icon: 'ph:crown-duotone' },
 	{ name: t('admin.nav.payments'), path: '/admin/payments', icon: 'ph:credit-card-duotone' },
 	{ name: t('admin.nav.users'), path: '/admin/users', icon: 'ph:users-three-duotone' },
+	{ name: t('admin.nav.infiltration'), path: '/admin/infiltration', icon: 'ph:eye-duotone' },
 	{ name: t('admin.nav.notifications'), path: '/admin/notifications', icon: 'ph:bell-duotone' },
 	{ name: t('admin.nav.settings'), path: '/admin/settings', icon: 'ph:gear-duotone' },
 ])

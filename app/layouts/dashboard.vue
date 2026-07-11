@@ -141,6 +141,9 @@ const toggleDarkMode = () => {
 		<!-- Main Content -->
 		<main class="flex-1 min-w-0 lg:h-full lg:overflow-hidden lg:ml-60 rtl:lg:ml-0 rtl:lg:mr-60 p-2.5 transition-all duration-300 flex flex-col">
 
+			<!-- Impersonation banner (visible only while an admin infiltrates) -->
+			<ImpersonationBanner />
+
 			<!-- Interface Card -->
 			<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/70 dark:border-slate-800 shadow-sm flex-1 flex flex-col lg:overflow-hidden">
 

@@ -1764,6 +1764,7 @@
 			"subscriptions": "Abonnements",
 			"payments": "Factures",
 			"users": "Utilisateurs",
+			"infiltration": "Infiltration",
 			"notifications": "Notifications",
 			"settings": "Paramètres"
 		},
@@ -2432,6 +2433,23 @@
 				"add": "Ajouter"
 			}
 		}
+	},
+	"impersonation": {
+		"title": "Infiltration",
+		"description": "Ouvrir le tableau de bord d'un marchand comme si vous étiez connecté à sa place.",
+		"warning_title": "Mode administrateur — accès complet",
+		"warning_body": "Vous agirez avec les pleins pouvoirs sur le compte du marchand. Chaque infiltration est enregistrée dans le journal d'audit.",
+		"search_placeholder": "Rechercher un marchand (nom, email, établissement)…",
+		"table_merchant": "Marchand",
+		"table_business": "Établissement",
+		"table_created": "Inscrit le",
+		"table_action": "Action",
+		"infiltrate_button": "Infiltrer",
+		"no_merchants": "Aucun marchand à infiltrer",
+		"no_results": "Aucun résultat",
+		"start_error": "Impossible de démarrer l'infiltration",
+		"banner_prefix": "Vous êtes infiltré en tant que",
+		"banner_exit": "Quitter l'infiltration"
 	},
 	"components": {
 		"game_preview": {

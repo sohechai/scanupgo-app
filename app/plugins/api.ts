@@ -15,6 +15,14 @@ export default defineNuxtPlugin({
 				const localeCookie = useCookie('i18n_locale')
 				headers.set('X-Locale', localeCookie.value || 'fr')
 
+				// Impersonation tabs mark themselves via sessionStorage (per-tab,
+				// unlike localStorage). This header routes the request to the
+				// isolated impersonation session (cookie booster.imp.sid) so the
+				// admin's own session in another tab is never touched.
+				if (import.meta.client && sessionStorage.getItem('impersonation_tab') === '1') {
+					headers.set('X-Impersonation', '1')
+				}
+
 				// SSR: Forward cookies from incoming request to API
 				if (import.meta.server) {
 					const event = useRequestEvent()

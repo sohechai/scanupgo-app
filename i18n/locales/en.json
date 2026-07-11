@@ -1764,6 +1764,7 @@
 			"subscriptions": "Subscriptions",
 			"payments": "Invoices",
 			"users": "Users",
+			"infiltration": "Infiltration",
 			"notifications": "Notifications",
 			"settings": "Settings"
 		},
@@ -2432,6 +2433,23 @@
 				"add": "Add"
 			}
 		}
+	},
+	"impersonation": {
+		"title": "Infiltration",
+		"description": "Open a merchant's dashboard as if you were logged in as them.",
+		"warning_title": "Administrator mode — full access",
+		"warning_body": "You will act with full privileges on the merchant's account. Every infiltration is recorded in the audit log.",
+		"search_placeholder": "Search a merchant (name, email, business)…",
+		"table_merchant": "Merchant",
+		"table_business": "Business",
+		"table_created": "Joined",
+		"table_action": "Action",
+		"infiltrate_button": "Infiltrate",
+		"no_merchants": "No merchant to infiltrate",
+		"no_results": "No results",
+		"start_error": "Unable to start infiltration",
+		"banner_prefix": "You are infiltrating as",
+		"banner_exit": "Exit infiltration"
 	},
 	"components": {
 		"game_preview": {

@@ -1764,6 +1764,7 @@
 			"subscriptions": "الاشتراكات",
 			"payments": "الفواتير",
 			"users": "المستخدمون",
+			"infiltration": "التسلل",
 			"notifications": "الإشعارات",
 			"settings": "الإعدادات"
 		},
@@ -2432,6 +2433,23 @@
 			"billing_trial_inactive": "التجربة معطّلة — تسجيل مباشر دون فترة تجريبية",
 			"email_template_auto": "تلقائي"
 		}
+	},
+	"impersonation": {
+		"title": "التسلل",
+		"description": "افتح لوحة تحكم التاجر كما لو كنت مسجّلاً الدخول باسمه.",
+		"warning_title": "وضع المسؤول — وصول كامل",
+		"warning_body": "ستتصرف بكامل الصلاحيات على حساب التاجر. يتم تسجيل كل عملية تسلل في سجل التدقيق.",
+		"search_placeholder": "ابحث عن تاجر (الاسم، البريد، المتجر)…",
+		"table_merchant": "التاجر",
+		"table_business": "المتجر",
+		"table_created": "انضم في",
+		"table_action": "إجراء",
+		"infiltrate_button": "تسلل",
+		"no_merchants": "لا يوجد تاجر للتسلل إليه",
+		"no_results": "لا نتائج",
+		"start_error": "تعذّر بدء التسلل",
+		"banner_prefix": "أنت متسلل باسم",
+		"banner_exit": "إنهاء التسلل"
 	},
 	"components": {
 		"game_preview": {
