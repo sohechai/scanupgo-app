@@ -1028,7 +1028,13 @@ const exportFlyer = async () => {
 			showToast('Flyer exporté avec succès', 'success')
 			// On inclut le flag isQrCode dans le JSON pour que la déduplication du
 			// QR fonctionne aussi au rechargement d'un flyer sauvegardé.
-			const canvasJson = { ...(canvas.value?.toJSON(['isQrCode']) || {}), _template: selectedBaseTemplate.value }
+			// IMPORTANT (Fabric v7) : utiliser toObject(propertiesToInclude), PAS
+			// toJSON([...]). En v7, canvas.toJSON(['isQrCode']) NE propage plus le
+			// tableau aux objets enfants -> le flag n'était pas sauvegardé -> au
+			// rechargement, les anciens QR n'étaient plus reconnus -> ils
+			// s'accumulaient au lieu d'être remplacés. toObject(['isQrCode'])
+			// propage bien la propriété (vérifié).
+			const canvasJson = { ...(canvas.value?.toObject(['isQrCode']) || {}), _template: selectedBaseTemplate.value }
 			emit('save', response.url, canvasJson)
 		}
 	} catch (e) {
