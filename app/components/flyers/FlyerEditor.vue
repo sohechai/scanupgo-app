@@ -552,30 +552,53 @@ const customQRCodeUrl = ref<string | null>(null)
 const qrCanvasObject = ref<any>(null)
 const logoCanvasObject = ref<any>(null)
 
+// Détermine si un objet du canvas est un QR à remplacer.
+//  - flag isQrCode : QR placés/sauvegardés par la nouvelle version.
+//  - HEURISTIQUE (compat flyers enregistrés AVANT le fix, dont le QR n'a pas le
+//    flag) : une petite FabricImage data URL, positionnée dans la qrZone.
+// IMPORTANT : on filtre aussi par TAILLE pour ne JAMAIS confondre le QR (~120px)
+// avec l'image de FOND du template (qui couvre le canvas, ~500px, souvent une
+// data URL elle aussi et centrée près de la zone QR). Sans ce garde-fou, le fond
+// était supprimé en même temps que le QR.
+const isQrLikeObject = (o: any, zone: any): boolean => {
+	if (o?.isQrCode) return true
+	if (o?.type !== 'image') return false
+	const src: string = o?.getSrc ? o.getSrc() : (o?._element?.src || o?.src || '')
+	if (typeof src !== 'string' || !src.startsWith('data:')) return false
+	// Taille effective à l'écran (largeur/hauteur × échelle). Un QR fait ~120px ;
+	// on autorise jusqu'à 220px. L'image de fond (bien plus grande) est exclue.
+	const effW = (o.width ?? 0) * (o.scaleX ?? 1)
+	const effH = (o.height ?? 0) * (o.scaleY ?? 1)
+	if (effW > 220 || effH > 220) return false
+	// Position : proche de la zone QR (le QR peut avoir été un peu déplacé).
+	const cx = o.left ?? 0
+	const cy = o.top ?? 0
+	const targetX = zone?.x ?? zone?.left ?? 246
+	const targetY = zone?.y ?? zone?.top ?? 420
+	return Math.abs(cx - targetX) < 140 && Math.abs(cy - targetY) < 140
+}
+
 // Place (or replace) QR code on canvas at the template's qrZone
 const placeQROnCanvas = async (url: string) => {
 	if (!canvas.value || !url) return
 	const { FabricImage } = await import('fabric')
-
-	// Supprime TOUT QR déjà présent (pas seulement le dernier référencé) : les
-	// appels async de FabricImage.fromURL peuvent laisser des QR orphelins non
-	// suivis par qrCanvasObject → on les retire via le flag isQrCode pour éviter
-	// la duplication.
-	const existingQrs = canvas.value.getObjects().filter((o: any) => o.isQrCode)
-	for (const obj of existingQrs) canvas.value.remove(obj)
-	qrCanvasObject.value = null
 
 	// Position du QR : utiliser la qrZone définie par le template si elle existe,
 	// sinon position fixe par défaut (zone blanche à 66%/68% du canvas).
 	const tpl = templates.value.find((t: any) => t.id === selectedBaseTemplate.value)
 	const zone = tpl?.qrZone || null
 
+	// Supprime TOUT QR déjà présent (flag OU heuristique pour les anciens flyers).
+	const existingQrs = canvas.value.getObjects().filter((o: any) => isQrLikeObject(o, zone))
+	for (const obj of existingQrs) canvas.value.remove(obj)
+	qrCanvasObject.value = null
+
 	FabricImage.fromURL(url, { crossOrigin: 'anonymous' }).then((img) => {
 		if (!canvas.value) return
 
 		// Filet de sécurité : si un autre appel async a ajouté un QR entre-temps,
 		// on le retire avant d'ajouter le nouveau (évite la duplication).
-		const stale = canvas.value.getObjects().filter((o: any) => o.isQrCode)
+		const stale = canvas.value.getObjects().filter((o: any) => isQrLikeObject(o, zone))
 		for (const obj of stale) canvas.value.remove(obj)
 
 		// Marqueur pour identifier les QR (utilisé pour la déduplication ci-dessus)
