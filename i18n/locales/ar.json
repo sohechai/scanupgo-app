@@ -418,6 +418,7 @@
 		"access_description": "أنشئ ألعابًا تفاعلية (عجلة الحظ، الحك...) لإشراك عملائك وجمع بياناتهم.",
 		"status_active": "نشط",
 		"status_draft": "مسودة",
+		"status_suspended": "موقوف",
 		"flyer_ready": "الفلاير جاهز",
 		"order_flyers": "طلب",
 		"flyer_not_configured": "الفلاير غير مُعدّ",

@@ -418,6 +418,7 @@
 		"access_description": "Create interactive games (spin wheel, scratch cards...) to engage your customers and collect their data.",
 		"status_active": "Active",
 		"status_draft": "Draft",
+		"status_suspended": "Suspended",
 		"flyer_ready": "Flyer ready",
 		"order_flyers": "Order",
 		"flyer_not_configured": "Flyer not configured",

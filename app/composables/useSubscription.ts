@@ -7,13 +7,15 @@ export const useSubscription = () => {
 	const subscription = computed(() => store.data)
 	const loading = computed(() => store.loading)
 
+	// Doit rester aligné sur GamesService.findBySlug côté backend : c'est lui qui
+	// décide si le jeu est réellement jouable. Toute divergence fait afficher au
+	// commerçant un jeu "Actif" alors que les joueurs voient "pas encore actif".
 	const hasActiveSubscription = computed(() => {
 		if (isAdmin.value) return true
 		if (!store.data) return false
-		if (store.data.status !== 'active') return false
-		if (store.data.cancelledAt && store.data.currentPeriodEnd) {
-			if (new Date(store.data.currentPeriodEnd) <= new Date()) return false
-		}
+		if (!['active', 'trialing'].includes(store.data.status)) return false
+		// Période échue = abonnement expiré, qu'il ait été annulé ou non.
+		if (store.data.currentPeriodEnd && new Date(store.data.currentPeriodEnd) <= new Date()) return false
 		return true
 	})
 
