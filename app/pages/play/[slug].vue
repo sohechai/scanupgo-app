@@ -99,6 +99,18 @@ onMounted(() => {
   if (game.value && !error.value && !gameInactive.value) {
     trackEvent('page_visit')
     if (game.value.gameLanguage) switchLocale(game.value.gameLanguage)
+
+    // Retour d'un réseau social : sur mobile, ouvrir le lien navigue hors de la
+    // page (l'app native prend le relais), donc la page est rechargée au retour.
+    // On rouvre la modale des étapes pour que le joueur reprenne où il en était
+    // au lieu de retomber sur l'écran d'accueil.
+    try {
+      const key = `game-steps-progress-${game.value.id || game.value.slug || 'x'}-open`
+      if (sessionStorage.getItem(key) === '1') {
+        showStepsModal.value = true
+        showSplash.value = false
+      }
+    } catch { /* ignore */ }
   }
 })
 

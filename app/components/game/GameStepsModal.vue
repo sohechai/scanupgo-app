@@ -48,6 +48,10 @@ const current = computed<Action | undefined>(() => actions.value[currentIndex.va
 
 const clearTimer = () => { if (timer) { clearInterval(timer); timer = null } }
 
+// Sur mobile, ouvrir un réseau social doit naviguer dans l'onglet courant :
+// l'app native intercepte l'URL et aucun onglet vide n'est laissé derrière.
+const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
 // Persistance de la progression : sur mobile, ouvrir un réseau navigue hors de la
 // page ; au retour, on restaure l'étape pour ne pas tout recommencer.
 const storageKey = computed(() => `game-steps-progress-${props.game?.id || props.game?.slug || 'x'}`)
@@ -55,6 +59,9 @@ const storageKey = computed(() => `game-steps-progress-${props.game?.id || props
 const saveProgress = () => {
   try {
     sessionStorage.setItem(storageKey.value, JSON.stringify({ i: currentIndex.value, p: phase.value }))
+    // Marque la modale comme ouverte : sur mobile la page est rechargée au retour
+    // du réseau social, et play/[slug].vue s'en sert pour la rouvrir.
+    sessionStorage.setItem(`${storageKey.value}-open`, '1')
   } catch { /* ignore */ }
 }
 const restoreProgress = () => {
@@ -70,7 +77,12 @@ const restoreProgress = () => {
     }
   } catch { /* ignore */ }
 }
-const clearProgress = () => { try { sessionStorage.removeItem(storageKey.value) } catch { /* ignore */ } }
+const clearProgress = () => {
+  try {
+    sessionStorage.removeItem(storageKey.value)
+    sessionStorage.removeItem(`${storageKey.value}-open`)
+  } catch { /* ignore */ }
+}
 
 const reset = () => {
   clearTimer()
@@ -101,33 +113,20 @@ const openCurrent = () => {
     let url = a.link.trim()
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url
     if (/^https?:\/\/.+\..+/i.test(url)) {
-      // Toujours ouvrir le réseau dans un nouvel onglet (comportement attendu).
-      const win = window.open(url, '_blank')
       saveProgress()
-      // Cas mobile : si l'app native du réseau prend le relais, l'onglet web
-      // ouvert reste un about:blank résiduel. On le ferme UNIQUEMENT si la page
-      // jeu redevient visible très vite (retour d'app) sans que l'onglet ait
-      // été réellement consulté. Si l'utilisateur reste sur l'onglet web
-      // (réseau sans app installée), on n'y touche pas.
-      if (win) {
-        const openedAt = Date.now()
-        let leftPage = false
-        const onVisibility = () => {
-          if (document.visibilityState === 'hidden') {
-            leftPage = true
-          } else if (document.visibilityState === 'visible' && leftPage) {
-            // De retour sur le jeu rapidement -> l'app native a géré l'ouverture,
-            // l'onglet web est inutile : on le ferme.
-            if (Date.now() - openedAt < 4000) {
-              try { if (!win.closed) win.close() } catch { /* ignore */ }
-            }
-            cleanup()
-          }
-        }
-        const cleanup = () => document.removeEventListener('visibilitychange', onVisibility)
-        document.addEventListener('visibilitychange', onVisibility)
-        // Filet : on retire l'écouteur après 12s (onglet web normal conservé).
-        setTimeout(cleanup, 12000)
+      // Mobile : navigation directe dans l'onglet courant. L'app native du réseau
+      // (universal/app link) prend le relais avant tout chargement. `window.open`
+      // laissait au contraire un onglet about:blank résiduel que le joueur devait
+      // fermer à la main au retour — et `win.close()` est refusé par les
+      // navigateurs mobiles dès que l'onglet a navigué.
+      // Au retour, la page est rechargée : la modale et l'étape courante sont
+      // restaurées depuis sessionStorage (voir restoreProgress / play/[slug].vue).
+      if (isMobile()) {
+        window.location.href = url
+      } else {
+        // Desktop : nouvel onglet, le jeu reste visible. `noopener` empêche la
+        // page ouverte d'accéder à window.opener (tabnabbing).
+        window.open(url, '_blank', 'noopener')
       }
     }
   }
