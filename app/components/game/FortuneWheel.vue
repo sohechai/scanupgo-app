@@ -27,33 +27,34 @@ const lightPhase = ref(0)
 const giftImage = ref<HTMLImageElement | null>(null)
 const pointerDeflection = ref(0) // degrees, updated each frame during spin
 
-// Total number of segments (alternating lost/gift)
-const TOTAL_SEGMENTS = 8
+// Nombre de segments gagnants quand le jeu n'a aucun lot (roue de démo).
+const MIN_PRIZE_SEGMENTS = 4
 
-// Generate segments: alternating lost and gift (cadeau)
+// Segments alternés perdant / cadeau. Il y a UN segment par lot : avec un nombre
+// fixe de segments, les lots au-delà du 4e n'apparaissaient sur la roue, et le
+// serveur pouvait tirer un lot absent — la roue cherchait alors un segment
+// inexistant et tournait indéfiniment.
 const wheelSegments = computed(() => {
+	const prizes = props.prizes || []
+	const prizeCount = prizes.length || MIN_PRIZE_SEGMENTS
 	const segments: any[] = []
 
-	for (let i = 0; i < TOTAL_SEGMENTS; i++) {
-		if (i % 2 === 0) {
-			segments.push({
-				type: 'lost',
-				name: t('play.wheel.lost'),
-				color: props.wheelLostColor || '#3f3f46',
-				textColor: '#ffffff'
-			})
-		} else {
-			const prizeIndex = Math.floor(i / 2)
-			const prize = props.prizes[prizeIndex % props.prizes.length]
-			segments.push({
-				type: 'prize',
-				name: prize?.name || t('play.wheel.gift'),
-				data: prize,
-				color: props.wheelPrizeColor || '#3f3f46',
-				textColor: '#ffffff',
-				hasGiftImage: true
-			})
-		}
+	for (let i = 0; i < prizeCount; i++) {
+		segments.push({
+			type: 'lost',
+			name: t('play.wheel.lost'),
+			color: props.wheelLostColor || '#3f3f46',
+			textColor: '#ffffff'
+		})
+		const prize = prizes[i]
+		segments.push({
+			type: 'prize',
+			name: prize?.name || t('play.wheel.gift'),
+			data: prize,
+			color: props.wheelPrizeColor || '#3f3f46',
+			textColor: '#ffffff',
+			hasGiftImage: true
+		})
 	}
 
 	return segments
@@ -87,6 +88,14 @@ onUnmounted(() => {
 watch(() => props.prizes, drawWheel, { deep: true })
 watch(wheelSegments, drawWheel, { deep: true })
 watch(() => [props.wheelLostColor, props.wheelPrizeColor, props.wheelBorderColor], drawWheel)
+// Filet de sécurité : la roue ne s'arrête que si un résultat arrive
+// (hasLost / targetPrizeIndex). Réponse jamais reçue, lot absent des segments,
+// ou toute autre anomalie => elle tournait indéfiniment. Au-delà de ce délai on
+// force l'arrêt et on rend la main plutôt que de laisser le joueur bloqué.
+const SPIN_SAFETY_TIMEOUT_MS = 12000
+let safetyTimer: ReturnType<typeof setTimeout> | null = null
+const clearSafetyTimer = () => { if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null } }
+
 watch(() => props.isSpinning, (newVal) => {
 	if (newVal) {
 		startSpin()
@@ -96,8 +105,23 @@ watch(() => props.isSpinning, (newVal) => {
 		setTimeout(() => {
 			checkAndDecelerate()
 		}, 2500)
+
+		clearSafetyTimer()
+		safetyTimer = setTimeout(() => {
+			if (props.isSpinning && !isDecelerating.value) {
+				// Pas de résultat exploitable : on s'arrête sur le segment perdant
+				// s'il existe, sinon sur le premier segment — l'essentiel est de
+				// sortir de la rotation infinie et d'émettre spin-end.
+				const lostIndex = wheelSegments.value.findIndex(s => s.type === 'lost')
+				startDeceleration(lostIndex !== -1 ? lostIndex : 0)
+			}
+		}, SPIN_SAFETY_TIMEOUT_MS)
+	} else {
+		clearSafetyTimer()
 	}
 })
+
+onUnmounted(clearSafetyTimer)
 function checkAndDecelerate() {
 	if (props.isSpinning && !isDecelerating.value) {
 		if (props.hasLost) {
@@ -106,8 +130,12 @@ function checkAndDecelerate() {
 				startDeceleration(lostSegmentIndex)
 			}
 		} else if (props.targetPrizeIndex !== null) {
+			// Comparaison par id, pas par référence d'objet : le tableau `prizes`
+			// peut être recréé (refetch, réactivité) et l'égalité `===` échouerait
+			// alors silencieusement, laissant la roue tourner sans fin.
+			const targetPrize = props.prizes[props.targetPrizeIndex as number]
 			const prizeSegmentIndex = wheelSegments.value.findIndex(s =>
-				s.type === 'prize' && s.data === props.prizes[props.targetPrizeIndex as number]
+				s.type === 'prize' && s.data?.id && targetPrize?.id && s.data.id === targetPrize.id
 			)
 			if (prizeSegmentIndex !== -1) {
 				startDeceleration(prizeSegmentIndex)

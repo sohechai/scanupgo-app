@@ -245,6 +245,10 @@ const submitForm = async (formData: { first_name: string; email: string; phone: 
       error.value = e?.data?.message || t('play.error.unknown')
     }
     step.value = 'intro'
+    // La roue ne s'arrête que sur hasLost / targetPrizeIndex, tous deux issus de
+    // la réponse. Sans ça, un appel en échec la laissait tourner indéfiniment
+    // derrière l'écran d'erreur.
+    isSpinning.value = false
   } finally {
     isLoadingResult.value = false
   }
