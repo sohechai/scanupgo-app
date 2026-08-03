@@ -2651,7 +2651,7 @@
 		},
 		"steps": {
 			"message": "Share your experience on Google and come back to spin the wheel!",
-			"comeback_notice": "Come back to this page after leaving your review to claim your prize!",
+			"comeback_notice": "Come back to this page once the step is done to claim your prize!",
 			"complete_title": "Complete the steps to play",
 			"complete_subtitle": "Do each action to unlock the wheel",
 			"validating": "Validating… {sec}s",

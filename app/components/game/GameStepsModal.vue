@@ -48,10 +48,6 @@ const current = computed<Action | undefined>(() => actions.value[currentIndex.va
 
 const clearTimer = () => { if (timer) { clearInterval(timer); timer = null } }
 
-// Sur mobile, ouvrir un réseau social doit naviguer dans l'onglet courant :
-// l'app native intercepte l'URL et aucun onglet vide n'est laissé derrière.
-const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-
 // Persistance de la progression : sur mobile, ouvrir un réseau navigue hors de la
 // page ; au retour, on restaure l'étape pour ne pas tout recommencer.
 const storageKey = computed(() => `game-steps-progress-${props.game?.id || props.game?.slug || 'x'}`)
@@ -59,9 +55,6 @@ const storageKey = computed(() => `game-steps-progress-${props.game?.id || props
 const saveProgress = () => {
   try {
     sessionStorage.setItem(storageKey.value, JSON.stringify({ i: currentIndex.value, p: phase.value }))
-    // Marque la modale comme ouverte : sur mobile la page est rechargée au retour
-    // du réseau social, et play/[slug].vue s'en sert pour la rouvrir.
-    sessionStorage.setItem(`${storageKey.value}-open`, '1')
   } catch { /* ignore */ }
 }
 const restoreProgress = () => {
@@ -77,12 +70,7 @@ const restoreProgress = () => {
     }
   } catch { /* ignore */ }
 }
-const clearProgress = () => {
-  try {
-    sessionStorage.removeItem(storageKey.value)
-    sessionStorage.removeItem(`${storageKey.value}-open`)
-  } catch { /* ignore */ }
-}
+const clearProgress = () => { try { sessionStorage.removeItem(storageKey.value) } catch { /* ignore */ } }
 
 const reset = () => {
   clearTimer()
@@ -106,30 +94,24 @@ const goNext = () => {
   }
 }
 
-const openCurrent = () => {
+// URL de l'action courante, normalisée (ajout du https:// si absent).
+// Exposée au template pour être posée dans un vrai <a href>, et non ouverte par
+// window.open : un onglet issu de window.open reste marqué comme « popup » par le
+// navigateur, et le script d'Instagram le referme quand son app n'est pas
+// installée. Un lien cliqué par l'utilisateur produit un onglet ordinaire —
+// exactement le cas où coller l'URL à la main fonctionne.
+const currentUrl = computed(() => {
   const a = current.value
-  if (!a) return
-  if (a.link && a.link.trim()) {
-    let url = a.link.trim()
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url
-    if (/^https?:\/\/.+\..+/i.test(url)) {
-      saveProgress()
-      // Mobile : navigation directe dans l'onglet courant. L'app native du réseau
-      // (universal/app link) prend le relais avant tout chargement. `window.open`
-      // laissait au contraire un onglet about:blank résiduel que le joueur devait
-      // fermer à la main au retour — et `win.close()` est refusé par les
-      // navigateurs mobiles dès que l'onglet a navigué.
-      // Au retour, la page est rechargée : la modale et l'étape courante sont
-      // restaurées depuis sessionStorage (voir restoreProgress / play/[slug].vue).
-      if (isMobile()) {
-        window.location.href = url
-      } else {
-        // Desktop : nouvel onglet, le jeu reste visible. `noopener` empêche la
-        // page ouverte d'accéder à window.opener (tabnabbing).
-        window.open(url, '_blank', 'noopener')
-      }
-    }
-  }
+  if (!a?.link?.trim()) return null
+  let url = a.link.trim()
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url
+  return /^https?:\/\/.+\..+/i.test(url) ? url : null
+})
+
+// Démarre le timer de vérification. Appelé au clic sur le lien : la navigation
+// est gérée par le <a> lui-même, on ne fait plus qu'enregistrer la progression.
+const openCurrent = () => {
+  if (currentUrl.value) saveProgress()
   phase.value = 'pending'
   remaining.value = ACTION_TIMER_SECONDS
   clearTimer()
@@ -233,12 +215,16 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
                 </div>
               </div>
 
-              <button @click="openCurrent"
+              <!-- Vrai lien, pas window.open : l'onglet ouvert par un clic
+                   utilisateur est un onglet ordinaire, alors qu'un onglet issu de
+                   window.open reste marqué « popup » et se fait refermer par le
+                   script d'Instagram quand son app n'est pas installée. -->
+              <a :href="currentUrl || undefined" target="_blank" rel="noreferrer" @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
                 {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
-              </button>
+              </a>
 
               <p class="w-full mt-4 text-center font-extrabold text-[13px] leading-snug opacity-90">
                 ⚠️ {{ $t('play.steps.comeback_notice') }}
@@ -249,12 +235,12 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
             <template v-else>
               <h2 class="text-2xl font-black text-center mb-5">{{ $t('play.review_timer.not_done') }}</h2>
 
-              <button @click="openCurrent"
+              <a :href="currentUrl || undefined" target="_blank" rel="noreferrer" @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
                 {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
-              </button>
+              </a>
 
               <!-- Logo de la marque qui tourne -->
               <div v-if="business?.logo" class="relative w-28 h-28 flex items-center justify-center my-5">

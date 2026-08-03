@@ -27,26 +27,28 @@ const lightPhase = ref(0)
 const giftImage = ref<HTMLImageElement | null>(null)
 const pointerDeflection = ref(0) // degrees, updated each frame during spin
 
-// Nombre de segments gagnants quand le jeu n'a aucun lot (roue de démo).
-const MIN_PRIZE_SEGMENTS = 4
+// La roue a TOUJOURS 8 segments (4 perdants, 4 cadeaux), quel que soit le nombre
+// de lots : son rendu est purement visuel et doit rester identique d'un jeu à
+// l'autre. Seule compte la nature du segment d'arrivée — cadeau si le joueur
+// gagne, perdant sinon. Le lot réellement gagné est celui décidé par le serveur,
+// pas celui écrit sur le segment.
+const PRIZE_SEGMENTS = 4
 
-// Segments alternés perdant / cadeau. Il y a UN segment par lot : avec un nombre
-// fixe de segments, les lots au-delà du 4e n'apparaissaient sur la roue, et le
-// serveur pouvait tirer un lot absent — la roue cherchait alors un segment
-// inexistant et tournait indéfiniment.
 const wheelSegments = computed(() => {
 	const prizes = props.prizes || []
-	const prizeCount = prizes.length || MIN_PRIZE_SEGMENTS
 	const segments: any[] = []
 
-	for (let i = 0; i < prizeCount; i++) {
+	for (let i = 0; i < PRIZE_SEGMENTS; i++) {
 		segments.push({
 			type: 'lost',
 			name: t('play.wheel.lost'),
 			color: props.wheelLostColor || '#3f3f46',
 			textColor: '#ffffff'
 		})
-		const prize = prizes[i]
+		// Étiquette du segment : on boucle sur les lots pour habiller la roue.
+		// Au-delà de 4 lots, tous ne sont pas affichés — sans conséquence, la
+		// roue s'arrête sur un segment cadeau et le lot annoncé vient du serveur.
+		const prize = prizes.length ? prizes[i % prizes.length] : undefined
 		segments.push({
 			type: 'prize',
 			name: prize?.name || t('play.wheel.gift'),
@@ -130,13 +132,19 @@ function checkAndDecelerate() {
 				startDeceleration(lostSegmentIndex)
 			}
 		} else if (props.targetPrizeIndex !== null) {
-			// Comparaison par id, pas par référence d'objet : le tableau `prizes`
-			// peut être recréé (refetch, réactivité) et l'égalité `===` échouerait
-			// alors silencieusement, laissant la roue tourner sans fin.
+			// On vise le segment portant le lot gagné (comparaison par id : le tableau
+			// `prizes` peut être recréé et une égalité par référence échouerait).
 			const targetPrize = props.prizes[props.targetPrizeIndex as number]
-			const prizeSegmentIndex = wheelSegments.value.findIndex(s =>
+			const exactIndex = wheelSegments.value.findIndex(s =>
 				s.type === 'prize' && s.data?.id && targetPrize?.id && s.data.id === targetPrize.id
 			)
+			// Repli sur n'importe quel segment cadeau si ce lot n'est pas affiché :
+			// la roue n'en montre que 4, donc au-delà le lot gagné peut ne pas y
+			// figurer. Sans ce repli la roue tournait indéfiniment. Le joueur voit
+			// une case cadeau, et le lot annoncé reste celui décidé par le serveur.
+			const prizeSegmentIndex = exactIndex !== -1
+				? exactIndex
+				: wheelSegments.value.findIndex(s => s.type === 'prize')
 			if (prizeSegmentIndex !== -1) {
 				startDeceleration(prizeSegmentIndex)
 			}
