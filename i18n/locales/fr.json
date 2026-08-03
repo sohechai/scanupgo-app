@@ -2651,7 +2651,7 @@
 		},
 		"steps": {
 			"message": "Partagez votre expérience sur Google et revenez tourner la roue !",
-			"comeback_notice": "Revenez sur cette page après avoir laissé votre avis pour récupérer votre lot !",
+			"comeback_notice": "Revenez sur cette page une fois l'étape terminée pour récupérer votre lot !",
 			"complete_title": "Complétez les étapes pour jouer",
 			"complete_subtitle": "Faites chaque action pour débloquer la roue",
 			"validating": "Validation en cours… {sec}s",

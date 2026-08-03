@@ -94,43 +94,24 @@ const goNext = () => {
   }
 }
 
-const openCurrent = () => {
+// URL de l'action courante, normalisée (ajout du https:// si absent).
+// Exposée au template pour être posée dans un vrai <a href>, et non ouverte par
+// window.open : un onglet issu de window.open reste marqué comme « popup » par le
+// navigateur, et le script d'Instagram le referme quand son app n'est pas
+// installée. Un lien cliqué par l'utilisateur produit un onglet ordinaire —
+// exactement le cas où coller l'URL à la main fonctionne.
+const currentUrl = computed(() => {
   const a = current.value
-  if (!a) return
-  if (a.link && a.link.trim()) {
-    let url = a.link.trim()
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url
-    if (/^https?:\/\/.+\..+/i.test(url)) {
-      // Toujours ouvrir le réseau dans un nouvel onglet (comportement attendu).
-      const win = window.open(url, '_blank')
-      saveProgress()
-      // Cas mobile : si l'app native du réseau prend le relais, l'onglet web
-      // ouvert reste un about:blank résiduel. On le ferme UNIQUEMENT si la page
-      // jeu redevient visible très vite (retour d'app) sans que l'onglet ait
-      // été réellement consulté. Si l'utilisateur reste sur l'onglet web
-      // (réseau sans app installée), on n'y touche pas.
-      if (win) {
-        const openedAt = Date.now()
-        let leftPage = false
-        const onVisibility = () => {
-          if (document.visibilityState === 'hidden') {
-            leftPage = true
-          } else if (document.visibilityState === 'visible' && leftPage) {
-            // De retour sur le jeu rapidement -> l'app native a géré l'ouverture,
-            // l'onglet web est inutile : on le ferme.
-            if (Date.now() - openedAt < 4000) {
-              try { if (!win.closed) win.close() } catch { /* ignore */ }
-            }
-            cleanup()
-          }
-        }
-        const cleanup = () => document.removeEventListener('visibilitychange', onVisibility)
-        document.addEventListener('visibilitychange', onVisibility)
-        // Filet : on retire l'écouteur après 12s (onglet web normal conservé).
-        setTimeout(cleanup, 12000)
-      }
-    }
-  }
+  if (!a?.link?.trim()) return null
+  let url = a.link.trim()
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url
+  return /^https?:\/\/.+\..+/i.test(url) ? url : null
+})
+
+// Démarre le timer de vérification. Appelé au clic sur le lien : la navigation
+// est gérée par le <a> lui-même, on ne fait plus qu'enregistrer la progression.
+const openCurrent = () => {
+  if (currentUrl.value) saveProgress()
   phase.value = 'pending'
   remaining.value = ACTION_TIMER_SECONDS
   clearTimer()
@@ -234,12 +215,16 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
                 </div>
               </div>
 
-              <button @click="openCurrent"
+              <!-- Vrai lien, pas window.open : l'onglet ouvert par un clic
+                   utilisateur est un onglet ordinaire, alors qu'un onglet issu de
+                   window.open reste marqué « popup » et se fait refermer par le
+                   script d'Instagram quand son app n'est pas installée. -->
+              <a :href="currentUrl || undefined" target="_blank" rel="noreferrer" @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
                 {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
-              </button>
+              </a>
 
               <p class="w-full mt-4 text-center font-extrabold text-[13px] leading-snug opacity-90">
                 ⚠️ {{ $t('play.steps.comeback_notice') }}
@@ -250,12 +235,12 @@ const stepRowBg = computed(() => (isDarkCard.value ? 'rgba(255,255,255,0.20)' : 
             <template v-else>
               <h2 class="text-2xl font-black text-center mb-5">{{ $t('play.review_timer.not_done') }}</h2>
 
-              <button @click="openCurrent"
+              <a :href="currentUrl || undefined" target="_blank" rel="noreferrer" @click="openCurrent"
                 class="w-full py-4 rounded-[24px] font-black text-[19px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
                 :style="{ backgroundColor: buttonColor, color: buttonTextColor }">
                 {{ actionButton(current) }}
                 <Icon name="ph:arrow-up-right-bold" size="16" />
-              </button>
+              </a>
 
               <!-- Logo de la marque qui tourne -->
               <div v-if="business?.logo" class="relative w-28 h-28 flex items-center justify-center my-5">
