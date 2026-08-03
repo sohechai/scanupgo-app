@@ -932,7 +932,7 @@ const saveGame = async () => {
 								<div v-if="saving" class="flex justify-center py-8">
 									<Icon name="ph:spinner-gap-bold" class="animate-spin text-slate-300" size="28" />
 								</div>
-								<GamePrizes v-else-if="createdGameId" :game-id="createdGameId" />
+								<GamePrizes v-else-if="createdGameId" :game-id="createdGameId" :win-probability="game.winProbability" />
 
 								<div class="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
 									<button type="button" @click="goToPreviousStep"
@@ -952,7 +952,7 @@ const saveGame = async () => {
 									<h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ $t('games.detail.prizes_title') }}</h2>
 									<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $t('games.detail.prizes_after_creation') }}</p>
 								</div>
-								<GamePrizes :game-id="route.params.id as string" />
+								<GamePrizes :game-id="route.params.id as string" :win-probability="game.winProbability" />
 								<div class="flex justify-end pt-6 mt-6 border-t border-slate-100 dark:border-slate-700">
 									<button type="button" @click="activeTab = 'flyers'"
 										class="px-5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium rounded-md text-sm flex items-center gap-2 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
