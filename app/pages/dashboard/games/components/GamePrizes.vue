@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{
 	gameId: string
+	// Probabilité de gain du jeu (50-100). Sert à afficher la chance réelle par lot.
+	winProbability?: number
 }>()
 
 const { t } = useI18n()
@@ -41,9 +43,28 @@ const form = ref<Prize>({
 	status: 'active'
 })
 
-// Minimum 10% de chance par lot (garantit une bonne expérience client)
-const MIN_PROBABILITY = 50
+// Ce champ est un POIDS relatif, pas une probabilité : le tirage additionne les
+// poids de tous les lots et normalise sur ce total (voir PrizeDrawService). Un
+// plancher à 50 n'y garantissait donc rien — trois lots à 50 pèsent 33% chacun —
+// et empêchait surtout de créer un lot rare à côté de lots courants. Seul un
+// poids nul (lot jamais tiré) est refusé.
+const MIN_PROBABILITY = 1
 const probabilityError = computed(() => (form.value.probability ?? 0) < MIN_PROBABILITY)
+
+// Chance réelle de gagner CE lot, telle qu'elle sera calculée au tirage :
+// probabilité de gain du jeu × part du poids de ce lot dans le total.
+const realChance = computed(() => {
+	const weight = form.value.probability ?? 0
+	if (weight <= 0) return 0
+	// Poids des autres lots (on exclut celui en cours d'édition pour ne pas le compter deux fois)
+	const others = prizes.value
+		.filter(p => p.id !== form.value.id)
+		.reduce((sum, p) => sum + (p.probability ?? 0), 0)
+	const total = others + weight
+	if (total <= 0) return 0
+	const winProbability = props.winProbability ?? 100
+	return (winProbability / 100) * (weight / total) * 100
+})
 
 const fetchPrizes = async () => {
 	if (!props.gameId) return
@@ -253,22 +274,26 @@ watch(() => props.gameId, (newId) => {
 								class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{{ $t('games.prizes.probability') }}</label>
 							<div class="relative flex items-center bg-slate-50 dark:bg-slate-700 border rounded-xl focus-within:border-[#007AFF]/40 transition-colors"
 								:class="probabilityError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'">
-								<input v-model.number="form.probability" type="number" min="50" max="100" step="1"
+								<input v-model.number="form.probability" type="number" min="1" max="100" step="1"
 									class="prob-input flex-1 min-w-0 bg-transparent pl-4 pr-1 py-2 text-slate-900 dark:text-white outline-none">
-								<span class="text-slate-400 dark:text-slate-500 text-sm font-bold pr-2">%</span>
 								<div class="flex flex-col border-l border-slate-200 dark:border-slate-600">
 									<button type="button" @click="form.probability = Math.min(100, (form.probability || 0) + 1)"
 										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
 										<Icon name="ph:caret-up-bold" size="11" />
 									</button>
-									<button type="button" @click="form.probability = Math.max(50, (form.probability || 0) - 1)"
+									<button type="button" @click="form.probability = Math.max(1, (form.probability || 0) - 1)"
 										class="px-2 py-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors border-t border-slate-200 dark:border-slate-600">
 										<Icon name="ph:caret-down-bold" size="11" />
 									</button>
 								</div>
 							</div>
 							<p v-if="probabilityError" class="text-[11px] text-red-500 mt-1">{{ $t('games.prizes.probability_min_error') }}</p>
-							<p v-else class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
+							<template v-else>
+								<p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{{ $t('games.prizes.probability_hint') }}</p>
+								<p class="text-[11px] font-semibold text-[#007AFF] mt-0.5">
+									{{ $t('games.prizes.probability_real', { percent: realChance.toFixed(1) }) }}
+								</p>
+							</template>
 						</div>
 					</div>
 

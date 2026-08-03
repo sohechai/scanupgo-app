@@ -605,9 +605,9 @@
 			"food_category": "Nourriture",
 			"discount_category": "Réductions",
 			"quantity": "Quantité (Stock)",
-			"probability": "Chance de gagner",
-			"probability_hint": "Pourcentage de chance qu'un joueur gagne ce lot (ex: 20 = 1 chance sur 5)",
-			"probability_min_error": "Minimum 50% pour garantir une bonne expérience client.",
+			"probability": "Poids du lot",
+			"probability_hint": "Poids relatif entre vos lots : un lot à 20 sort 2x plus souvent qu'un lot à 10. La somme n'a pas besoin de faire 100.",
+			"probability_min_error": "Le poids doit être d'au moins 1 (un lot à 0 n'est jamais tiré).",
 			"message": "Message gagnant",
 			"default_message": "Félicitations ! Vous avez gagné un lot.",
 			"min_order_amount": "Montant minimum de commande",
@@ -628,7 +628,8 @@
 			"delete_cancel": "Annuler",
 			"delete_deleting": "Suppression...",
 			"ex_count": "ex.",
-			"return_link": "← Retour"
+			"return_link": "← Retour",
+			"probability_real": "Chance réelle pour un joueur : {percent}%"
 		}
 	},
 	"orders": {

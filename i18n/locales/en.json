@@ -605,9 +605,9 @@
 			"food_category": "Food",
 			"discount_category": "Discounts",
 			"quantity": "Quantity (Stock)",
-			"probability": "Chance of winning",
-			"probability_hint": "Percentage chance a player wins this prize (e.g. 20 = 1 in 5 chance)",
-			"probability_min_error": "Minimum 50% to ensure a good customer experience.",
+			"probability": "Prize weight",
+			"probability_hint": "Relative weight between your prizes: a prize at 20 comes up 2x as often as one at 10. The total doesn't need to add up to 100.",
+			"probability_min_error": "Weight must be at least 1 (a prize at 0 is never drawn).",
 			"message": "Winner message",
 			"default_message": "Congratulations! You won a prize.",
 			"min_order_amount": "Minimum order amount",
@@ -628,7 +628,8 @@
 			"delete_cancel": "Cancel",
 			"delete_deleting": "Deleting...",
 			"ex_count": "pcs.",
-			"return_link": "← Back"
+			"return_link": "← Back",
+			"probability_real": "Actual chance for a player: {percent}%"
 		}
 	},
 	"orders": {

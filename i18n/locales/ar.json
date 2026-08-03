@@ -605,9 +605,9 @@
 			"food_category": "طعام",
 			"discount_category": "تخفيضات",
 			"quantity": "الكمية (ستوك)",
-			"probability": "فرصة الربح",
-			"probability_hint": "نسبة احتمال فوز اللاعب بهذه الجائزة (مثال: 20 = فرصة واحدة من 5)",
-			"probability_min_error": "الحد الأدنى 50% لضمان تجربة جيدة للعميل.",
+			"probability": "وزن الجائزة",
+			"probability_hint": "وزن نسبي بين جوائزك: جائزة بوزن 20 تخرج مرتين أكثر من جائزة بوزن 10. المجموع لا يجب أن يساوي 100.",
+			"probability_min_error": "يجب أن يكون الوزن 1 على الأقل (الجائزة بوزن 0 لا تُسحب أبدًا).",
 			"message": "رسالة الفائز",
 			"default_message": "مبروك! لقد ربحت جائزة.",
 			"min_order_amount": "الحد الأدنى لمبلغ الطلب",
@@ -628,7 +628,8 @@
 			"delete_cancel": "إلغاء",
 			"delete_deleting": "جاري الحذف...",
 			"ex_count": "وحدة",
-			"return_link": "→ رجوع"
+			"return_link": "→ رجوع",
+			"probability_real": "الفرصة الحقيقية للاعب: {percent}%"
 		}
 	},
 	"orders": {
