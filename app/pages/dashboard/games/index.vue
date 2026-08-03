@@ -343,8 +343,10 @@ onMounted(async () => {
 						:class="!hasActiveSubscription ? 'cursor-not-allowed opacity-50' : ''"
 					>
 						<span class="text-[11px] font-medium w-16 text-right"
-							:class="game.active && hasActiveSubscription ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'">
-							{{ game.active ? $t('games.status_active') : $t('games.status_draft') }}
+							:class="game.active && hasActiveSubscription ? 'text-emerald-600 dark:text-emerald-400' : (game.active && !hasActiveSubscription ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500')">
+							{{ !hasActiveSubscription && game.active
+								? $t('games.status_suspended')
+								: (game.active ? $t('games.status_active') : $t('games.status_draft')) }}
 						</span>
 						<div class="relative w-7 h-3.5 rounded-full transition-colors shrink-0"
 							:class="game.active && hasActiveSubscription ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">

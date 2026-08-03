@@ -418,6 +418,7 @@
 		"access_description": "Créez des jeux interactifs (roue de la fortune, grattage...) pour engager vos clients et collecter leurs données.",
 		"status_active": "Actif",
 		"status_draft": "Brouillon",
+		"status_suspended": "Suspendu",
 		"flyer_ready": "Flyer prêt",
 		"order_flyers": "Commander",
 		"flyer_not_configured": "Flyer non configuré",
